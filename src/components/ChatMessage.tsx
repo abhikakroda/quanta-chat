@@ -74,11 +74,12 @@ type Props = {
   isThinking?: boolean;
   isStreaming?: boolean;
   imageUrl?: string;
+  modelLabel?: string;
   onEdit?: (newContent: string) => void;
   onRegenerate?: () => void;
 };
 
-function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUrl, onEdit, onRegenerate }: Props) {
+function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUrl, modelLabel, onEdit, onRegenerate }: Props) {
   const isUser = role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -99,46 +100,19 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
     setEditing(false);
   };
   const [speaking, setSpeaking] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleSpeak = useCallback(async (text: string) => {
     if (speaking) {
-      audioRef.current?.pause();
-      audioRef.current = null;
+      window.speechSynthesis.cancel();
       setSpeaking(false);
       return;
     }
     setSpeaking(true);
-    try {
-      const { supabase } = await import("@/integrations/supabase/client");
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error("Not authenticated");
-
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-tts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ text: text.slice(0, 2500) }),
-        }
-      );
-      if (!resp.ok) throw new Error("TTS failed");
-      const data = await resp.json();
-      if (data.audio) {
-        const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
-        audioRef.current = audio;
-        audio.onended = () => { setSpeaking(false); audioRef.current = null; };
-        await audio.play();
-      }
-    } catch (err) {
-      console.error("TTS error:", err);
-      setSpeaking(false);
-    }
+    const utterance = new SpeechSynthesisUtterance(text.slice(0, 3000));
+    utterance.rate = 1;
+    utterance.onend = () => setSpeaking(false);
+    utterance.onerror = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
   }, [speaking]);
 
   return (
@@ -293,6 +267,11 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Regenerate</span>
                       </button>
+                    )}
+                    {modelLabel && (
+                      <span className="text-[10px] text-muted-foreground/40 ml-auto">
+                        {modelLabel}
+                      </span>
                     )}
                   </div>
                 )}

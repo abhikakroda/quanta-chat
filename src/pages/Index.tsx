@@ -4,7 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
-import { streamChat, Message, MODELS, ModelId, resolveAutoModel } from "@/lib/chat";
+import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel } from "@/lib/chat";
 import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -55,6 +55,7 @@ export default function Index() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const { messages, addMessage, setMessages } = useMessages(activeId);
   const [messageImages, setMessageImages] = useState<Record<string, string>>({});
+  const [messageModels, setMessageModels] = useState<Record<string, string>>({});
   const [streaming, setStreaming] = useState(false);
   const [streamContent, setStreamContent] = useState("");
   const [streamThinking, setStreamThinking] = useState("");
@@ -236,6 +237,8 @@ export default function Index() {
           .select()
           .single();
         if (data) {
+          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
           setMessages((prev) => [...prev, data as any]);
         }
         setStreamContent("");
@@ -341,7 +344,11 @@ export default function Index() {
           .insert({ conversation_id: activeId!, role: "assistant" as const, content: savedContent })
           .select()
           .single();
-        if (data) setMessages((prev) => [...prev, data as any]);
+        if (data) {
+          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
+          setMessages((prev) => [...prev, data as any]);
+        }
         setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
       },
       onError: (err) => {
@@ -451,6 +458,7 @@ export default function Index() {
                     content={displayContent}
                     thinking={thinking}
                     imageUrl={messageImages[m.id]}
+                    modelLabel={m.role === "assistant" ? messageModels[m.id] : undefined}
                     onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
                     onRegenerate={m.role === "assistant" && !streaming ? () => handleRegenerate(i) : undefined}
                   />
