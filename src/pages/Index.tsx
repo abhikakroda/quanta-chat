@@ -20,6 +20,7 @@ import ImageDescriberTool from "@/components/tools/ImageDescriberTool";
 import VisionTool from "@/components/tools/VisionTool";
 import VoiceChatTool from "@/components/tools/VoiceChatTool";
 import ConversationalAgentTool from "@/components/tools/ConversationalAgentTool";
+import PdfEditorTool from "@/components/tools/PdfEditorTool";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -35,6 +36,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "vision": VisionTool,
   "voice-chat": VoiceChatTool,
   "conversational-agent": ConversationalAgentTool,
+  "pdf-editor": PdfEditorTool,
 };
 
 export default function Index() {
