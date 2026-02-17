@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
-import { Moon, Sun, Menu, Atom } from "lucide-react";
+import { Moon, Sun, Menu, Atom, Bot, X } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -11,6 +11,8 @@ import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 // Lazy load all tool components
 const TranslatorTool = lazy(() => import("@/components/tools/TranslatorTool"));
@@ -48,7 +50,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
 };
 
 export default function Index() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, signIn, signUp } = useAuth();
   const { conversations, createConversation, deleteConversation, updateTitle, refetch } = useConversations();
   const [activeId, setActiveId] = useState<string | null>(null);
   const { messages, addMessage, setMessages } = useMessages(activeId);
@@ -88,13 +90,41 @@ export default function Index() {
     }
   }, [messages, streamContent, streamThinking]);
 
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [authIsSignUp, setAuthIsSignUp] = useState(false);
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authError, setAuthError] = useState("");
+  const [authSubmitting, setAuthSubmitting] = useState(false);
+
   const needsAuth = (action: string) => {
     if (!user) {
-      // Redirect to auth for actions that need login
-      window.location.href = '/auth';
+      setShowAuthDialog(true);
       return true;
     }
     return false;
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError("");
+    setAuthSubmitting(true);
+    const result = authIsSignUp ? await signUp(authEmail, authPassword) : await signIn(authEmail, authPassword);
+    if (result.error) {
+      setAuthError(result.error);
+    } else {
+      setShowAuthDialog(false);
+      setAuthEmail("");
+      setAuthPassword("");
+    }
+    setAuthSubmitting(false);
+  };
+
+  const handleGoogleSignIn = async () => {
+    const { error } = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (error) setAuthError(String(error));
   };
 
   if (authLoading) {
@@ -442,6 +472,74 @@ export default function Index() {
           <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} />
         )}
       </div>
+
+      {/* Auth Dialog */}
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent className="sm:max-w-sm p-0 gap-0 border-border bg-background">
+          <div className="p-6 space-y-6">
+            <div className="text-center space-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+                <Bot className="w-7 h-7 text-primary" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">
+                {authIsSignUp ? "Create Account" : "Welcome Back"}
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                {authIsSignUp ? "Sign up to get started" : "Sign in to continue"}
+              </p>
+            </div>
+
+            <button
+              onClick={handleGoogleSignIn}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-medium hover:bg-accent transition-colors"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Continue with Google
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground">or</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
+
+            <form onSubmit={handleAuthSubmit} className="space-y-3">
+              <input
+                type="email"
+                placeholder="Email"
+                value={authEmail}
+                onChange={(e) => setAuthEmail(e.target.value)}
+                required
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              {authError && <p className="text-destructive text-xs text-center">{authError}</p>}
+              <button
+                type="submit"
+                disabled={authSubmitting}
+                className="w-full px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {authSubmitting ? "..." : authIsSignUp ? "Sign Up" : "Sign In"}
+              </button>
+            </form>
+
+            <p className="text-center text-xs text-muted-foreground">
+              {authIsSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+              <button onClick={() => { setAuthIsSignUp(!authIsSignUp); setAuthError(""); }} className="text-primary hover:underline">
+                {authIsSignUp ? "Sign In" : "Sign Up"}
+              </button>
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
