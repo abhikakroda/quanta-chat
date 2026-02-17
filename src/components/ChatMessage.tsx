@@ -1,6 +1,6 @@
 import { useState, memo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
-import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -9,9 +9,10 @@ type Props = {
   thinking?: string;
   isThinking?: boolean;
   onEdit?: (newContent: string) => void;
+  onRegenerate?: () => void;
 };
 
-function ChatMessage({ role, content, thinking, isThinking, onEdit }: Props) {
+function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate }: Props) {
   const isUser = role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -110,16 +111,27 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit }: Props) {
                   </div>
                 )}
 
-                {/* Copy button for assistant */}
                 {content && !isThinking && (
-                  <button
-                    onClick={handleCopy}
-                    className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors mt-1"
-                    title="Copy response"
-                  >
-                    {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    <span>{copied ? "Copied" : "Copy"}</span>
-                  </button>
+                  <div className="flex items-center gap-2 mt-1">
+                    <button
+                      onClick={handleCopy}
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors"
+                      title="Copy response"
+                    >
+                      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      <span>{copied ? "Copied" : "Copy"}</span>
+                    </button>
+                    {onRegenerate && (
+                      <button
+                        onClick={onRegenerate}
+                        className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors"
+                        title="Regenerate response"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Regenerate</span>
+                      </button>
+                    )}
+                  </div>
                 )}
 
                 {!content && !isThinking && thinking && (
