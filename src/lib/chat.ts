@@ -20,6 +20,7 @@ export async function streamChat({
   onDelta,
   onDone,
   onError,
+  signal,
 }: {
   messages: Message[];
   model?: ModelId;
@@ -28,6 +29,7 @@ export async function streamChat({
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
+  signal?: AbortSignal;
 }) {
   const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
@@ -43,6 +45,7 @@ export async function streamChat({
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
     body: JSON.stringify({ messages, enableThinking, model }),
+    signal,
   });
 
   if (!resp.ok) {

@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Square } from "lucide-react";
 
 type Props = {
   onSend: (message: string) => void;
+  onStop?: () => void;
   disabled: boolean;
+  streaming?: boolean;
 };
 
-export default function ChatInput({ onSend, disabled }: Props) {
+export default function ChatInput({ onSend, onStop, disabled, streaming }: Props) {
   const [input, setInput] = useState("");
   const ref = useRef<HTMLTextAreaElement>(null);
 
@@ -43,13 +45,22 @@ export default function ChatInput({ onSend, disabled }: Props) {
             disabled={disabled}
           />
           <div className="absolute right-2 bottom-2">
-            <button
-              onClick={handleSubmit}
-              disabled={!input.trim() || disabled}
-              className="w-7 h-7 rounded-lg bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-opacity flex items-center justify-center"
-            >
-              <ArrowUp className="w-3.5 h-3.5" strokeWidth={2.5} />
-            </button>
+            {streaming ? (
+              <button
+                onClick={onStop}
+                className="w-7 h-7 rounded-lg bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center"
+              >
+                <Square className="w-3 h-3" fill="currentColor" />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={!input.trim() || disabled}
+                className="w-7 h-7 rounded-lg bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-opacity flex items-center justify-center"
+              >
+                <ArrowUp className="w-3.5 h-3.5" strokeWidth={2.5} />
+              </button>
+            )}
           </div>
         </div>
       </div>

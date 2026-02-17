@@ -28,6 +28,7 @@ export default function Index() {
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -71,6 +72,8 @@ export default function Index() {
 
     setMessages((prev: any) => [...prev, { id: crypto.randomUUID(), conversation_id: convId!, role: "user", content: input, created_at: new Date().toISOString() }]);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
     setStreaming(true);
     setStreamContent("");
     setStreamThinking("");
@@ -82,6 +85,7 @@ export default function Index() {
       messages: allMessages,
       model: selectedModel,
       enableThinking: thinkingEnabled,
+      signal: controller.signal,
       onThinkingDelta: (text) => {
         fullThinking += text;
         setStreamThinking(fullThinking);
@@ -120,6 +124,15 @@ export default function Index() {
         console.error(err);
       },
     });
+  };
+
+  const handleStop = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setStreaming(false);
+    setStreamContent("");
+    setStreamThinking("");
+    setIsThinkingPhase(false);
   };
 
   const handleNewChat = async () => {
@@ -260,7 +273,7 @@ export default function Index() {
           <WelcomeScreen onSuggestion={handleSend} />
         )}
 
-        <ChatInput onSend={handleSend} disabled={streaming} />
+        <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} />
       </div>
     </div>
   );
