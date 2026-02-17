@@ -27,7 +27,7 @@ hljs.registerLanguage("sh", bash);
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("markdown", markdown);
 hljs.registerLanguage("md", markdown);
-import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck, Volume2, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck, Volume2, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
@@ -150,9 +150,9 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
           <div className="shrink-0 mt-1">
             <div className={cn(
               "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold",
-              isUser ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+              isUser ? "bg-white/90 text-muted-foreground" : "bg-muted text-muted-foreground"
             )}>
-              {isUser ? "Y" : "Q"}
+              {isUser ? <User className="w-4 h-4 text-muted-foreground" /> : "Q"}
             </div>
           </div>
 
