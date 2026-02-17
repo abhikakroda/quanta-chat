@@ -1,4 +1,3 @@
-// @ts-ignore
 import ReactMarkdown from "react-markdown";
 import { Bot, User } from "lucide-react";
 import { cn } from "@/lib/utils";
