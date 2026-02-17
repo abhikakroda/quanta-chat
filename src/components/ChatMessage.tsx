@@ -143,7 +143,7 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
     <div className="group animate-message-in">
       <div className="py-2 sm:py-3 px-3 sm:px-4">
         <div className={cn(
-          "max-w-2xl mx-auto flex gap-2.5 sm:gap-3",
+          "max-w-3xl mx-auto flex gap-2.5 sm:gap-3",
           isUser ? "flex-row-reverse" : "flex-row"
         )}>
           {/* Avatar */}

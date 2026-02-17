@@ -389,7 +389,7 @@ export default function Index() {
               )}
               {streaming && !streamContent && !streamThinking && (
                 <div className="py-2 sm:py-3 px-3 sm:px-4 animate-message-in">
-                  <div className="max-w-2xl mx-auto flex gap-2.5 sm:gap-3">
+                  <div className="max-w-3xl mx-auto flex gap-2.5 sm:gap-3">
                     <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-semibold text-muted-foreground">
                       {agentMode ? <Atom className="w-3.5 h-3.5" /> : "Q"}
                     </div>

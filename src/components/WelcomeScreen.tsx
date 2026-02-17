@@ -43,7 +43,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
         What can I help with?
       </h1>
 
-      <div className="w-full max-w-[680px] mb-6">
+      <div className="w-full max-w-[768px] mb-6">
         <ChatInput
           onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming}
           agentMode={agentMode} onToggleAgent={onToggleAgent}
@@ -53,7 +53,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
         />
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 max-w-[680px]">
+      <div className="flex flex-wrap justify-center gap-2 max-w-[768px]">
         {suggestions.map((s) => (
           <button
             key={s.text}
