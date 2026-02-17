@@ -4,11 +4,11 @@ export type Message = { role: "user" | "assistant"; content: string };
 
 export type ModelId = "qwen" | "mistral" | "minimax" | "deepseek" | "sarvam";
 
-export const MODELS: { id: ModelId; label: string }[] = [
-  { id: "qwen", label: "Qwen 3.5" },
+export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean }[] = [
+  { id: "qwen", label: "Qwen 3.5", supportsThinking: true },
   { id: "mistral", label: "Mistral Small" },
   { id: "minimax", label: "MiniMax M2.1" },
-  { id: "deepseek", label: "DeepSeek V3.2" },
+  { id: "deepseek", label: "DeepSeek V3.2", supportsThinking: true },
   { id: "sarvam", label: "Sarvam M" },
 ];
 

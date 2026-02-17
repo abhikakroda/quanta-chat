@@ -143,6 +143,7 @@ export default function Index() {
 
   const hasMessages = messages.length > 0 || streaming;
   const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label;
+  const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -195,19 +196,21 @@ export default function Index() {
             )}
           </div>
 
-          {/* Thinking toggle */}
-          <button
-            onClick={() => setThinkingEnabled((t) => !t)}
-            className={`p-1.5 rounded-lg transition-all duration-200 ${
-              thinkingEnabled
-                ? 'text-primary bg-primary/10'
-                : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50'
-            }`}
-            aria-label="Toggle thinking mode"
-            title={thinkingEnabled ? "Thinking on" : "Thinking off"}
-          >
-            <Brain className="w-4 h-4" />
-          </button>
+          {/* Thinking toggle - only for models that support it */}
+          {modelSupportsThinking && (
+            <button
+              onClick={() => setThinkingEnabled((t) => !t)}
+              className={`p-1.5 rounded-lg transition-all duration-200 ${
+                thinkingEnabled
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50'
+              }`}
+              aria-label="Toggle thinking mode"
+              title={thinkingEnabled ? "Thinking on" : "Thinking off"}
+            >
+              <Brain className="w-4 h-4" />
+            </button>
+          )}
 
           {/* Theme toggle */}
           <button
