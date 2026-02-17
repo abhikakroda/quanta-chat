@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
 import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
@@ -26,13 +26,13 @@ type Props = {
   modelSupportsThinking?: boolean;
 };
 
-export default function ChatInput({
+const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
   thinkingEnabled, onToggleThinking,
   selectedModel = "qwen", onSelectModel,
   modelSupportsThinking,
-}: Props) {
+}, _ref) {
   const [input, setInput] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
@@ -171,6 +171,11 @@ export default function ChatInput({
         setTranscribing(true);
 
         try {
+          const { supabase } = await import("@/integrations/supabase/client");
+          const { data: { session } } = await supabase.auth.getSession();
+          const token = session?.access_token;
+          if (!token) throw new Error("Not authenticated");
+
           const formData = new FormData();
           formData.append("audio", blob, "recording.webm");
 
@@ -180,7 +185,7 @@ export default function ChatInput({
               method: "POST",
               headers: {
                 apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-                Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+                Authorization: `Bearer ${token}`,
               },
               body: formData,
             }
@@ -401,4 +406,6 @@ export default function ChatInput({
       </div>
     </div>
   );
-}
+});
+
+export default ChatInput;
