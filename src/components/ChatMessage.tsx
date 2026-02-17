@@ -62,7 +62,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
           <span>{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
-      <pre className="overflow-x-auto p-3 text-[13px] leading-relaxed !bg-transparent"><code ref={codeRef} className={lang ? `language-${lang}` : ""}>{code}</code></pre>
+      <pre className="overflow-x-auto p-3 text-[14px] sm:text-[13px] leading-relaxed !bg-transparent"><code ref={codeRef} className={lang ? `language-${lang}` : ""}>{code}</code></pre>
     </div>
   );
 }
@@ -230,7 +230,7 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                               return <CodeBlock lang={lang} code={codeStr} />;
                             }
                             return (
-                              <code className="px-1.5 py-0.5 rounded bg-muted text-[13px]" {...props}>
+                              <code className="px-1.5 py-0.5 rounded bg-muted text-[14px] sm:text-[13px]" {...props}>
                                 {children}
                               </code>
                             );

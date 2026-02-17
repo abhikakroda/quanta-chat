@@ -65,7 +65,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
                 onSend(s.text);
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full glass-card text-[15px] sm:text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
           >
             <span>{s.icon}</span>
             <span>{s.text}</span>
