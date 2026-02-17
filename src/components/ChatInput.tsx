@@ -289,7 +289,10 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             onChange={(e) => setInput(e.target.value)}
             onFocus={() => setExpanded(true)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                if (!streaming) handleSubmit();
+              }
             }}
             placeholder={agentMode ? "Ask agent anything…" : "Ask anything"}
             rows={1}
@@ -297,7 +300,6 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
               "w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50 max-h-[200px] px-5 transition-all duration-200",
               expanded ? "min-h-[48px] pt-3.5 pb-1" : "min-h-[44px] pt-3 pb-3"
             )}
-            disabled={disabled}
           />
 
           {/* Bottom action row - only visible when expanded */}
@@ -437,7 +439,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
               ) : (
                 <button
                   onClick={handleSubmit}
-                  disabled={!input.trim() || disabled}
+                  disabled={!input.trim() || streaming}
                   className="w-9 h-9 rounded-xl bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-opacity flex items-center justify-center touch-manipulation ripple-container press-scale"
                 >
                   <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
