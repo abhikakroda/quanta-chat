@@ -73,11 +73,12 @@ type Props = {
   thinking?: string;
   isThinking?: boolean;
   isStreaming?: boolean;
+  imageUrl?: string;
   onEdit?: (newContent: string) => void;
   onRegenerate?: () => void;
 };
 
-function ChatMessage({ role, content, thinking, isThinking, isStreaming, onEdit, onRegenerate }: Props) {
+function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUrl, onEdit, onRegenerate }: Props) {
   const isUser = role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -186,6 +187,15 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, onEdit,
                     </button>
                   )}
                   <div className="px-4 py-2.5 rounded-2xl rounded-tr-md bg-chat-user text-chat-user-foreground">
+                    {imageUrl && (
+                      <div className="mb-2 -mx-1 -mt-0.5">
+                        <img
+                          src={imageUrl}
+                          alt="Attached image"
+                          className="rounded-xl max-w-[240px] sm:max-w-[280px] max-h-[200px] object-cover"
+                        />
+                      </div>
+                    )}
                     <p className="text-[15px] sm:text-[14px] leading-relaxed whitespace-pre-wrap break-words">{content}</p>
                   </div>
                 </div>
