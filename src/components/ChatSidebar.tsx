@@ -98,7 +98,6 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             ) : (
               <>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">Q</div>
                   <span className="text-[15px] font-semibold text-sidebar-foreground tracking-tight">Quanta</span>
                 </div>
                 <div className="flex items-center gap-0.5">
