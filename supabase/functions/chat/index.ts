@@ -54,6 +54,26 @@ serve(async (req) => {
           top_p: 0.95,
         }),
       });
+    } else if (model === "minimax") {
+      const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
+      if (!NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY not configured");
+
+      response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${NVIDIA_API_KEY}`,
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          model: "minimaxai/minimax-m2.1",
+          messages: allMessages,
+          stream: true,
+          max_tokens: 8192,
+          temperature: 1,
+          top_p: 0.95,
+        }),
+      });
     } else {
       // Default: NVIDIA Qwen
       const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
@@ -78,6 +98,7 @@ serve(async (req) => {
           repetition_penalty: 1,
           chat_template_kwargs: { enable_thinking: enableThinking },
         }),
+      });
       });
     }
 
