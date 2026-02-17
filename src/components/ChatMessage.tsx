@@ -123,7 +123,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
             isUser ? "flex-row-reverse" : "flex-row"
           )}>
           {/* Avatar */}
-          <div className="shrink-0 mt-1">
+          <div className="shrink-0 pt-1">
             <div className={cn(
               "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold",
               isUser ? "bg-foreground/10 text-foreground/70" : "bg-muted text-muted-foreground"
