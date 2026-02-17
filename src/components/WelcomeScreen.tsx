@@ -50,7 +50,7 @@ export default function WelcomeScreen({
           <button
             key={s.text}
             onClick={() => onSend(s.text)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] touch-manipulation"
+            className="flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
           >
             <span>{s.icon}</span>
             <span>{s.text}</span>
