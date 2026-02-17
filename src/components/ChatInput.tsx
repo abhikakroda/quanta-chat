@@ -304,8 +304,8 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 
           {/* Bottom action row - only visible when expanded */}
           <div className={cn(
-            "flex items-center justify-between px-2.5 overflow-hidden transition-all duration-200",
-            expanded ? "max-h-[50px] pb-2.5 pt-0.5 opacity-100" : "max-h-0 pb-0 pt-0 opacity-0"
+            "flex items-center justify-between px-2.5 transition-all duration-200",
+            expanded ? "max-h-[50px] pb-2.5 pt-0.5 opacity-100" : "max-h-0 pb-0 pt-0 opacity-0 overflow-hidden"
           )}>
             {/* Left: attach + settings */}
             <div className="flex items-center gap-0.5">
@@ -323,7 +323,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                 className={cn(
                   "p-2 rounded-xl border transition-all duration-200 touch-manipulation ripple-container press-scale",
                   recording
-                    ? "border-destructive/50 text-destructive bg-destructive/10 animate-pulse"
+                    ? "border-destructive/50 text-destructive bg-destructive/10"
                     : transcribing
                     ? "border-border text-muted-foreground/40"
                     : "border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground"
