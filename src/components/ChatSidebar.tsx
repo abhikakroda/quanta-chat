@@ -21,7 +21,6 @@ type Props = {
   onToggleCollapse: () => void;
   activeSkill?: string | null;
   onSelectSkill?: (skill: string | null) => void;
-  onOpenCrawl?: () => void;
 };
 
 export const SKILLS = [
@@ -45,17 +44,11 @@ export const TOOLS = [
   { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks." },
 ] as const;
 
-export const OPENCLAW_ITEMS = [
-  { id: "crawl", icon: Globe, label: "Crawl a Website", comingSoon: false },
-  { id: "auto-agent", icon: Zap, label: "Auto Agent", comingSoon: true },
-  { id: "web-pilot", icon: BookOpen, label: "Web Pilot", comingSoon: true },
-  { id: "data-extractor", icon: Activity, label: "Data Extractor", comingSoon: true },
-] as const;
 
 export type SkillId = typeof SKILLS[number]["id"];
 export type ToolId = typeof TOOLS[number]["id"];
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, onOpenCrawl }: Props) {
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
@@ -247,50 +240,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </div>
             )}
 
-            {/* Open Claw section */}
-            {!collapsed ? (
-              <div className="px-3 mt-1">
-                <div className="flex items-center gap-2 px-2 py-2.5">
-                  <span className="text-[13px] font-normal tracking-wide text-sidebar-foreground/35">Open Claw</span>
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-badge-new text-badge-new-foreground">NEW</span>
-                </div>
-                <div className="space-y-1">
-                    {OPENCLAW_ITEMS.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => {
-                          if (!item.comingSoon) {
-                            if (item.id === "crawl") { onOpenCrawl?.(); }
-                          }
-                        }}
-                        disabled={item.comingSoon}
-                        className={cn(
-                          "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 touch-manipulation text-left tracking-tight",
-                          item.comingSoon
-                            ? "text-sidebar-foreground/25 cursor-not-allowed"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground hover:translate-x-0.5 press-scale"
-                        )}
-                      >
-                        <item.icon className="w-[22px] h-[22px] shrink-0 opacity-70" />
-                        <span className="flex-1 truncate">{item.label}</span>
-                        {item.comingSoon && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground">Soon</span>
-                        )}
-                      </button>
-                    ))}
-                </div>
-              </div>
-            ) : (
-              <div className="px-1.5 space-y-0.5 mt-1">
-                <button
-                  onClick={onOpenCrawl}
-                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors touch-manipulation press-scale"
-                  title="Open Claw"
-                >
-                  <Bug className="w-[18px] h-[18px]" />
-                </button>
-              </div>
-            )}
+            {/* Removed Open Claw section */}
 
             <div className="mx-3 my-2 h-px bg-sidebar-border/50" />
 
