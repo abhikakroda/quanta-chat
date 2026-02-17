@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Menu, Moon, Sun, Brain } from "lucide-react";
+import { Menu, Moon, Sun, Brain, ChevronDown } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
-import { streamChat, Message } from "@/lib/chat";
+import { streamChat, Message, MODELS, ModelId } from "@/lib/chat";
 import ChatSidebar from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -23,6 +23,8 @@ export default function Index() {
   const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
+  const [selectedModel, setSelectedModel] = useState<ModelId>("qwen");
+  const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -68,6 +70,7 @@ export default function Index() {
 
     await streamChat({
       messages: allMessages,
+      model: selectedModel,
       enableThinking: thinkingEnabled,
       onThinkingDelta: (text) => {
         fullThinking += text;
@@ -149,6 +152,28 @@ export default function Index() {
           <h2 className="font-semibold text-foreground truncate flex-1">
             {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : "Quanta AI"}
           </h2>
+          <div className="relative">
+            <button
+              onClick={() => setModelMenuOpen((o) => !o)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-card hover:bg-accent transition-colors text-foreground"
+            >
+              {MODELS.find((m) => m.id === selectedModel)?.label}
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+            {modelMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-50 min-w-[140px] py-1">
+                {MODELS.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => { setSelectedModel(m.id); setModelMenuOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-xs hover:bg-accent transition-colors ${selectedModel === m.id ? 'text-primary font-medium' : 'text-foreground'}`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={() => setThinkingEnabled((t) => !t)}
             className={`p-2 rounded-lg transition-colors ${thinkingEnabled ? 'bg-primary/15 text-primary' : 'hover:bg-accent text-muted-foreground'}`}
