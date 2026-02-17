@@ -85,15 +85,22 @@ export async function streamChat({
         const parsed = JSON.parse(json);
         const content = parsed.choices?.[0]?.delta?.content;
         if (content) {
-          // Parse <think>...</think> tags from the stream
           let remaining = content as string;
 
           while (remaining.length > 0) {
-            if (!inThinking && !thinkingDone) {
-              // Look for <think> opening tag
+            if (!inThinking && !thinkingDone && enableThinking) {
               const thinkStart = remaining.indexOf("<think>");
               if (thinkStart !== -1) {
-                // Text before <think> goes to answer
+                const before = remaining.slice(0, thinkStart);
+                if (before) onDelta(before);
+                inThinking = true;
+                remaining = remaining.slice(thinkStart + 7);
+                continue;
+              }
+            } else if (!inThinking && !thinkingDone && !enableThinking) {
+              // Strip <think> tags entirely when thinking is disabled
+              const thinkStart = remaining.indexOf("<think>");
+              if (thinkStart !== -1) {
                 const before = remaining.slice(0, thinkStart);
                 if (before) onDelta(before);
                 inThinking = true;
@@ -103,24 +110,25 @@ export async function streamChat({
             }
 
             if (inThinking) {
-              // Look for </think> closing tag
               const thinkEnd = remaining.indexOf("</think>");
               if (thinkEnd !== -1) {
-                const thinkContent = remaining.slice(0, thinkEnd);
-                if (thinkContent && onThinkingDelta) onThinkingDelta(thinkContent);
+                if (enableThinking) {
+                  const thinkContent = remaining.slice(0, thinkEnd);
+                  if (thinkContent && onThinkingDelta) onThinkingDelta(thinkContent);
+                }
+                // If !enableThinking, silently discard thinking content
                 inThinking = false;
                 thinkingDone = true;
                 remaining = remaining.slice(thinkEnd + 8);
                 continue;
               } else {
-                // All remaining is thinking content
-                if (onThinkingDelta) onThinkingDelta(remaining);
+                if (enableThinking && onThinkingDelta) onThinkingDelta(remaining);
+                // If !enableThinking, discard
                 remaining = "";
                 continue;
               }
             }
 
-            // Normal answer content
             onDelta(remaining);
             remaining = "";
           }
