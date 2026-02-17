@@ -99,7 +99,6 @@ serve(async (req) => {
           chat_template_kwargs: { enable_thinking: enableThinking },
         }),
       });
-      });
     }
 
     if (!response.ok) {
