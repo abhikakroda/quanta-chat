@@ -23,6 +23,7 @@ import ConversationalAgentTool from "@/components/tools/ConversationalAgentTool"
 import PdfEditorTool from "@/components/tools/PdfEditorTool";
 import WebScraperTool from "@/components/tools/WebScraperTool";
 import NewsTool from "@/components/tools/NewsTool";
+import TextToSpeechTool from "@/components/tools/TextToSpeechTool";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -41,6 +42,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "pdf-editor": PdfEditorTool,
   "web-scraper": WebScraperTool,
   "news": NewsTool,
+  "text-to-speech": TextToSpeechTool,
 };
 
 export default function Index() {
