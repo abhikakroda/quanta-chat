@@ -1,10 +1,50 @@
-import { useState, memo, useCallback } from "react";
+import { useState, memo, useCallback, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import hljs from "highlight.js/lib/core";
+import javascript from "highlight.js/lib/languages/javascript";
+import typescript from "highlight.js/lib/languages/typescript";
+import python from "highlight.js/lib/languages/python";
+import css from "highlight.js/lib/languages/css";
+import xml from "highlight.js/lib/languages/xml";
+import json from "highlight.js/lib/languages/json";
+import bash from "highlight.js/lib/languages/bash";
+import sql from "highlight.js/lib/languages/sql";
+import markdown from "highlight.js/lib/languages/markdown";
+
+hljs.registerLanguage("javascript", javascript);
+hljs.registerLanguage("js", javascript);
+hljs.registerLanguage("jsx", javascript);
+hljs.registerLanguage("typescript", typescript);
+hljs.registerLanguage("ts", typescript);
+hljs.registerLanguage("tsx", typescript);
+hljs.registerLanguage("python", python);
+hljs.registerLanguage("css", css);
+hljs.registerLanguage("html", xml);
+hljs.registerLanguage("xml", xml);
+hljs.registerLanguage("json", json);
+hljs.registerLanguage("bash", bash);
+hljs.registerLanguage("sh", bash);
+hljs.registerLanguage("sql", sql);
+hljs.registerLanguage("markdown", markdown);
+hljs.registerLanguage("md", markdown);
 import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [copied, setCopied] = useState(false);
+  const codeRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (codeRef.current) {
+      codeRef.current.removeAttribute("data-highlighted");
+      if (lang && hljs.getLanguage(lang)) {
+        hljs.highlightElement(codeRef.current);
+      } else {
+        hljs.highlightElement(codeRef.current);
+      }
+    }
+  }, [code, lang]);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
     setCopied(true);
@@ -22,7 +62,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
           <span>{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
-      <pre className="overflow-x-auto p-3 text-[13px] leading-relaxed"><code>{code}</code></pre>
+      <pre className="overflow-x-auto p-3 text-[13px] leading-relaxed !bg-transparent"><code ref={codeRef} className={lang ? `language-${lang}` : ""}>{code}</code></pre>
     </div>
   );
 }
