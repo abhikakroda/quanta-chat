@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Square, Plus } from "lucide-react";
 
 type Props = {
   onSend: (message: string) => void;
@@ -26,9 +26,9 @@ export default function ChatInput({ onSend, onStop, disabled, streaming }: Props
   };
 
   return (
-    <div className="px-3 sm:px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2">
-      <div className="max-w-2xl mx-auto">
-        <div className="relative rounded-xl border border-border bg-card transition-all duration-150 focus-within:border-foreground/20">
+    <div className="px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
+      <div className="max-w-[680px] mx-auto">
+        <div className="relative flex items-end rounded-[26px] border border-border bg-card/80 transition-all duration-150 focus-within:border-foreground/15 shadow-elegant">
           <textarea
             ref={ref}
             value={input}
@@ -39,26 +39,26 @@ export default function ChatInput({ onSend, onStop, disabled, streaming }: Props
                 handleSubmit();
               }
             }}
-            placeholder="Message Quanta…"
+            placeholder="Ask anything"
             rows={1}
-            className="w-full resize-none bg-transparent outline-none text-[14px] text-foreground placeholder:text-muted-foreground/50 min-h-[44px] max-h-[200px] px-3 sm:px-3.5 py-3 pr-12"
+            className="w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50 min-h-[48px] max-h-[200px] pl-4 sm:pl-5 pr-14 py-3.5"
             disabled={disabled}
           />
           <div className="absolute right-2 bottom-2">
             {streaming ? (
               <button
                 onClick={onStop}
-                className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg bg-foreground text-background hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
+                className="w-8 h-8 rounded-full bg-foreground text-background hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
               >
-                <Square className="w-3 h-3" fill="currentColor" />
+                <Square className="w-3.5 h-3.5" fill="currentColor" />
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
                 disabled={!input.trim() || disabled}
-                className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg bg-foreground text-background disabled:opacity-20 hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
+                className="w-8 h-8 rounded-full bg-foreground text-background disabled:opacity-20 hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
               >
-                <ArrowUp className="w-3.5 h-3.5" strokeWidth={2.5} />
+                <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
               </button>
             )}
           </div>

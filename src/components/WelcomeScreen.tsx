@@ -1,33 +1,42 @@
-import { Code2, PenTool, GraduationCap, Zap } from "lucide-react";
+import { Code2, BookOpen, Pencil, Lightbulb } from "lucide-react";
+import ChatInput from "./ChatInput";
 
-type Props = { onSuggestion: (text: string) => void };
+type Props = {
+  onSend: (text: string) => void;
+  onStop?: () => void;
+  disabled: boolean;
+  streaming?: boolean;
+};
 
 const suggestions = [
-  { icon: Code2, text: "Help me write a Python function to sort a list" },
-  { icon: PenTool, text: "Summarize a long article for me" },
-  { icon: GraduationCap, text: "Explain quantum computing simply" },
-  { icon: Zap, text: "What are the latest trends in AI?" },
+  { icon: "💻", text: "Write code" },
+  { icon: "📖", text: "Learn something" },
+  { icon: "✏️", text: "Write or edit" },
+  { icon: "💡", text: "Step-by-step help" },
 ];
 
-export default function WelcomeScreen({ onSuggestion }: Props) {
+export default function WelcomeScreen({ onSend, onStop, disabled, streaming }: Props) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-16">
-      <h1 className="text-xl sm:text-2xl font-semibold text-foreground mb-1 tracking-tight text-center">
+    <div className="flex-1 flex flex-col items-center justify-center px-4">
+      <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-8 sm:mb-10 tracking-tight text-center">
         What can I help with?
       </h1>
-      <p className="text-sm text-muted-foreground mb-8 sm:mb-10 text-center">
-        Ask anything or pick a suggestion below.
-      </p>
 
-      <div className="flex flex-col sm:flex-wrap sm:flex-row justify-center gap-2 w-full max-w-lg px-2 sm:px-0">
+      {/* Centered input */}
+      <div className="w-full max-w-[680px] mb-6">
+        <ChatInput onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming} />
+      </div>
+
+      {/* Suggestion chips */}
+      <div className="flex flex-wrap justify-center gap-2 max-w-[680px]">
         {suggestions.map((s) => (
           <button
             key={s.text}
-            onClick={() => onSuggestion(s.text)}
-            className="flex items-center gap-2 px-3.5 py-2.5 sm:py-2 rounded-full border border-border bg-card hover:bg-accent active:bg-accent text-sm text-foreground/80 hover:text-foreground transition-colors duration-150 touch-manipulation"
+            onClick={() => onSend(s.text)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border hover:bg-accent active:bg-accent text-sm text-foreground/70 hover:text-foreground transition-colors duration-150 touch-manipulation"
           >
-            <s.icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-            <span className="truncate">{s.text}</span>
+            <span>{s.icon}</span>
+            <span>{s.text}</span>
           </button>
         ))}
       </div>
