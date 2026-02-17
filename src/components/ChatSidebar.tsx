@@ -34,7 +34,7 @@ export const SKILLS = [
 export const TOOLS = [
   { id: "conversational-agent", icon: Phone, label: "Conversational Agent", badge: "Sarvam", prompt: "You are a conversational AI agent." },
   { id: "text-to-speech", icon: Volume2, label: "Text to Speech", badge: "Sarvam", prompt: "You are a TTS assistant." },
-  { id: "pdf-editor", icon: FilePen, label: "PDF Editor", badge: "AI", prompt: "You are a document editing assistant." },
+  
   { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant." },
   { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
   { id: "news", icon: Newspaper, label: "News", badge: "Live", prompt: "You are a news assistant." },
@@ -311,37 +311,60 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
 
           {/* User section */}
           <div className="mt-auto border-t border-sidebar-border/50">
-            {!collapsed ? (
-              <div className="px-2 py-2">
-                {userMenuOpen && (
+            {user ? (
+              !collapsed ? (
+                <div className="px-2 py-2">
+                  {userMenuOpen && (
+                    <button
+                      onClick={() => { signOut(); setUserMenuOpen(false); }}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-destructive hover:bg-destructive/10 transition-colors mb-1"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  )}
                   <button
-                    onClick={() => { signOut(); setUserMenuOpen(false); }}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-destructive hover:bg-destructive/10 transition-colors mb-1"
+                    onClick={() => setUserMenuOpen((o) => !o)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-sidebar-accent/70 transition-colors"
                   >
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
+                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
+                      {user?.email?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    <span className="text-[12px] text-sidebar-foreground/60 truncate flex-1 text-left">{user?.email || "User"}</span>
                   </button>
-                )}
-                <button
-                  onClick={() => setUserMenuOpen((o) => !o)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-sidebar-accent/70 transition-colors"
-                >
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
-                    {user?.email?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <span className="text-[12px] text-sidebar-foreground/60 truncate flex-1 text-left">{user?.email || "User"}</span>
-                </button>
-              </div>
+                </div>
+              ) : (
+                <div className="px-1.5 py-2">
+                  <button
+                    onClick={signOut}
+                    className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-[18px] h-[18px]" />
+                  </button>
+                </div>
+              )
             ) : (
-              <div className="px-1.5 py-2">
-                <button
-                  onClick={signOut}
-                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
-                  title="Sign Out"
-                >
-                  <LogOut className="w-[18px] h-[18px]" />
-                </button>
-              </div>
+              !collapsed ? (
+                <div className="px-2 py-2">
+                  <a
+                    href="/auth"
+                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-opacity justify-center"
+                  >
+                    Sign In
+                  </a>
+                </div>
+              ) : (
+                <div className="px-1.5 py-2">
+                  <a
+                    href="/auth"
+                    className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors"
+                    title="Sign In"
+                  >
+                    <LogOut className="w-[18px] h-[18px]" />
+                  </a>
+                </div>
+              )
             )}
           </div>
         </div>

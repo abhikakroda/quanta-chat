@@ -24,7 +24,7 @@ const ImageDescriberTool = lazy(() => import("@/components/tools/ImageDescriberT
 const VisionTool = lazy(() => import("@/components/tools/VisionTool"));
 const VoiceChatTool = lazy(() => import("@/components/tools/VoiceChatTool"));
 const ConversationalAgentTool = lazy(() => import("@/components/tools/ConversationalAgentTool"));
-const PdfEditorTool = lazy(() => import("@/components/tools/PdfEditorTool"));
+
 const WebScraperTool = lazy(() => import("@/components/tools/WebScraperTool"));
 const NewsTool = lazy(() => import("@/components/tools/NewsTool"));
 const TextToSpeechTool = lazy(() => import("@/components/tools/TextToSpeechTool"));
@@ -41,7 +41,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "vision": VisionTool,
   "voice-chat": VoiceChatTool,
   "conversational-agent": ConversationalAgentTool,
-  "pdf-editor": PdfEditorTool,
+  
   "web-scraper": WebScraperTool,
   "news": NewsTool,
   "text-to-speech": TextToSpeechTool,
@@ -88,20 +88,28 @@ export default function Index() {
     }
   }, [messages, streamContent, streamThinking]);
 
+  const needsAuth = (action: string) => {
+    if (!user) {
+      // Redirect to auth for actions that need login
+      window.location.href = '/auth';
+      return true;
+    }
+    return false;
+  };
+
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex h-[100dvh] items-center justify-center bg-background">
         <span className="text-sm text-muted-foreground animate-pulse">Loading…</span>
       </div>
     );
   }
-  if (!user) return <Navigate to="/auth" replace />;
 
   const ToolUIComponent = activeSkill ? TOOL_UI_MAP[activeSkill] : null;
 
   const handleSend = async (input: string, files?: { name: string; content: string; type: string; dataUrl?: string }[]) => {
+    if (needsAuth('chat')) return;
     let convId = activeId;
-
     if (!convId) {
       const conv = await createConversation(input.slice(0, 50));
       if (!conv) return;
@@ -304,7 +312,7 @@ export default function Index() {
   const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-[100dvh] bg-background overflow-hidden">
       <ChatSidebar
         conversations={conversations}
         activeId={activeId}
