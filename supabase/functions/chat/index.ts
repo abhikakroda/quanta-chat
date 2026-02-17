@@ -25,10 +25,14 @@ serve(async (req) => {
     const { data, error: authError } = await supabase.auth.getClaims(token);
     if (authError || !data?.claims?.sub) throw new Error("Not authenticated");
 
-    const { messages, enableThinking = true, model = "qwen" } = await req.json();
+    const { messages, enableThinking = true, model = "qwen", skillPrompt } = await req.json();
+
+    const systemContent = skillPrompt
+      ? `${SYSTEM_PROMPT}\n\nAdditional skill context: ${skillPrompt}`
+      : SYSTEM_PROMPT;
 
     const allMessages = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: systemContent },
       ...messages,
     ];
 

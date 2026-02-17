@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { streamChat, Message, MODELS, ModelId } from "@/lib/chat";
-import ChatSidebar from "@/components/ChatSidebar";
+import ChatSidebar, { SKILLS, SkillId } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
@@ -34,6 +34,7 @@ export default function Index() {
   }, [selectedModel]);
   
   const [agentMode, setAgentMode] = useState(false);
+  const [activeSkill, setActiveSkill] = useState<string | null>(null);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -82,10 +83,13 @@ export default function Index() {
     let fullContent = "";
     let fullThinking = "";
 
+    const skillDef = activeSkill ? SKILLS.find((s) => s.id === activeSkill) : null;
+
     await streamChat({
       messages: allMessages,
       model: selectedModel,
       enableThinking: thinkingEnabled,
+      skillPrompt: skillDef?.prompt,
       signal: controller.signal,
       onThinkingDelta: (text) => {
         fullThinking += text;
@@ -180,10 +184,13 @@ export default function Index() {
     let fullContent = "";
     let fullThinking = "";
 
+    const skillDef2 = activeSkill ? SKILLS.find((s) => s.id === activeSkill) : null;
+
     await streamChat({
       messages: history,
       model: selectedModel,
       enableThinking: thinkingEnabled,
+      skillPrompt: skillDef2?.prompt,
       signal: controller.signal,
       onThinkingDelta: (text) => { fullThinking += text; setStreamThinking(fullThinking); },
       onDelta: (text) => { setIsThinkingPhase(false); fullContent += text; setStreamContent(fullContent); },
@@ -222,6 +229,8 @@ export default function Index() {
         onClose={() => setSidebarOpen(false)}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
+        activeSkill={activeSkill}
+        onSelectSkill={setActiveSkill}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
