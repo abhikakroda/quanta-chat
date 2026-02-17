@@ -13,11 +13,19 @@ serve(async (req) => {
     const SARVAM_API_KEY = Deno.env.get("SARVAM_API_KEY");
     if (!SARVAM_API_KEY) throw new Error("SARVAM_API_KEY not configured");
 
-    const { text, language = "en-IN" } = await req.json();
+    const { text, language = "en-IN", speaker = "meera" } = await req.json();
     if (!text) throw new Error("Text is required");
 
     // Sarvam TTS has a 1000 char limit, truncate if needed
     const truncatedText = text.slice(0, 1000);
+
+    const ttsBody: Record<string, unknown> = {
+      text: truncatedText,
+      target_language_code: language,
+      model: "bulbul:v3",
+      audio_format: "mp3",
+    };
+    if (speaker) ttsBody.speaker = speaker;
 
     const response = await fetch("https://api.sarvam.ai/text-to-speech", {
       method: "POST",
@@ -25,12 +33,7 @@ serve(async (req) => {
         "api-subscription-key": SARVAM_API_KEY,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        text: truncatedText,
-        target_language_code: language,
-        model: "bulbul:v3",
-        audio_format: "mp3",
-      }),
+      body: JSON.stringify(ttsBody),
     });
 
     if (!response.ok) {
