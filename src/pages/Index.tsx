@@ -26,6 +26,7 @@ export default function Index() {
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [selectedModel, setSelectedModel] = useState<ModelId>("qwen");
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const [agentMode, setAgentMode] = useState(false);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -339,10 +340,10 @@ export default function Index() {
                 </div>
               )}
             </div>
-            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} />
+            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} />
           </>
         ) : (
-          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} />
+          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} />
         )}
       </div>
     </div>
