@@ -22,7 +22,7 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) throw new Error("Not authenticated");
 
-    const { messages, conversationId } = await req.json();
+    const { messages, conversationId, enableThinking = true } = await req.json();
     const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
     if (!NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY not configured");
 
@@ -49,7 +49,7 @@ serve(async (req) => {
         top_k: 20,
         presence_penalty: 0,
         repetition_penalty: 1,
-        chat_template_kwargs: { enable_thinking: true },
+        chat_template_kwargs: { enable_thinking: enableThinking },
       }),
     });
 
