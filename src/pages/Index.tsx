@@ -9,6 +9,9 @@ import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
+import TranslatorTool from "@/components/tools/TranslatorTool";
+import CalculatorTool from "@/components/tools/CalculatorTool";
+import SummarizerTool from "@/components/tools/SummarizerTool";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -229,6 +232,12 @@ export default function Index() {
   
   const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
 
+  // Dedicated tool UIs
+  const activeToolUI = activeSkill === "calculator" ? "calculator"
+    : activeSkill === "translator" ? "translator"
+    : activeSkill === "summarizer" ? "summarizer"
+    : null;
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <ChatSidebar
@@ -274,7 +283,19 @@ export default function Index() {
         </header>
 
         {/* Content */}
-        {hasMessages ? (
+        {activeToolUI === "calculator" ? (
+          <div className="flex-1 overflow-y-auto flex items-start justify-center pt-8">
+            <CalculatorTool />
+          </div>
+        ) : activeToolUI === "translator" ? (
+          <div className="flex-1 overflow-y-auto">
+            <TranslatorTool />
+          </div>
+        ) : activeToolUI === "summarizer" ? (
+          <div className="flex-1 overflow-y-auto">
+            <SummarizerTool />
+          </div>
+        ) : hasMessages ? (
           <>
             <div ref={scrollRef} className="flex-1 overflow-y-auto">
               {messages.map((m, i) => {

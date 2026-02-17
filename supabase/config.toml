@@ -2,3 +2,12 @@ project_id = "fwdptrrdhgkruvvctcns"
 
 [functions.chat]
 verify_jwt = false
+
+[functions.sarvam-translate]
+verify_jwt = false
+
+[functions.sarvam-stt]
+verify_jwt = false
+
+[functions.sarvam-tts]
+verify_jwt = false
