@@ -211,7 +211,7 @@ export default function ChatInput({
                     {modelMenuOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
                   {modelMenuOpen && (
-                    <div className="absolute bottom-full right-0 mb-2 glass-strong rounded-xl shadow-liquid z-50 min-w-[180px] py-1 animate-scale-spring">
+                    <div className="absolute bottom-full right-0 mb-2 bg-popover border border-border rounded-xl shadow-liquid z-50 min-w-[180px] py-1 animate-scale-spring">
                       {MODELS.map((m) => (
                         <button
                           key={m.id}
@@ -262,7 +262,7 @@ export default function ChatInput({
                     <Atom className="w-4 h-4" />
                   </button>
                   {agentPopover && (
-                    <div className="absolute bottom-full right-0 mb-2 glass-strong rounded-xl shadow-liquid z-50 w-[220px] p-3 animate-scale-spring">
+                    <div className="absolute bottom-full right-0 mb-2 bg-popover border border-border rounded-xl shadow-liquid z-50 w-[220px] p-3 animate-scale-spring">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Atom className="w-4 h-4 text-foreground" />
                         <span className="text-sm font-medium text-foreground">Agent Mode</span>

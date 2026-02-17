@@ -243,7 +243,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                   {userMenuOpen ? <ChevronUp className="w-3.5 h-3.5 text-sidebar-foreground/30" /> : <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/30" />}
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute bottom-full left-2 right-2 mb-1 glass-strong rounded-xl shadow-liquid z-50 py-1 animate-scale-spring">
+                  <div className="absolute bottom-full left-2 right-2 mb-1 bg-popover border border-border rounded-xl shadow-liquid z-50 py-1 animate-scale-spring">
                     <div className="px-3 py-2 border-b border-border">
                       <p className="text-[12px] text-muted-foreground truncate">{user?.email}</p>
                     </div>
