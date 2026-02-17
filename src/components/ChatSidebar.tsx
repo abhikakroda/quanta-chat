@@ -89,7 +89,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           <div className={cn("flex items-center px-3 pt-3.5 pb-2", collapsed ? "flex-col gap-1 px-2" : "justify-between")}>
             {collapsed ? (
               <>
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-sm mb-1">Q</div>
+                
                 <button onClick={onToggleCollapse} className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors touch-manipulation" title="Expand">
                   <PanelLeftOpen className="w-[18px] h-[18px]" />
                 </button>
