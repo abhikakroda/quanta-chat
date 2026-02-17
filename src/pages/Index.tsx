@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Menu } from "lucide-react";
+import { Menu, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
@@ -19,6 +20,7 @@ export default function Index() {
   const [streaming, setStreaming] = useState(false);
   const [streamContent, setStreamContent] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -125,9 +127,12 @@ export default function Index() {
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 rounded-lg hover:bg-accent">
             <Menu className="w-5 h-5 text-foreground" />
           </button>
-          <h2 className="font-semibold text-foreground truncate">
+          <h2 className="font-semibold text-foreground truncate flex-1">
             {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : "Quanta AI"}
           </h2>
+          <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Toggle theme">
+            {dark ? <Sun className="w-5 h-5 text-foreground" /> : <Moon className="w-5 h-5 text-foreground" />}
+          </button>
         </header>
 
         {/* Messages */}
