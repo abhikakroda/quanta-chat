@@ -10,7 +10,7 @@ export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean }[
   { id: "mistral", label: "Mistral Small" },
   { id: "minimax", label: "MiniMax M2.1" },
   { id: "deepseek", label: "DeepSeek V3.2", supportsThinking: true },
-  { id: "sarvam", label: "Sarvam M" },
+  { id: "sarvam", label: "Sarvam M", supportsThinking: true },
 ];
 
 export async function streamChat({

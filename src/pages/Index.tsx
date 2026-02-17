@@ -269,10 +269,10 @@ export default function Index() {
           {modelSupportsThinking && (
             <button
               onClick={() => setThinkingEnabled((t) => !t)}
-              className={`shrink-0 p-1.5 rounded-md transition-colors touch-manipulation ${thinkingEnabled ? 'text-foreground' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
-              title={thinkingEnabled ? "Thinking on" : "Thinking off"}
+              className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors touch-manipulation border ${thinkingEnabled ? 'border-foreground/20 text-foreground bg-accent' : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'}`}
             >
-              <Brain className="w-4 h-4" />
+              <Brain className="w-3.5 h-3.5" />
+              <span>{thinkingEnabled ? "Reason" : "Normal"}</span>
             </button>
           )}
 
