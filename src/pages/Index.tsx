@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Moon, Sun, Menu } from "lucide-react";
+import { Moon, Sun, Menu, Atom } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -22,7 +22,6 @@ import VoiceChatTool from "@/components/tools/VoiceChatTool";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
-// Map of tool IDs to their dedicated UI components
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "calculator": CalculatorTool,
   "translator": TranslatorTool,
@@ -48,6 +47,7 @@ export default function Index() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
+  const [agentStep, setAgentStep] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
     return (saved as ModelId) || "mistral";
@@ -78,7 +78,6 @@ export default function Index() {
   }
   if (!user) return <Navigate to="/auth" replace />;
 
-  // Check if active skill has a dedicated tool UI
   const ToolUIComponent = activeSkill ? TOOL_UI_MAP[activeSkill] : null;
 
   const handleSend = async (input: string, files?: { name: string; content: string; type: string }[]) => {
@@ -111,7 +110,8 @@ export default function Index() {
     setStreaming(true);
     setStreamContent("");
     setStreamThinking("");
-    setIsThinkingPhase(thinkingEnabled);
+    setIsThinkingPhase(thinkingEnabled || agentMode);
+    setAgentStep(agentMode ? 1 : null);
     let fullContent = "";
     let fullThinking = "";
 
@@ -125,7 +125,11 @@ export default function Index() {
       model: selectedModel,
       enableThinking: thinkingEnabled,
       skillPrompt: skillDef?.prompt,
+      agentMode,
       signal: controller.signal,
+      onAgentStep: (step) => {
+        setAgentStep(step);
+      },
       onThinkingDelta: (text) => {
         fullThinking += text;
         setStreamThinking(fullThinking);
@@ -136,9 +140,12 @@ export default function Index() {
         setStreamContent(fullContent);
       },
       onDone: async () => {
+        // Clean up agent markers from final content
+        const cleanContent = fullContent.replace(/\[(CONTINUE|DONE)\]\s*/g, "").trim();
+        
         const savedContent = fullThinking
-          ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${fullContent}`
-          : fullContent;
+          ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${cleanContent}`
+          : cleanContent;
         const { data } = await supabase
           .from("messages")
           .insert({ conversation_id: convId!, role: "assistant" as const, content: savedContent })
@@ -151,6 +158,7 @@ export default function Index() {
         setStreamThinking("");
         setIsThinkingPhase(false);
         setStreaming(false);
+        setAgentStep(null);
 
         if (messages.length === 0) {
           await updateTitle(convId!, input.slice(0, 50));
@@ -161,6 +169,7 @@ export default function Index() {
         setStreamThinking("");
         setIsThinkingPhase(false);
         setStreaming(false);
+        setAgentStep(null);
         console.error(err);
       },
     });
@@ -173,6 +182,7 @@ export default function Index() {
     setStreamContent("");
     setStreamThinking("");
     setIsThinkingPhase(false);
+    setAgentStep(null);
   };
 
   const handleNewChat = async () => {
@@ -215,12 +225,13 @@ export default function Index() {
     setStreaming(true);
     setStreamContent("");
     setStreamThinking("");
-    setIsThinkingPhase(thinkingEnabled);
+    setIsThinkingPhase(thinkingEnabled || agentMode);
+    setAgentStep(agentMode ? 1 : null);
     let fullContent = "";
     let fullThinking = "";
 
     const skillDef2 = activeSkill === "web-scraper"
-      ? { prompt: "You are a web search and crawling assistant. Help users find information from the web, summarize web pages, extract data from URLs, and perform web research tasks." }
+      ? { prompt: "You are a web search and crawling assistant." }
       : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
 
     await streamChat({
@@ -228,30 +239,32 @@ export default function Index() {
       model: selectedModel,
       enableThinking: thinkingEnabled,
       skillPrompt: skillDef2?.prompt,
+      agentMode,
       signal: controller.signal,
+      onAgentStep: (step) => setAgentStep(step),
       onThinkingDelta: (text) => { fullThinking += text; setStreamThinking(fullThinking); },
       onDelta: (text) => { setIsThinkingPhase(false); fullContent += text; setStreamContent(fullContent); },
       onDone: async () => {
+        const cleanContent = fullContent.replace(/\[(CONTINUE|DONE)\]\s*/g, "").trim();
         const savedContent = fullThinking
-          ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${fullContent}`
-          : fullContent;
+          ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${cleanContent}`
+          : cleanContent;
         const { data } = await supabase
           .from("messages")
           .insert({ conversation_id: activeId!, role: "assistant" as const, content: savedContent })
           .select()
           .single();
         if (data) setMessages((prev) => [...prev, data as any]);
-        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false);
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
       },
       onError: (err) => {
-        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false);
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
         console.error(err);
       },
     });
   };
 
   const hasMessages = messages.length > 0 || streaming;
-  
   const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
 
   return (
@@ -285,13 +298,27 @@ export default function Index() {
 
           <div className="flex-1" />
 
-          {activeId && (
+          {/* Agent step indicator */}
+          {agentStep !== null && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 animate-pulse">
+              <Atom className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">Agent Step {agentStep}</span>
+            </div>
+          )}
+
+          {activeId && !agentStep && (
             <span className="text-xs text-muted-foreground truncate max-w-[200px]">
               {conversations.find((c) => c.id === activeId)?.title || "Chat"}
             </span>
           )}
 
           <div className="flex-1" />
+
+          {agentMode && !streaming && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
+              Agent ON
+            </span>
+          )}
 
           <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -328,6 +355,9 @@ export default function Index() {
                   displayContent = parts.slice(1).join('').trim();
                 }
 
+                // Clean agent markers from display
+                displayContent = displayContent.replace(/\[(CONTINUE|DONE)\]\s*/g, "").trim();
+
                 return (
                   <ChatMessage
                     key={m.id}
@@ -342,7 +372,7 @@ export default function Index() {
               {streaming && (streamThinking || streamContent) && (
                 <ChatMessage
                   role="assistant"
-                  content={streamContent}
+                  content={streamContent.replace(/\[(CONTINUE|DONE)\]\s*/g, "")}
                   thinking={streamThinking || undefined}
                   isThinking={isThinkingPhase}
                 />
@@ -350,7 +380,9 @@ export default function Index() {
               {streaming && !streamContent && !streamThinking && (
                 <div className="py-2 sm:py-3 px-3 sm:px-4 animate-message-in">
                   <div className="max-w-2xl mx-auto flex gap-2.5 sm:gap-3">
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-semibold text-muted-foreground">Q</div>
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-semibold text-muted-foreground">
+                      {agentMode ? <Atom className="w-3.5 h-3.5" /> : "Q"}
+                    </div>
                     <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-muted/60 glass-subtle">
                       <div className="flex items-center gap-1">
                         <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "0ms" }} />

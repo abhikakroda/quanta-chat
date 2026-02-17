@@ -273,7 +273,7 @@ export default function ChatInput({
                 className={cn(
                   "p-2 rounded-xl border transition-all duration-200 touch-manipulation ripple-container press-scale",
                   recording
-                    ? "border-red-500/50 text-red-500 bg-red-500/10 animate-pulse"
+                    ? "border-destructive/50 text-destructive bg-destructive/10 animate-pulse"
                     : transcribing
                     ? "border-border text-muted-foreground/40"
                     : "border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground"
@@ -348,14 +348,20 @@ export default function ChatInput({
                     <Atom className="w-4 h-4" />
                   </button>
                   {agentPopover && (
-                    <div className="absolute bottom-full right-0 mb-2 bg-popover border border-border rounded-xl shadow-liquid z-50 w-[220px] p-3 animate-scale-spring">
+                    <div className="absolute bottom-full right-0 mb-2 bg-popover border border-border rounded-xl shadow-liquid z-50 w-[250px] p-3 animate-scale-spring">
                       <div className="flex items-center gap-2 mb-1.5">
                         <Atom className="w-4 h-4 text-foreground" />
                         <span className="text-sm font-medium text-foreground">Agent Mode</span>
                       </div>
-                      <p className="text-[12px] text-muted-foreground mb-3 leading-relaxed">
-                        Multi-step reasoning for complex professional tasks
+                      <p className="text-[12px] text-muted-foreground mb-2 leading-relaxed">
+                        Multi-step reasoning for complex tasks. The agent will:
                       </p>
+                      <ul className="text-[11px] text-muted-foreground mb-3 space-y-1 pl-3">
+                        <li>• Break tasks into numbered steps</li>
+                        <li>• Auto-continue until complete</li>
+                        <li>• Use the best model (Qwen 3.5)</li>
+                        <li>• Enable deep thinking automatically</li>
+                      </ul>
                       <button
                         onClick={() => { onToggleAgent(); setAgentPopover(false); }}
                         className={cn(
