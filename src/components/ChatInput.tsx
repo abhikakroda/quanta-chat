@@ -40,10 +40,12 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   const [agentPopover, setAgentPopover] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
   const agentRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
@@ -64,6 +66,20 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [modelMenuOpen, agentPopover]);
+
+  // Collapse input bar when clicking outside
+  useEffect(() => {
+    if (!expanded) return;
+    const handler = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setExpanded(false);
+        setModelMenuOpen(false);
+        setAgentPopover(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [expanded]);
 
   const handleSubmit = () => {
     const trimmed = input.trim();
@@ -258,26 +274,37 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           </div>
         )}
 
-        <div className={cn(
-          "relative flex flex-col rounded-[26px] glass-strong transition-all duration-300 focus-within:border-foreground/15 shadow-liquid overflow-visible",
-          dragging && "ring-2 ring-primary/30"
-        )}>
+        <div
+          ref={containerRef}
+          className={cn(
+            "relative flex flex-col rounded-[26px] glass-strong transition-all duration-300 shadow-liquid overflow-visible",
+            expanded && "border-foreground/15",
+            dragging && "ring-2 ring-primary/30"
+          )}
+        >
           {/* Textarea */}
           <textarea
             ref={ref}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onFocus={() => setExpanded(true)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(); }
             }}
             placeholder={agentMode ? "Ask agent anything…" : "Ask anything"}
             rows={1}
-            className="w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50 min-h-[48px] max-h-[200px] px-5 pt-3.5 pb-1"
+            className={cn(
+              "w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50 max-h-[200px] px-5 transition-all duration-200",
+              expanded ? "min-h-[48px] pt-3.5 pb-1" : "min-h-[44px] pt-3 pb-3"
+            )}
             disabled={disabled}
           />
 
-          {/* Bottom action row */}
-          <div className="flex items-center justify-between px-2.5 pb-2.5 pt-0.5">
+          {/* Bottom action row - only visible when expanded */}
+          <div className={cn(
+            "flex items-center justify-between px-2.5 overflow-hidden transition-all duration-200",
+            expanded ? "max-h-[50px] pb-2.5 pt-0.5 opacity-100" : "max-h-0 pb-0 pt-0 opacity-0"
+          )}>
             {/* Left: attach + settings */}
             <div className="flex items-center gap-0.5">
               <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,image/*" multiple className="hidden" onChange={handleFileSelect} />
