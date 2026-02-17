@@ -218,11 +218,21 @@ export default function Index() {
             {messages.map((m) => {
               let thinking: string | undefined;
               let displayContent = m.content;
+
+              // Handle <!--thinking:base64--> format
               const thinkMatch = m.content.match(/^<!--thinking:(.+?)-->(.*)$/s);
               if (thinkMatch) {
                 try { thinking = decodeURIComponent(atob(thinkMatch[1])); } catch { /* ignore */ }
                 displayContent = thinkMatch[2];
               }
+
+              // Handle raw <think>...</think> tags in stored content
+              const rawThinkMatch = displayContent.match(/^<think>([\s\S]*?)<\/think>([\s\S]*)$/);
+              if (rawThinkMatch) {
+                thinking = rawThinkMatch[1].trim();
+                displayContent = rawThinkMatch[2].trim();
+              }
+
               return <ChatMessage key={m.id} role={m.role} content={displayContent} thinking={thinking} />;
             })}
             {streaming && (streamThinking || streamContent) && (
