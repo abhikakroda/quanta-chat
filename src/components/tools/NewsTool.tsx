@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { Newspaper, Loader2, ExternalLink, RefreshCw, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +20,7 @@ const CATEGORIES = [
   { id: "sports", label: "Sports" },
 ];
 
-export default function NewsTool() {
+const NewsTool = forwardRef<HTMLDivElement, object>(function NewsTool(_props, ref) {
   const [category, setCategory] = useState("general");
   const [articles, setArticles] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -99,7 +99,7 @@ export default function NewsTool() {
   }, [category]);
 
   return (
-    <div className="max-w-2xl mx-auto p-4 space-y-4 animate-fade-in h-full flex flex-col">
+    <div ref={ref} className="max-w-2xl mx-auto p-4 space-y-4 animate-fade-in h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -182,4 +182,6 @@ export default function NewsTool() {
       </div>
     </div>
   );
-}
+});
+
+export default NewsTool;

@@ -187,6 +187,10 @@ export default function ConversationalAgentTool() {
     try {
       // Stage 1: Speech-to-Text (fast)
       setProcessingStage("Recognizing...");
+      const { data: { session: sttSession } } = await supabase.auth.getSession();
+      const sttToken = sttSession?.access_token;
+      if (!sttToken) throw new Error("Not authenticated");
+
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.wav");
 
@@ -194,7 +198,7 @@ export default function ConversationalAgentTool() {
         method: "POST",
         headers: {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${sttToken}`,
         },
         body: formData,
       });
@@ -290,10 +294,10 @@ Respond as if you're on a real phone call - brief, warm, and to the point.`,
         headers: {
           "Content-Type": "application/json",
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${sttToken}`,
         },
         body: JSON.stringify({
-          text: fullResp.slice(0, 1000),
+          text: fullResp.slice(0, 2500),
           language,
           speaker: voice,
         }),

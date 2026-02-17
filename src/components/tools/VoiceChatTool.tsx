@@ -47,6 +47,10 @@ export default function VoiceChatTool() {
 
     try {
       // Step 1: STT with Sarvam
+      const { data: { session: sttSession } } = await supabase.auth.getSession();
+      const sttToken = sttSession?.access_token;
+      if (!sttToken) throw new Error("Not authenticated");
+
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.wav");
 
@@ -54,7 +58,7 @@ export default function VoiceChatTool() {
         method: "POST",
         headers: {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${sttToken}`,
         },
         body: formData,
       });
@@ -126,9 +130,9 @@ export default function VoiceChatTool() {
         headers: {
           "Content-Type": "application/json",
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          Authorization: `Bearer ${sttToken}`,
         },
-        body: JSON.stringify({ text: fullResp.slice(0, 1000), language: "en-IN" }),
+        body: JSON.stringify({ text: fullResp.slice(0, 2500), language: "en-IN" }),
       });
 
       if (ttsResp.ok) {

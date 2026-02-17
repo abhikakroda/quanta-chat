@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import ChatInput from "./ChatInput";
 import { ModelId } from "@/lib/chat";
 
@@ -29,15 +30,15 @@ const suggestions = [
   { icon: "🌐", text: "Website Builder", skill: "code-assistant" },
 ];
 
-export default function WelcomeScreen({
+const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
   thinkingEnabled, onToggleThinking,
   selectedModel, onSelectModel,
   modelSupportsThinking, onSelectSkill,
-}: Props) {
+}, ref) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 animate-fade-in">
+    <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 animate-fade-in">
       <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-8 sm:mb-10 tracking-tight text-center animate-slide-up">
         What can I help with?
       </h1>
@@ -72,4 +73,6 @@ export default function WelcomeScreen({
       </div>
     </div>
   );
-}
+});
+
+export default WelcomeScreen;

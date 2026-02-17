@@ -158,16 +158,7 @@ export async function streamChat({
             let remaining = content as string;
 
             while (remaining.length > 0) {
-              if (!inThinking && !thinkingDone && effectiveThinking) {
-                const thinkStart = remaining.indexOf("<think>");
-                if (thinkStart !== -1) {
-                  const before = remaining.slice(0, thinkStart);
-                  if (before) { onDelta(before); stepContent += before; }
-                  inThinking = true;
-                  remaining = remaining.slice(thinkStart + 7);
-                  continue;
-                }
-              } else if (!inThinking && !thinkingDone && !effectiveThinking) {
+              if (!inThinking && !thinkingDone) {
                 const thinkStart = remaining.indexOf("<think>");
                 if (thinkStart !== -1) {
                   const before = remaining.slice(0, thinkStart);
