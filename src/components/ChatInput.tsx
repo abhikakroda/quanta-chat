@@ -176,7 +176,7 @@ export default function ChatInput({
               <input ref={fileRef} type="file" accept="image/*,.pdf,.txt,.md,.csv,.json" multiple className="hidden" onChange={handleFileSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
-                className="p-2 rounded-xl border border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground transition-colors touch-manipulation"
+                className="p-2 rounded-xl border border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground transition-colors touch-manipulation ripple-container press-scale"
                 title="Attach file"
               >
                 <Paperclip className="w-4 h-4" />
@@ -185,7 +185,7 @@ export default function ChatInput({
                 onClick={toggleRecording}
                 disabled={transcribing}
                 className={cn(
-                  "p-2 rounded-xl border transition-all duration-200 touch-manipulation",
+                  "p-2 rounded-xl border transition-all duration-200 touch-manipulation ripple-container press-scale",
                   recording
                     ? "border-red-500/50 text-red-500 bg-red-500/10 animate-pulse"
                     : transcribing
@@ -235,7 +235,7 @@ export default function ChatInput({
                 <button
                   onClick={onToggleThinking}
                   className={cn(
-                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation",
+                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale",
                     thinkingEnabled
                       ? "border-primary/30 text-primary bg-primary/10"
                       : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
@@ -290,7 +290,7 @@ export default function ChatInput({
               {streaming ? (
                 <button
                   onClick={onStop}
-                  className="w-9 h-9 rounded-xl bg-foreground text-background hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
+                  className="w-9 h-9 rounded-xl bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center touch-manipulation ripple-container press-scale"
                 >
                   <Square className="w-3.5 h-3.5" fill="currentColor" />
                 </button>
@@ -298,7 +298,7 @@ export default function ChatInput({
                 <button
                   onClick={handleSubmit}
                   disabled={!input.trim() || disabled}
-                  className="w-9 h-9 rounded-xl bg-foreground text-background disabled:opacity-20 hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
+                  className="w-9 h-9 rounded-xl bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-opacity flex items-center justify-center touch-manipulation ripple-container press-scale"
                 >
                   <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
                 </button>
