@@ -2,10 +2,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Message = { role: "user" | "assistant"; content: string };
 
-export type ModelId = "qwen" | "mistral" | "minimax" | "deepseek" | "sarvam";
+export type ModelId = "qwen" | "qwen-coder" | "mistral" | "minimax" | "deepseek" | "sarvam";
 
 export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean }[] = [
   { id: "qwen", label: "Qwen 3.5", supportsThinking: true },
+  { id: "qwen-coder", label: "Qwen3 Coder", supportsThinking: true },
   { id: "mistral", label: "Mistral Small" },
   { id: "minimax", label: "MiniMax M2.1" },
   { id: "deepseek", label: "DeepSeek V3.2", supportsThinking: true },

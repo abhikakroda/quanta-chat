@@ -115,6 +115,27 @@ serve(async (req) => {
           top_p: 1,
         }),
       });
+    } else if (model === "qwen-coder") {
+      const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
+      if (!NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY not configured");
+
+      response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${NVIDIA_API_KEY}`,
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          model: "qwen/qwen3-coder-480b-a35b-instruct",
+          messages: allMessages,
+          stream: true,
+          max_tokens: 8192,
+          temperature: 0.60,
+          top_p: 0.95,
+          chat_template_kwargs: { enable_thinking: enableThinking },
+        }),
+      });
     } else {
       // Default: NVIDIA Qwen
       const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
