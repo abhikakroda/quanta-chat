@@ -13,7 +13,7 @@ serve(async (req) => {
     const SARVAM_API_KEY = Deno.env.get("SARVAM_API_KEY");
     if (!SARVAM_API_KEY) throw new Error("SARVAM_API_KEY not configured");
 
-    const { text, language = "en-IN", speaker = "meera" } = await req.json();
+    const { text, language = "en-IN", speaker = "anushka" } = await req.json();
     if (!text) throw new Error("Text is required");
 
     // Sarvam TTS has a 1000 char limit, truncate if needed

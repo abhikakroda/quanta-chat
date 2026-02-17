@@ -4,16 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const VOICES = [
-  { id: "meera", label: "Meera", gender: "Female" },
-  { id: "pavithra", label: "Pavithra", gender: "Female" },
-  { id: "maitreyi", label: "Maitreyi", gender: "Female" },
-  { id: "arvind", label: "Arvind", gender: "Male" },
-  { id: "karthik", label: "Karthik", gender: "Male" },
-  { id: "advika", label: "Advika", gender: "Female" },
-  { id: "diya", label: "Diya", gender: "Female" },
-  { id: "neel", label: "Neel", gender: "Male" },
-  { id: "amartya", label: "Amartya", gender: "Male" },
-  { id: "amruta", label: "Amruta", gender: "Female" },
+  { id: "anushka", label: "Anushka", gender: "Female" },
+  { id: "manisha", label: "Manisha", gender: "Female" },
+  { id: "vidya", label: "Vidya", gender: "Female" },
+  { id: "arya", label: "Arya", gender: "Female" },
+  { id: "ritu", label: "Ritu", gender: "Female" },
+  { id: "priya", label: "Priya", gender: "Female" },
+  { id: "abhilash", label: "Abhilash", gender: "Male" },
+  { id: "karun", label: "Karun", gender: "Male" },
+  { id: "hitesh", label: "Hitesh", gender: "Male" },
+  { id: "rahul", label: "Rahul", gender: "Male" },
 ];
 
 const LANGUAGES = [
@@ -31,7 +31,7 @@ const LANGUAGES = [
 
 export default function TextToSpeechTool() {
   const [text, setText] = useState("");
-  const [voice, setVoice] = useState("meera");
+  const [voice, setVoice] = useState("anushka");
   const [language, setLanguage] = useState("en-IN");
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);

@@ -18,16 +18,16 @@ const LANGUAGES = [
 ];
 
 const VOICES = [
-  { id: "meera", label: "Meera", gender: "Female" },
-  { id: "pavithra", label: "Pavithra", gender: "Female" },
-  { id: "maitreyi", label: "Maitreyi", gender: "Female" },
-  { id: "arvind", label: "Arvind", gender: "Male" },
-  { id: "karthik", label: "Karthik", gender: "Male" },
-  { id: "amol", label: "Amol", gender: "Male" },
-  { id: "amartya", label: "Amartya", gender: "Male" },
-  { id: "diya", label: "Diya", gender: "Female" },
-  { id: "neel", label: "Neel", gender: "Male" },
-  { id: "misha", label: "Misha", gender: "Female" },
+  { id: "anushka", label: "Anushka", gender: "Female" },
+  { id: "manisha", label: "Manisha", gender: "Female" },
+  { id: "vidya", label: "Vidya", gender: "Female" },
+  { id: "arya", label: "Arya", gender: "Female" },
+  { id: "ritu", label: "Ritu", gender: "Female" },
+  { id: "priya", label: "Priya", gender: "Female" },
+  { id: "abhilash", label: "Abhilash", gender: "Male" },
+  { id: "karun", label: "Karun", gender: "Male" },
+  { id: "hitesh", label: "Hitesh", gender: "Male" },
+  { id: "rahul", label: "Rahul", gender: "Male" },
 ];
 
 type Turn = { role: "user" | "agent"; text: string; timestamp: Date };
@@ -38,7 +38,7 @@ export default function ConversationalAgentTool() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [language, setLanguage] = useState("en-IN");
-  const [voice, setVoice] = useState("meera");
+  const [voice, setVoice] = useState("anushka");
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [showVoicePicker, setShowVoicePicker] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
