@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Menu, Moon, Sun } from "lucide-react";
+import { Menu, Moon, Sun, Brain } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -22,6 +22,7 @@ export default function Index() {
   const [streamThinking, setStreamThinking] = useState("");
   const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -61,12 +62,13 @@ export default function Index() {
     setStreaming(true);
     setStreamContent("");
     setStreamThinking("");
-    setIsThinkingPhase(true);
+    setIsThinkingPhase(thinkingEnabled);
     let fullContent = "";
     let fullThinking = "";
 
     await streamChat({
       messages: allMessages,
+      enableThinking: thinkingEnabled,
       onThinkingDelta: (text) => {
         fullThinking += text;
         setStreamThinking(fullThinking);
@@ -147,6 +149,14 @@ export default function Index() {
           <h2 className="font-semibold text-foreground truncate flex-1">
             {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : "Quanta AI"}
           </h2>
+          <button
+            onClick={() => setThinkingEnabled((t) => !t)}
+            className={`p-2 rounded-lg transition-colors ${thinkingEnabled ? 'bg-primary/15 text-primary' : 'hover:bg-accent text-muted-foreground'}`}
+            aria-label="Toggle thinking mode"
+            title={thinkingEnabled ? "Thinking mode on" : "Thinking mode off"}
+          >
+            <Brain className="w-5 h-5" />
+          </button>
           <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Toggle theme">
             {dark ? <Sun className="w-5 h-5 text-foreground" /> : <Moon className="w-5 h-5 text-foreground" />}
           </button>

@@ -4,12 +4,14 @@ export type Message = { role: "user" | "assistant"; content: string };
 
 export async function streamChat({
   messages,
+  enableThinking = true,
   onThinkingDelta,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Message[];
+  enableThinking?: boolean;
   onThinkingDelta?: (text: string) => void;
   onDelta: (text: string) => void;
   onDone: () => void;
@@ -28,7 +30,7 @@ export async function streamChat({
       Authorization: `Bearer ${token}`,
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ messages, enableThinking }),
   });
 
   if (!resp.ok) {
