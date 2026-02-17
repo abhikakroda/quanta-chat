@@ -179,7 +179,7 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                       <Pencil className="w-3 h-3" />
                     </button>
                   )}
-                  <div className="px-4 py-2.5 rounded-2xl rounded-tr-md bg-primary text-primary-foreground glass-shine">
+                  <div className="px-4 py-2.5 rounded-2xl rounded-tr-md bg-chat-user text-chat-user-foreground">
                     <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{content}</p>
                   </div>
                 </div>

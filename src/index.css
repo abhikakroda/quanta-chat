@@ -46,8 +46,8 @@
     --sidebar-border: 0 0% 92%;
     --sidebar-ring: 0 0% 9%;
 
-    --chat-user: 0 0% 96%;
-    --chat-user-foreground: 0 0% 9%;
+    --chat-user: 204 94% 94%;
+    --chat-user-foreground: 204 80% 16%;
     --chat-ai: 0 0% 100%;
     --chat-ai-foreground: 0 0% 9%;
 
@@ -94,8 +94,8 @@
     --sidebar-border: 0 0% 14%;
     --sidebar-ring: 0 0% 93%;
 
-    --chat-user: 0 0% 14%;
-    --chat-user-foreground: 0 0% 93%;
+    --chat-user: 204 80% 20%;
+    --chat-user-foreground: 204 60% 90%;
     --chat-ai: 0 0% 10%;
     --chat-ai-foreground: 0 0% 90%;
 
