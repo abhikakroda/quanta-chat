@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import { Sparkles, User, ChevronDown, ChevronRight, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,7 @@ type Props = {
   isThinking?: boolean;
 };
 
-export default function ChatMessage({ role, content, thinking, isThinking }: Props) {
+function ChatMessage({ role, content, thinking, isThinking }: Props) {
   const isUser = role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(false);
 
@@ -100,3 +100,5 @@ export default function ChatMessage({ role, content, thinking, isThinking }: Pro
     </div>
   );
 }
+
+export default memo(ChatMessage);
