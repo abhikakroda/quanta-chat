@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Moon, Sun, Brain, ChevronDown, PanelLeftOpen, Menu } from "lucide-react";
+import { Moon, Sun, Menu } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -25,7 +25,7 @@ export default function Index() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [selectedModel, setSelectedModel] = useState<ModelId>("qwen");
-  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  
   const [agentMode, setAgentMode] = useState(false);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -37,12 +37,6 @@ export default function Index() {
     }
   }, [messages, streamContent, streamThinking]);
 
-  useEffect(() => {
-    if (!modelMenuOpen) return;
-    const handler = () => setModelMenuOpen(false);
-    document.addEventListener("click", handler);
-    return () => document.removeEventListener("click", handler);
-  }, [modelMenuOpen]);
 
   if (authLoading) {
     return (
@@ -206,7 +200,7 @@ export default function Index() {
   };
 
   const hasMessages = messages.length > 0 || streaming;
-  const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label;
+  
   const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
 
   return (
@@ -230,35 +224,10 @@ export default function Index() {
             <Menu className="w-4 h-4 text-muted-foreground" />
           </button>
 
-          {/* Model selector - left side like reference */}
-          <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setModelMenuOpen((o) => !o)}
-              className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg text-sm font-medium text-foreground hover:bg-accent active:bg-accent transition-colors touch-manipulation"
-            >
-              <span className="truncate max-w-[120px] sm:max-w-none">{selectedModelLabel}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-150 ${modelMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {modelMenuOpen && (
-              <div className="absolute left-0 top-full mt-1 bg-card border border-border rounded-xl shadow-float z-50 min-w-[180px] py-1 animate-message-in">
-                {MODELS.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => { setSelectedModel(m.id); setModelMenuOpen(false); }}
-                    className={`w-full text-left px-3 py-2 text-sm transition-colors touch-manipulation ${
-                      selectedModel === m.id ? 'text-foreground font-medium bg-accent' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-                    }`}
-                  >
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <span className="text-sm font-medium text-foreground pl-1 hidden md:block">Quanta</span>
 
           <div className="flex-1" />
 
-          {/* Conversation title */}
           {activeId && (
             <span className="text-xs text-muted-foreground truncate max-w-[200px]">
               {conversations.find((c) => c.id === activeId)?.title || "Chat"}
@@ -266,16 +235,6 @@ export default function Index() {
           )}
 
           <div className="flex-1" />
-
-          {modelSupportsThinking && (
-            <button
-              onClick={() => setThinkingEnabled((t) => !t)}
-              className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors touch-manipulation border ${thinkingEnabled ? 'border-foreground/20 text-foreground bg-accent' : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'}`}
-            >
-              <Brain className="w-3.5 h-3.5" />
-              <span>{thinkingEnabled ? "Reason" : "Normal"}</span>
-            </button>
-          )}
 
           <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -340,10 +299,10 @@ export default function Index() {
                 </div>
               )}
             </div>
-            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} />
+            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
           </>
         ) : (
-          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} />
+          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
         )}
       </div>
     </div>
