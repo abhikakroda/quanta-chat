@@ -9,9 +9,25 @@ export type Conversation = {
   updated_at: string;
 };
 
+const CACHE_KEY = "quanta-conversations-cache";
+
+function getCachedConversations(): Conversation[] {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) return JSON.parse(cached);
+  } catch { /* ignore */ }
+  return [];
+}
+
+function setCachedConversations(conversations: Conversation[]) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(conversations));
+  } catch { /* ignore quota errors */ }
+}
+
 export function useConversations() {
   const { user } = useAuth();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>(() => getCachedConversations());
   const [loading, setLoading] = useState(true);
 
   const fetchConversations = useCallback(async () => {
@@ -20,7 +36,10 @@ export function useConversations() {
       .from("conversations")
       .select("*")
       .order("updated_at", { ascending: false });
-    if (data) setConversations(data);
+    if (data) {
+      setConversations(data);
+      setCachedConversations(data);
+    }
     setLoading(false);
   }, [user]);
 
@@ -34,18 +53,30 @@ export function useConversations() {
       .select()
       .single();
     if (error || !data) return null;
-    setConversations((prev) => [data, ...prev]);
+    setConversations((prev) => {
+      const next = [data, ...prev];
+      setCachedConversations(next);
+      return next;
+    });
     return data;
   };
 
   const updateTitle = async (id: string, title: string) => {
     await supabase.from("conversations").update({ title }).eq("id", id);
-    setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, title } : c)));
+    setConversations((prev) => {
+      const next = prev.map((c) => (c.id === id ? { ...c, title } : c));
+      setCachedConversations(next);
+      return next;
+    });
   };
 
   const deleteConversation = async (id: string) => {
     await supabase.from("conversations").delete().eq("id", id);
-    setConversations((prev) => prev.filter((c) => c.id !== id));
+    setConversations((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      setCachedConversations(next);
+      return next;
+    });
   };
 
   return { conversations, loading, createConversation, updateTitle, deleteConversation, refetch: fetchConversations };

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Moon, Sun, Menu, Atom } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,23 +9,25 @@ import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
-import TranslatorTool from "@/components/tools/TranslatorTool";
-import CalculatorTool from "@/components/tools/CalculatorTool";
-import SummarizerTool from "@/components/tools/SummarizerTool";
-import DeepResearcherTool from "@/components/tools/DeepResearcherTool";
-import CodeAssistantTool from "@/components/tools/CodeAssistantTool";
-import WriterTool from "@/components/tools/WriterTool";
-import TaskSchedulerTool from "@/components/tools/TaskSchedulerTool";
-import ImageDescriberTool from "@/components/tools/ImageDescriberTool";
-import VisionTool from "@/components/tools/VisionTool";
-import VoiceChatTool from "@/components/tools/VoiceChatTool";
-import ConversationalAgentTool from "@/components/tools/ConversationalAgentTool";
-import PdfEditorTool from "@/components/tools/PdfEditorTool";
-import WebScraperTool from "@/components/tools/WebScraperTool";
-import NewsTool from "@/components/tools/NewsTool";
-import TextToSpeechTool from "@/components/tools/TextToSpeechTool";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+
+// Lazy load all tool components
+const TranslatorTool = lazy(() => import("@/components/tools/TranslatorTool"));
+const CalculatorTool = lazy(() => import("@/components/tools/CalculatorTool"));
+const SummarizerTool = lazy(() => import("@/components/tools/SummarizerTool"));
+const DeepResearcherTool = lazy(() => import("@/components/tools/DeepResearcherTool"));
+const CodeAssistantTool = lazy(() => import("@/components/tools/CodeAssistantTool"));
+const WriterTool = lazy(() => import("@/components/tools/WriterTool"));
+const TaskSchedulerTool = lazy(() => import("@/components/tools/TaskSchedulerTool"));
+const ImageDescriberTool = lazy(() => import("@/components/tools/ImageDescriberTool"));
+const VisionTool = lazy(() => import("@/components/tools/VisionTool"));
+const VoiceChatTool = lazy(() => import("@/components/tools/VoiceChatTool"));
+const ConversationalAgentTool = lazy(() => import("@/components/tools/ConversationalAgentTool"));
+const PdfEditorTool = lazy(() => import("@/components/tools/PdfEditorTool"));
+const WebScraperTool = lazy(() => import("@/components/tools/WebScraperTool"));
+const NewsTool = lazy(() => import("@/components/tools/NewsTool"));
+const TextToSpeechTool = lazy(() => import("@/components/tools/TextToSpeechTool"));
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "calculator": CalculatorTool,
@@ -357,9 +359,11 @@ export default function Index() {
 
         {/* Content */}
         {ToolUIComponent ? (
-          <div className="flex-1 overflow-y-auto">
-            <ToolUIComponent />
-          </div>
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center"><span className="text-sm text-muted-foreground animate-pulse">Loading…</span></div>}>
+            <div className="flex-1 overflow-y-auto">
+              <ToolUIComponent />
+            </div>
+          </Suspense>
         ) : hasMessages ? (
           <>
             <div ref={scrollRef} className="flex-1 overflow-y-auto">
