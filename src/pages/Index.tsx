@@ -166,14 +166,14 @@ export default function Index() {
       }
     }
 
-    await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent });
+    const { data: insertedMsg } = await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single();
 
     const allMessages: Message[] = [
       ...messages.map((m) => ({ role: m.role, content: m.content })),
       { role: "user" as const, content: userContent },
     ];
 
-    const msgId = crypto.randomUUID();
+    const msgId = insertedMsg?.id || crypto.randomUUID();
     
     // Store image URL for display
     const imageFile = files?.find((f) => f.dataUrl && f.type.startsWith("image/"));
@@ -181,7 +181,11 @@ export default function Index() {
       setMessageImages((prev) => ({ ...prev, [msgId]: imageFile.dataUrl! }));
     }
 
-    setMessages((prev: any) => [...prev, { id: msgId, conversation_id: convId!, role: "user", content: userContent, created_at: new Date().toISOString() }]);
+    if (insertedMsg) {
+      setMessages((prev: any) => [...prev, insertedMsg as any]);
+    } else {
+      setMessages((prev: any) => [...prev, { id: msgId, conversation_id: convId!, role: "user", content: userContent, created_at: new Date().toISOString() }]);
+    }
 
     const controller = new AbortController();
     abortRef.current = controller;
