@@ -55,7 +55,10 @@ export default function Index() {
   const [streamThinking, setStreamThinking] = useState("");
   const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem("quanta-sidebar-collapsed");
+    return saved !== null ? saved === "true" : false; // default open
+  });
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [agentStep, setAgentStep] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
@@ -66,6 +69,10 @@ export default function Index() {
   useEffect(() => {
     localStorage.setItem("quanta-selected-model", selectedModel);
   }, [selectedModel]);
+
+  useEffect(() => {
+    localStorage.setItem("quanta-sidebar-collapsed", String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
   
   const [agentMode, setAgentMode] = useState(false);
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
