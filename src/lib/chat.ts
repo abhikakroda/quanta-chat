@@ -35,7 +35,7 @@ const AUTO_MODEL_MAP: Record<string, ModelId> = {
 export function resolveAutoModel(model: ModelId, activeSkill?: string | null): ModelId {
   if (model !== "auto") return model;
   if (activeSkill && AUTO_MODEL_MAP[activeSkill]) return AUTO_MODEL_MAP[activeSkill];
-  return "qwen"; // default fallback for general chat
+  return "mistral"; // default fallback for general chat
 }
 
 const AGENT_SYSTEM_PROMPT = `You are an advanced AI agent capable of multi-step reasoning. When given a complex task:
