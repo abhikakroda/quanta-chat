@@ -90,7 +90,7 @@ export default function Index() {
 
   const ToolUIComponent = activeSkill ? TOOL_UI_MAP[activeSkill] : null;
 
-  const handleSend = async (input: string, files?: { name: string; content: string; type: string }[]) => {
+  const handleSend = async (input: string, files?: { name: string; content: string; type: string; dataUrl?: string }[]) => {
     let convId = activeId;
 
     if (!convId) {
@@ -100,10 +100,26 @@ export default function Index() {
       setActiveId(conv.id);
     }
 
+    // Extract image data if any image files are attached
+    let imageData: { base64: string; mimeType: string } | undefined;
     let userContent = input;
     if (files && files.length > 0) {
-      const fileSection = files.map((f) => `--- File: ${f.name} ---\n${f.content}`).join("\n\n");
-      userContent = `${fileSection}\n\n${input}`;
+      const imageFile = files.find((f) => f.dataUrl && f.type.startsWith("image/"));
+      if (imageFile && imageFile.dataUrl) {
+        // Extract base64 from data URL: "data:image/png;base64,XXXX"
+        const base64Match = imageFile.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+        if (base64Match) {
+          imageData = { mimeType: base64Match[1], base64: base64Match[2] };
+        }
+      }
+      const textFiles = files.filter((f) => !f.type.startsWith("image/"));
+      if (textFiles.length > 0) {
+        const fileSection = textFiles.map((f) => `--- File: ${f.name} ---\n${f.content}`).join("\n\n");
+        userContent = `${fileSection}\n\n${input}`;
+      }
+      if (imageFile) {
+        userContent = userContent || "Describe this image in detail.";
+      }
     }
 
     await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent });
@@ -136,6 +152,7 @@ export default function Index() {
       enableThinking: thinkingEnabled,
       skillPrompt: skillDef?.prompt,
       agentMode,
+      imageData,
       signal: controller.signal,
       onAgentStep: (step) => {
         setAgentStep(step);

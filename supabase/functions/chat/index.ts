@@ -25,11 +25,73 @@ serve(async (req) => {
     const { data, error: authError } = await supabase.auth.getClaims(token);
     if (authError || !data?.claims?.sub) throw new Error("Not authenticated");
 
-    const { messages, enableThinking = true, model = "qwen", skillPrompt } = await req.json();
+    const { messages, enableThinking = true, model = "qwen", skillPrompt, imageData } = await req.json();
 
     const systemContent = skillPrompt
       ? `${SYSTEM_PROMPT}\n\nAdditional skill context: ${skillPrompt}`
       : SYSTEM_PROMPT;
+
+    // If image is attached, use Lovable AI (Gemini) for multimodal vision
+    if (imageData && imageData.base64 && imageData.mimeType) {
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+      // Build multimodal messages: system + history (text only) + final user message with image
+      const textHistory = messages.slice(0, -1).map((m: any) => ({
+        role: m.role,
+        content: typeof m.content === "string" ? m.content : m.content,
+      }));
+      const lastUserMsg = messages[messages.length - 1];
+      const userText = typeof lastUserMsg.content === "string" ? lastUserMsg.content : "Describe this image.";
+
+      const visionMessages = [
+        { role: "system", content: systemContent },
+        ...textHistory,
+        {
+          role: "user",
+          content: [
+            { type: "text", text: userText },
+            { type: "image_url", image_url: { url: `data:${imageData.mimeType};base64,${imageData.base64}` } },
+          ],
+        },
+      ];
+
+      const visionResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: visionMessages,
+          stream: true,
+          max_tokens: 4096,
+        }),
+      });
+
+      if (!visionResp.ok) {
+        if (visionResp.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (visionResp.status === 402) {
+          return new Response(JSON.stringify({ error: "Credits exhausted. Please add funds." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const errText = await visionResp.text();
+        console.error("Vision API error:", visionResp.status, errText);
+        return new Response(JSON.stringify({ error: "Vision service error" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(visionResp.body, {
+        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+      });
+    }
 
     const allMessages = [
       { role: "system", content: systemContent },
