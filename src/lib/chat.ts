@@ -89,13 +89,24 @@ export async function streamChat({
     ? (skillPrompt ? `${AGENT_SYSTEM_PROMPT}\n\nAdditional context: ${skillPrompt}` : AGENT_SYSTEM_PROMPT)
     : skillPrompt;
 
+  // Fallback order: try different models if the primary one fails
+  const FALLBACK_MODELS: ModelId[] = ["qwen", "mistral", "deepseek", "minimax"];
+  
+  const getFallbacks = (primary: ModelId): ModelId[] => {
+    const others = FALLBACK_MODELS.filter((m) => m !== primary);
+    return others;
+  };
+
   let currentMessages = [...messages];
   let agentStep = 1;
   let maxSteps = 5; // Safety limit for auto-continuation
   let fullAgentContent = "";
 
-  const runStep = async (): Promise<void> => {
+  const runStep = async (modelToUse?: ModelId, fallbacksLeft?: ModelId[]): Promise<void> => {
     if (signal?.aborted) return;
+
+    const currentModel = modelToUse || effectiveModel;
+    const remainingFallbacks = fallbacksLeft ?? getFallbacks(currentModel);
 
     if (agentMode) {
       onAgentStep?.(agentStep, null);
@@ -110,7 +121,7 @@ export async function streamChat({
     const bodyPayload: any = {
       messages: currentMessages,
       enableThinking: effectiveThinking,
-      model: effectiveModel,
+      model: currentModel,
       skillPrompt: effectiveSkillPrompt,
     };
     // Only send imageData on the first step
@@ -120,24 +131,44 @@ export async function streamChat({
       bodyPayload.imageData = imageData;
     }
 
-    const resp = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      },
-      body: JSON.stringify(bodyPayload),
-      signal,
-    });
+    let resp: Response;
+    try {
+      resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify(bodyPayload),
+        signal,
+      });
+    } catch (fetchErr: any) {
+      if (signal?.aborted) return;
+      // Network error — try fallback
+      if (remainingFallbacks.length > 0) {
+        console.warn(`Model ${currentModel} network error, trying ${remainingFallbacks[0]}...`);
+        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
+      }
+      onError(fetchErr.message || "Network error");
+      return;
+    }
 
     if (!resp.ok) {
+      // Model failed — try fallback
+      if (remainingFallbacks.length > 0) {
+        console.warn(`Model ${currentModel} returned ${resp.status}, trying ${remainingFallbacks[0]}...`);
+        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
+      }
       const err = await resp.json().catch(() => ({ error: "Request failed" }));
       onError(err.error || "Request failed");
       return;
     }
 
     if (!resp.body) {
+      if (remainingFallbacks.length > 0) {
+        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
+      }
       onError("No response body");
       return;
     }
@@ -148,102 +179,106 @@ export async function streamChat({
     let inThinking = false;
     let thinkingDone = false;
     let stepContent = "";
+    let gotContent = false;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
 
-      let idx: number;
-      while ((idx = buffer.indexOf("\n")) !== -1) {
-        let line = buffer.slice(0, idx);
-        buffer = buffer.slice(idx + 1);
-        if (line.endsWith("\r")) line = line.slice(0, -1);
-        if (!line.startsWith("data: ")) continue;
-        const json = line.slice(6).trim();
-        if (json === "[DONE]") {
-          // Check for agent continuation
-          if (agentMode && stepContent.trim().endsWith("[CONTINUE]") && agentStep < maxSteps) {
-            // Remove [CONTINUE] marker from displayed content
-            const cleanContent = stepContent.replace(/\[CONTINUE\]\s*$/, "").trim();
-            const delta = cleanContent.slice(fullAgentContent.length);
-            if (delta) {
-              // Already sent via onDelta, just track
+        let idx: number;
+        while ((idx = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") {
+            // If we got no content at all and have fallbacks, try next model
+            if (!gotContent && remainingFallbacks.length > 0) {
+              console.warn(`Model ${currentModel} returned empty, trying ${remainingFallbacks[0]}...`);
+              return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
             }
-            fullAgentContent = cleanContent + "\n\n";
             
-            // Add assistant response to messages for context
-            currentMessages = [
-              ...currentMessages,
-              { role: "assistant" as const, content: cleanContent },
-              { role: "user" as const, content: "Continue with the next step." },
-            ];
-            agentStep++;
+            // Check for agent continuation
+            if (agentMode && stepContent.trim().endsWith("[CONTINUE]") && agentStep < maxSteps) {
+              const cleanContent = stepContent.replace(/\[CONTINUE\]\s*$/, "").trim();
+              fullAgentContent = cleanContent + "\n\n";
+              
+              currentMessages = [
+                ...currentMessages,
+                { role: "assistant" as const, content: cleanContent },
+                { role: "user" as const, content: "Continue with the next step." },
+              ];
+              agentStep++;
+              
+              await runStep(currentModel, getFallbacks(currentModel));
+              return;
+            }
             
-            // Run next step
-            await runStep();
+            onDone();
             return;
           }
-          
-          // Clean up [DONE] marker if present
-          if (agentMode && stepContent.trim().endsWith("[DONE]")) {
-            // Already streamed, we just finish
-          }
-          
-          onDone();
-          return;
-        }
-        try {
-          const parsed = JSON.parse(json);
-          const content = parsed.choices?.[0]?.delta?.content;
-          if (content) {
-            let remaining = content as string;
+          try {
+            const parsed = JSON.parse(json);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              gotContent = true;
+              let remaining = content as string;
 
-            while (remaining.length > 0) {
-              if (!inThinking && !thinkingDone) {
-                const thinkStart = remaining.indexOf("<think>");
-                if (thinkStart !== -1) {
-                  const before = remaining.slice(0, thinkStart);
-                  if (before) { onDelta(before); stepContent += before; }
-                  inThinking = true;
-                  remaining = remaining.slice(thinkStart + 7);
-                  continue;
-                }
-              }
-
-              if (inThinking) {
-                const thinkEnd = remaining.indexOf("</think>");
-                if (thinkEnd !== -1) {
-                  if (effectiveThinking) {
-                    const thinkContent = remaining.slice(0, thinkEnd);
-                    if (thinkContent && onThinkingDelta) onThinkingDelta(thinkContent);
+              while (remaining.length > 0) {
+                if (!inThinking && !thinkingDone) {
+                  const thinkStart = remaining.indexOf("<think>");
+                  if (thinkStart !== -1) {
+                    const before = remaining.slice(0, thinkStart);
+                    if (before) { onDelta(before); stepContent += before; }
+                    inThinking = true;
+                    remaining = remaining.slice(thinkStart + 7);
+                    continue;
                   }
-                  inThinking = false;
-                  thinkingDone = true;
-                  remaining = remaining.slice(thinkEnd + 8);
-                  continue;
-                } else {
-                  if (effectiveThinking && onThinkingDelta) onThinkingDelta(remaining);
-                  remaining = "";
-                  continue;
                 }
-              }
 
-              // Filter out [CONTINUE] and [DONE] markers from display
-              const markerMatch = remaining.match(/\[(CONTINUE|DONE)\]\s*$/);
-              if (markerMatch) {
-                const before = remaining.slice(0, markerMatch.index);
-                if (before) { onDelta(before); stepContent += before; }
-                stepContent += markerMatch[0]; // Track but don't display
-                remaining = "";
-              } else {
-                onDelta(remaining);
-                stepContent += remaining;
-                remaining = "";
+                if (inThinking) {
+                  const thinkEnd = remaining.indexOf("</think>");
+                  if (thinkEnd !== -1) {
+                    if (effectiveThinking) {
+                      const thinkContent = remaining.slice(0, thinkEnd);
+                      if (thinkContent && onThinkingDelta) onThinkingDelta(thinkContent);
+                    }
+                    inThinking = false;
+                    thinkingDone = true;
+                    remaining = remaining.slice(thinkEnd + 8);
+                    continue;
+                  } else {
+                    if (effectiveThinking && onThinkingDelta) onThinkingDelta(remaining);
+                    remaining = "";
+                    continue;
+                  }
+                }
+
+                const markerMatch = remaining.match(/\[(CONTINUE|DONE)\]\s*$/);
+                if (markerMatch) {
+                  const before = remaining.slice(0, markerMatch.index);
+                  if (before) { onDelta(before); stepContent += before; }
+                  stepContent += markerMatch[0];
+                  remaining = "";
+                } else {
+                  onDelta(remaining);
+                  stepContent += remaining;
+                  remaining = "";
+                }
               }
             }
-          }
-        } catch { /* partial */ }
+          } catch { /* partial */ }
+        }
+      }
+    } catch (streamErr: any) {
+      if (signal?.aborted) return;
+      // Stream error mid-way — if we got no content, try fallback
+      if (!gotContent && remainingFallbacks.length > 0) {
+        console.warn(`Model ${currentModel} stream error, trying ${remainingFallbacks[0]}...`);
+        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
       }
     }
     onDone();
