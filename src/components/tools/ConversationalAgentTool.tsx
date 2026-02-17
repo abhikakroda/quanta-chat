@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Mic, MicOff, Square, Phone, PhoneOff, Globe, Volume2, Loader2, Settings2 } from "lucide-react";
+import { Mic, MicOff, Square, Phone, PhoneOff, Globe, Volume2, Loader2, Settings2, User, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 
 const LANGUAGES = [
@@ -18,6 +17,19 @@ const LANGUAGES = [
   { code: "od-IN", label: "Odia" },
 ];
 
+const VOICES = [
+  { id: "meera", label: "Meera", gender: "Female" },
+  { id: "pavithra", label: "Pavithra", gender: "Female" },
+  { id: "maitreyi", label: "Maitreyi", gender: "Female" },
+  { id: "arvind", label: "Arvind", gender: "Male" },
+  { id: "karthik", label: "Karthik", gender: "Male" },
+  { id: "amol", label: "Amol", gender: "Male" },
+  { id: "amartya", label: "Amartya", gender: "Male" },
+  { id: "diya", label: "Diya", gender: "Female" },
+  { id: "neel", label: "Neel", gender: "Male" },
+  { id: "misha", label: "Misha", gender: "Female" },
+];
+
 type Turn = { role: "user" | "agent"; text: string; timestamp: Date };
 
 export default function ConversationalAgentTool() {
@@ -26,12 +38,13 @@ export default function ConversationalAgentTool() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [language, setLanguage] = useState("en-IN");
+  const [voice, setVoice] = useState("meera");
   const [showLangPicker, setShowLangPicker] = useState(false);
+  const [showVoicePicker, setShowVoicePicker] = useState(false);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [currentTranscript, setCurrentTranscript] = useState("");
   const [agentResponse, setAgentResponse] = useState("");
   const [error, setError] = useState("");
-  const [autoListen, setAutoListen] = useState(true);
   const [processingStage, setProcessingStage] = useState("");
   const [volume, setVolume] = useState(0);
 
@@ -43,16 +56,19 @@ export default function ConversationalAgentTool() {
   const streamRef = useRef<MediaStream | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const isActiveRef = useRef(false);
+
+  // Keep ref in sync
+  useEffect(() => { isActiveRef.current = isActive; }, [isActive]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [turns, currentTranscript, agentResponse]);
 
-  // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      stopEverything();
-    };
+    return () => { stopEverything(); };
   }, []);
 
   const stopEverything = () => {
@@ -61,6 +77,8 @@ export default function ConversationalAgentTool() {
     audioRef.current?.pause();
     abortRef.current?.abort();
     cancelAnimationFrame(animFrameRef.current);
+    if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    audioContextRef.current?.close().catch(() => {});
     setIsActive(false);
     setIsListening(false);
     setIsProcessing(false);
@@ -68,20 +86,41 @@ export default function ConversationalAgentTool() {
     setVolume(0);
   };
 
-  const startVolumeMonitor = (stream: MediaStream) => {
+  const startVolumeMonitorWithSilenceDetection = (stream: MediaStream) => {
     try {
       const ctx = new AudioContext();
+      audioContextRef.current = ctx;
       const src = ctx.createMediaStreamSource(stream);
       const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
+      analyser.fftSize = 512;
       src.connect(analyser);
       analyserRef.current = analyser;
 
       const data = new Uint8Array(analyser.frequencyBinCount);
+      let silentFrames = 0;
+      const SILENCE_THRESHOLD = 8; // low volume threshold
+      const SILENCE_FRAMES_NEEDED = 45; // ~1.5s of silence at 30fps
+      let hasSpoken = false;
+
       const tick = () => {
         analyser.getByteFrequencyData(data);
         const avg = data.reduce((a, b) => a + b, 0) / data.length;
         setVolume(avg / 128);
+
+        if (avg > 15) {
+          hasSpoken = true;
+          silentFrames = 0;
+        } else if (hasSpoken) {
+          silentFrames++;
+        }
+
+        // Auto-stop after silence detected (user stopped speaking)
+        if (hasSpoken && silentFrames >= SILENCE_FRAMES_NEEDED && mediaRef.current?.state === "recording") {
+          mediaRef.current?.stop();
+          setIsListening(false);
+          return; // stop the loop
+        }
+
         animFrameRef.current = requestAnimationFrame(tick);
       };
       tick();
@@ -93,7 +132,7 @@ export default function ConversationalAgentTool() {
       setError("");
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
-      startVolumeMonitor(stream);
+      startVolumeMonitorWithSilenceDetection(stream);
 
       const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
       chunksRef.current = [];
@@ -102,11 +141,11 @@ export default function ConversationalAgentTool() {
         cancelAnimationFrame(animFrameRef.current);
         setVolume(0);
         stream.getTracks().forEach(t => t.stop());
+        audioContextRef.current?.close().catch(() => {});
         const blob = new Blob(chunksRef.current, { type: "audio/wav" });
         if (blob.size > 1000) {
           await processConversationTurn(blob);
-        } else if (autoListen && isActive) {
-          // Too short, listen again
+        } else if (isActiveRef.current) {
           startListening();
         }
       };
@@ -116,7 +155,7 @@ export default function ConversationalAgentTool() {
     } catch {
       setError("Microphone access denied. Please allow microphone permission.");
     }
-  }, [autoListen, isActive, language, turns]);
+  }, [language, turns, voice]);
 
   const stopListening = useCallback(() => {
     mediaRef.current?.stop();
@@ -129,7 +168,8 @@ export default function ConversationalAgentTool() {
     setError("");
     setCurrentTranscript("");
     setAgentResponse("");
-    await startListening();
+    // Small delay to let state update
+    setTimeout(() => startListening(), 100);
   }, [startListening]);
 
   const endConversation = useCallback(() => {
@@ -145,8 +185,8 @@ export default function ConversationalAgentTool() {
     setAgentResponse("");
 
     try {
-      // Stage 1: Speech-to-Text
-      setProcessingStage("Listening...");
+      // Stage 1: Speech-to-Text (fast)
+      setProcessingStage("Recognizing...");
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.wav");
 
@@ -162,10 +202,10 @@ export default function ConversationalAgentTool() {
       if (!sttResp.ok) throw new Error("Speech recognition failed");
       const sttData = await sttResp.json();
       if (sttData.error) throw new Error(sttData.error);
-      
+
       const userText = sttData.transcript;
       if (!userText?.trim()) {
-        if (autoListen && isActive) startListening();
+        if (isActiveRef.current) startListening();
         setIsProcessing(false);
         return;
       }
@@ -173,14 +213,14 @@ export default function ConversationalAgentTool() {
       setCurrentTranscript(userText);
       setTurns(prev => [...prev, { role: "user", text: userText, timestamp: new Date() }]);
 
-      // Stage 2: AI Thinking
+      // Stage 2: AI Response (stream it)
       setProcessingStage("Thinking...");
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
       if (!token) throw new Error("Not authenticated");
 
       abortRef.current = new AbortController();
-      
+
       const conversationHistory = turns.map(t => ({
         role: t.role === "user" ? "user" as const : "assistant" as const,
         content: t.text
@@ -200,11 +240,11 @@ export default function ConversationalAgentTool() {
           ],
           model: "mistral",
           enableThinking: false,
-          skillPrompt: `You are a conversational AI agent powered by Sarvam AI. You speak ${LANGUAGES.find(l => l.code === language)?.label || "English"}. 
-Keep responses conversational, natural, and concise (under 150 words). 
-Be warm, helpful, and engaging like a real person. 
+          skillPrompt: `You are a conversational AI agent. You speak ${LANGUAGES.find(l => l.code === language)?.label || "English"}. 
+Keep responses very short and concise (under 80 words). Be direct and natural like a phone call.
 If the user speaks in a regional language, respond in that language.
-Don't use markdown formatting - speak naturally as this will be converted to speech.`,
+Don't use markdown formatting, lists, or special characters - speak naturally as this will be converted to speech.
+Respond as if you're on a real phone call - brief, warm, and to the point.`,
         }),
         signal: abortRef.current.signal,
       });
@@ -217,7 +257,7 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
       let buffer = "";
       let fullResp = "";
 
-      setProcessingStage("Speaking...");
+      setProcessingStage("Responding...");
 
       while (true) {
         const { done, value } = await reader.read();
@@ -241,7 +281,7 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
 
       setTurns(prev => [...prev, { role: "agent", text: fullResp, timestamp: new Date() }]);
 
-      // Stage 3: Text-to-Speech
+      // Stage 3: Text-to-Speech (with selected voice)
       setProcessingStage("Speaking...");
       setIsSpeaking(true);
 
@@ -252,7 +292,11 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
         },
-        body: JSON.stringify({ text: fullResp.slice(0, 1000), language }),
+        body: JSON.stringify({
+          text: fullResp.slice(0, 1000),
+          language,
+          speaker: voice,
+        }),
       });
 
       if (ttsResp.ok) {
@@ -260,16 +304,10 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
         if (ttsData.audio) {
           const audio = new Audio(`data:audio/mp3;base64,${ttsData.audio}`);
           audioRef.current = audio;
-          
+
           await new Promise<void>((resolve) => {
-            audio.onended = () => {
-              setIsSpeaking(false);
-              resolve();
-            };
-            audio.onerror = () => {
-              setIsSpeaking(false);
-              resolve();
-            };
+            audio.onended = () => { setIsSpeaking(false); resolve(); };
+            audio.onerror = () => { setIsSpeaking(false); resolve(); };
             audio.play().catch(() => { setIsSpeaking(false); resolve(); });
           });
         }
@@ -277,8 +315,8 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
 
       setIsSpeaking(false);
 
-      // Auto-listen for next turn
-      if (autoListen && isActive) {
+      // Auto-listen for next turn immediately
+      if (isActiveRef.current) {
         setIsProcessing(false);
         setProcessingStage("");
         await startListening();
@@ -298,10 +336,9 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
   const stopSpeaking = () => {
     audioRef.current?.pause();
     setIsSpeaking(false);
-    if (autoListen && isActive) startListening();
+    if (isActiveRef.current) startListening();
   };
 
-  // Pulsing rings based on state
   const ringColor = isListening
     ? "from-green-500 to-emerald-400"
     : isSpeaking
@@ -333,15 +370,45 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
             <p className="text-[11px] text-muted-foreground">Powered by Sarvam AI</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          {/* Voice picker */}
+          <div className="relative">
+            <button
+              onClick={() => { setShowVoicePicker(!showVoicePicker); setShowLangPicker(false); }}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs bg-muted/50 border border-border/50 text-foreground/70 hover:bg-muted transition-colors"
+            >
+              <User className="w-3 h-3" />
+              {VOICES.find(v => v.id === voice)?.label}
+              <ChevronDown className="w-3 h-3 opacity-50" />
+            </button>
+            {showVoicePicker && (
+              <div className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-xl shadow-lg p-1 min-w-[160px] max-h-[260px] overflow-y-auto">
+                {VOICES.map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => { setVoice(v.id); setShowVoicePicker(false); }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between",
+                      v.id === voice ? "bg-primary/10 text-primary font-medium" : "text-foreground/70 hover:bg-muted"
+                    )}
+                  >
+                    <span>{v.label}</span>
+                    <span className="text-[10px] text-muted-foreground">{v.gender}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Language picker */}
           <div className="relative">
             <button
-              onClick={() => setShowLangPicker(!showLangPicker)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs bg-muted/50 border border-border/50 text-foreground/70 hover:bg-muted transition-colors"
+              onClick={() => { setShowLangPicker(!showLangPicker); setShowVoicePicker(false); }}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs bg-muted/50 border border-border/50 text-foreground/70 hover:bg-muted transition-colors"
             >
-              <Globe className="w-3.5 h-3.5" />
+              <Globe className="w-3 h-3" />
               {LANGUAGES.find(l => l.code === language)?.label}
+              <ChevronDown className="w-3 h-3 opacity-50" />
             </button>
             {showLangPicker && (
               <div className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-xl shadow-lg p-1 min-w-[140px] max-h-[240px] overflow-y-auto">
@@ -360,20 +427,6 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
               </div>
             )}
           </div>
-
-          {/* Auto-listen toggle */}
-          <button
-            onClick={() => setAutoListen(!autoListen)}
-            className={cn(
-              "px-2.5 py-1.5 rounded-xl text-xs border transition-colors",
-              autoListen
-                ? "bg-primary/10 border-primary/20 text-primary"
-                : "bg-muted/50 border-border/50 text-muted-foreground"
-            )}
-            title="Auto-listen after agent speaks"
-          >
-            Auto
-          </button>
         </div>
       </div>
 
@@ -521,7 +574,7 @@ Don't use markdown formatting - speak naturally as this will be converted to spe
             Tap to start a voice conversation
           </p>
           <p className="text-xs text-muted-foreground/60">
-            Supports 11 Indian languages • Real-time STT & TTS
+            Auto-detects silence • Select voice & language • Real-time
           </p>
         </div>
       )}
