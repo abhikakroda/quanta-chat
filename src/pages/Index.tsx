@@ -163,6 +163,55 @@ export default function Index() {
     handleSend(newContent);
   };
 
+  const handleRegenerate = async (assistantIndex: number) => {
+    if (!activeId || streaming) return;
+    // Find the user message before this assistant message
+    const userMsg = messages.slice(0, assistantIndex).reverse().find((m) => m.role === "user");
+    if (!userMsg) return;
+    // Delete the assistant message from DB and local state
+    await supabase.from("messages").delete().eq("id", messages[assistantIndex].id);
+    setMessages(messages.filter((_, i) => i !== assistantIndex));
+    // Resend the previous user message
+    // Build history up to (but not including) the deleted assistant message
+    const history: Message[] = messages
+      .slice(0, assistantIndex)
+      .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+    setStreaming(true);
+    setStreamContent("");
+    setStreamThinking("");
+    setIsThinkingPhase(thinkingEnabled);
+    let fullContent = "";
+    let fullThinking = "";
+
+    await streamChat({
+      messages: history,
+      model: selectedModel,
+      enableThinking: thinkingEnabled,
+      signal: controller.signal,
+      onThinkingDelta: (text) => { fullThinking += text; setStreamThinking(fullThinking); },
+      onDelta: (text) => { setIsThinkingPhase(false); fullContent += text; setStreamContent(fullContent); },
+      onDone: async () => {
+        const savedContent = fullThinking
+          ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${fullContent}`
+          : fullContent;
+        const { data } = await supabase
+          .from("messages")
+          .insert({ conversation_id: activeId!, role: "assistant" as const, content: savedContent })
+          .select()
+          .single();
+        if (data) setMessages((prev) => [...prev, data as any]);
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false);
+      },
+      onError: (err) => {
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false);
+        console.error(err);
+      },
+    });
+  };
+
   const hasMessages = messages.length > 0 || streaming;
   const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label;
   const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
@@ -266,6 +315,7 @@ export default function Index() {
                   content={displayContent}
                   thinking={thinking}
                   onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
+                  onRegenerate={m.role === "assistant" && !streaming ? () => handleRegenerate(i) : undefined}
                 />
               );
             })}
