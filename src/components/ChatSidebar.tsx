@@ -2,7 +2,7 @@ import { memo, useState, useMemo } from "react";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Zap, Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
-  Wrench, Calculator, Languages, Image, Bug
+  Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,9 +32,19 @@ export const SKILLS = [
 ] as const;
 
 export const TOOLS = [
-  { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant. Solve mathematical problems step-by-step. Handle arithmetic, algebra, calculus, statistics, and conversions. Show your work clearly." },
-  { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator. Translate text accurately between languages while preserving meaning, tone, and context. Support all major languages including Indian languages." },
-  { id: "image-describer", icon: Image, label: "Image Describer", prompt: "You are an image analysis assistant. When users describe or share images, provide detailed descriptions, identify objects, text, colors, and compositions. Help with alt text and visual content analysis." },
+  { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant." },
+  { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
+  { id: "image-describer", icon: Image, label: "Image Describer", prompt: "You are an image analysis assistant." },
+  { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: "Sarvam", prompt: "You are a voice assistant." },
+  { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents." },
+  { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks." },
+] as const;
+
+export const OPENCLAW_ITEMS = [
+  { id: "crawl", icon: Globe, label: "Crawl a Website", comingSoon: false },
+  { id: "auto-agent", icon: Zap, label: "Auto Agent", comingSoon: true },
+  { id: "web-pilot", icon: BookOpen, label: "Web Pilot", comingSoon: true },
+  { id: "data-extractor", icon: Activity, label: "Data Extractor", comingSoon: true },
 ] as const;
 
 export type SkillId = typeof SKILLS[number]["id"];
@@ -46,6 +56,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
   const [historyOpen, setHistoryOpen] = useState(true);
   const [skillsOpen, setSkillsOpen] = useState(true);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [openClawOpen, setOpenClawOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const filteredConversations = useMemo(() => {
@@ -215,6 +226,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                       >
                         <tool.icon className="w-4 h-4 shrink-0" />
                         <span className="flex-1 truncate">{tool.label}</span>
+                        {"badge" in tool && (tool as any).badge && (
+                          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-primary/15 text-primary">{(tool as any).badge}</span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -246,17 +260,42 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             {/* Open Claw section */}
             {!collapsed ? (
               <div className="px-2 mt-1">
-                <div className="flex items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
-                  <Bug className="w-3.5 h-3.5" />
-                  <span>Open Claw</span>
-                </div>
                 <button
-                  onClick={onOpenCrawl}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-sidebar-foreground/60 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale"
+                  onClick={() => setOpenClawOpen((o) => !o)}
+                  className="flex items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors w-full"
                 >
-                  <Globe className="w-4 h-4 shrink-0" />
-                  <span className="flex-1 truncate">Crawl a Website</span>
+                  <Bug className="w-3.5 h-3.5" />
+                  <span className="flex-1 text-left">Open Claw</span>
+                  <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-primary/20 text-primary mr-1">NEW</span>
+                  {openClawOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                 </button>
+                {openClawOpen && (
+                  <div className="space-y-0.5 pb-1">
+                    {OPENCLAW_ITEMS.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          if (!item.comingSoon) {
+                            if (item.id === "crawl") { onOpenCrawl?.(); }
+                          }
+                        }}
+                        disabled={item.comingSoon}
+                        className={cn(
+                          "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 touch-manipulation text-left",
+                          item.comingSoon
+                            ? "text-sidebar-foreground/30 cursor-not-allowed"
+                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground hover:translate-x-0.5 press-scale"
+                        )}
+                      >
+                        <item.icon className="w-4 h-4 shrink-0" />
+                        <span className="flex-1 truncate">{item.label}</span>
+                        {item.comingSoon && (
+                          <span className="text-[8px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">Soon</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="px-1.5 space-y-0.5 mt-1">
@@ -339,44 +378,37 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           </div>
 
           {/* User section */}
-          <div className={cn("border-t border-sidebar-border", collapsed ? "px-1.5 py-2" : "px-2 py-2")}>
-            {collapsed ? (
-              <div className="flex flex-col items-center gap-1">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-[12px] font-semibold">
-                  {user?.email?.[0]?.toUpperCase() || "U"}
-                </div>
-                <button onClick={signOut} className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors touch-manipulation" title="Sign out">
-                  <LogOut className="w-[16px] h-[16px]" />
+          <div className="mt-auto border-t border-sidebar-border/50">
+            {!collapsed ? (
+              <div className="px-2 py-2">
+                {userMenuOpen && (
+                  <button
+                    onClick={() => { signOut(); setUserMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-destructive hover:bg-destructive/10 transition-colors mb-1"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                )}
+                <button
+                  onClick={() => setUserMenuOpen((o) => !o)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-sidebar-accent/70 transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
+                    {user?.email?.[0]?.toUpperCase() || "U"}
+                  </div>
+                  <span className="text-[12px] text-sidebar-foreground/60 truncate flex-1 text-left">{user?.email || "User"}</span>
                 </button>
               </div>
             ) : (
-              <div className="relative">
+              <div className="px-1.5 py-2">
                 <button
-                  onClick={() => setUserMenuOpen((o) => !o)}
-                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl hover:bg-sidebar-accent transition-colors touch-manipulation"
+                  onClick={signOut}
+                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  title="Sign Out"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-[12px] font-semibold shrink-0">
-                    {user?.email?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <span className="text-[13px] truncate flex-1 text-left text-sidebar-foreground/70 font-medium">
-                    {user?.email?.split("@")[0] || "User"}
-                  </span>
-                  {userMenuOpen ? <ChevronUp className="w-3.5 h-3.5 text-sidebar-foreground/30" /> : <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/30" />}
+                  <LogOut className="w-[18px] h-[18px]" />
                 </button>
-                {userMenuOpen && (
-                  <div className="absolute bottom-full left-2 right-2 mb-1 bg-popover border border-border rounded-xl shadow-liquid z-50 py-1 animate-scale-spring">
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-[12px] text-muted-foreground truncate">{user?.email}</p>
-                    </div>
-                    <button
-                      onClick={() => { signOut(); setUserMenuOpen(false); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-[13px] text-sidebar-foreground/70 hover:bg-accent hover:text-foreground transition-colors"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>Sign out</span>
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>

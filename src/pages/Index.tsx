@@ -12,8 +12,29 @@ import WelcomeScreen from "@/components/WelcomeScreen";
 import TranslatorTool from "@/components/tools/TranslatorTool";
 import CalculatorTool from "@/components/tools/CalculatorTool";
 import SummarizerTool from "@/components/tools/SummarizerTool";
+import DeepResearcherTool from "@/components/tools/DeepResearcherTool";
+import CodeAssistantTool from "@/components/tools/CodeAssistantTool";
+import WriterTool from "@/components/tools/WriterTool";
+import TaskSchedulerTool from "@/components/tools/TaskSchedulerTool";
+import ImageDescriberTool from "@/components/tools/ImageDescriberTool";
+import VisionTool from "@/components/tools/VisionTool";
+import VoiceChatTool from "@/components/tools/VoiceChatTool";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+
+// Map of tool IDs to their dedicated UI components
+const TOOL_UI_MAP: Record<string, React.ComponentType> = {
+  "calculator": CalculatorTool,
+  "translator": TranslatorTool,
+  "summarizer": SummarizerTool,
+  "deep-research": DeepResearcherTool,
+  "code-assistant": CodeAssistantTool,
+  "writer": WriterTool,
+  "task-scheduler": TaskSchedulerTool,
+  "image-describer": ImageDescriberTool,
+  "vision": VisionTool,
+  "voice-chat": VoiceChatTool,
+};
 
 export default function Index() {
   const { user, loading: authLoading } = useAuth();
@@ -48,7 +69,6 @@ export default function Index() {
     }
   }, [messages, streamContent, streamThinking]);
 
-
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -57,6 +77,9 @@ export default function Index() {
     );
   }
   if (!user) return <Navigate to="/auth" replace />;
+
+  // Check if active skill has a dedicated tool UI
+  const ToolUIComponent = activeSkill ? TOOL_UI_MAP[activeSkill] : null;
 
   const handleSend = async (input: string, files?: { name: string; content: string; type: string }[]) => {
     let convId = activeId;
@@ -68,7 +91,6 @@ export default function Index() {
       setActiveId(conv.id);
     }
 
-    // Build user message with file contents
     let userContent = input;
     if (files && files.length > 0) {
       const fileSection = files.map((f) => `--- File: ${f.name} ---\n${f.content}`).join("\n\n");
@@ -232,12 +254,6 @@ export default function Index() {
   
   const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
 
-  // Dedicated tool UIs
-  const activeToolUI = activeSkill === "calculator" ? "calculator"
-    : activeSkill === "translator" ? "translator"
-    : activeSkill === "summarizer" ? "summarizer"
-    : null;
-
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <ChatSidebar
@@ -259,7 +275,7 @@ export default function Index() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header - minimal */}
+        {/* Header */}
         <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0 glass-subtle border-b border-border/30">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
             <Menu className="w-4 h-4 text-muted-foreground" />
@@ -283,17 +299,9 @@ export default function Index() {
         </header>
 
         {/* Content */}
-        {activeToolUI === "calculator" ? (
-          <div className="flex-1 overflow-y-auto flex items-start justify-center pt-8">
-            <CalculatorTool />
-          </div>
-        ) : activeToolUI === "translator" ? (
+        {ToolUIComponent ? (
           <div className="flex-1 overflow-y-auto">
-            <TranslatorTool />
-          </div>
-        ) : activeToolUI === "summarizer" ? (
-          <div className="flex-1 overflow-y-auto">
-            <SummarizerTool />
+            <ToolUIComponent />
           </div>
         ) : hasMessages ? (
           <>
