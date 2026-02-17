@@ -251,7 +251,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               <div className="px-3 mt-1">
                 <div className="flex items-center gap-2 px-2 py-2.5">
                   <span className="text-[13px] font-normal tracking-wide text-sidebar-foreground/35">Open Claw</span>
-                  <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">NEW</span>
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-badge-new text-badge-new-foreground">NEW</span>
                 </div>
                 <div className="space-y-1">
                     {OPENCLAW_ITEMS.map((item) => (

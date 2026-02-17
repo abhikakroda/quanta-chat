@@ -53,6 +53,9 @@
 
     --glass: 0 0% 100% / 0.8;
     --glass-border: 0 0% 0% / 0.05;
+
+    --badge-new: 199 89% 94%;
+    --badge-new-foreground: 213 80% 25%;
   }
 
   .dark {
@@ -101,6 +104,9 @@
 
     --glass: 0 0% 7% / 0.8;
     --glass-border: 0 0% 100% / 0.05;
+
+    --badge-new: 204 60% 18%;
+    --badge-new-foreground: 199 70% 72%;
   }
 }
 

@@ -68,6 +68,10 @@ export default {
           ai: "hsl(var(--chat-ai))",
           "ai-foreground": "hsl(var(--chat-ai-foreground))",
         },
+        badge: {
+          new: "hsl(var(--badge-new))",
+          "new-foreground": "hsl(var(--badge-new-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
