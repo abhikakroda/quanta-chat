@@ -97,8 +97,8 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </>
             ) : (
               <>
-                <div className="flex items-center gap-2.5">
-                  <span className="text-[15px] font-semibold text-sidebar-foreground tracking-tight">Quanta</span>
+                <div className="flex items-center">
+                  <span className="text-[20px] font-extrabold text-sidebar-foreground tracking-tight lowercase">quanta</span>
                 </div>
                 <div className="flex items-center gap-0.5">
                   <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
