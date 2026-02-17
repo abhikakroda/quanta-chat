@@ -39,12 +39,12 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   modelSupportsThinking, onSelectSkill,
 }, ref) {
   return (
-    <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 animate-fade-in">
-      <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-8 sm:mb-10 tracking-tight text-center animate-slide-up">
+    <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 pb-[10vh] animate-fade-in">
+      <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-6 sm:mb-8 tracking-tight text-center animate-slide-up">
         What can I help with?
       </h1>
 
-      <div className="w-full max-w-[768px] mb-6">
+      <div className="w-full max-w-[640px] mb-5">
         <ChatInput
           onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming}
           agentMode={agentMode} onToggleAgent={onToggleAgent}
@@ -54,7 +54,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
         />
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2 max-w-[768px]">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 max-w-[640px] w-full">
         {suggestions.map((s) => (
           <button
             key={s.text}
@@ -65,7 +65,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
                 onSend(s.text);
               }
             }}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full glass-card text-[15px] sm:text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full glass-card text-[14px] sm:text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
           >
             <span>{s.icon}</span>
             <span>{s.text}</span>

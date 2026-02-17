@@ -117,11 +117,11 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
 
   return (
     <div className="group animate-message-in">
-      <div className="py-2 sm:py-3 px-3 sm:px-4">
-        <div className={cn(
-          "max-w-3xl mx-auto flex gap-2.5 sm:gap-3",
-          isUser ? "flex-row-reverse" : "flex-row"
-        )}>
+        <div className="py-2 sm:py-3 px-4 sm:px-6">
+          <div className={cn(
+            "max-w-[640px] mx-auto flex gap-2.5 sm:gap-3",
+            isUser ? "flex-row-reverse" : "flex-row"
+          )}>
           {/* Avatar */}
           <div className="shrink-0 mt-1">
             <div className={cn(
