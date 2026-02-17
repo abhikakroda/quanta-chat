@@ -31,7 +31,7 @@ serve(async (req) => {
     const SARVAM_API_KEY = Deno.env.get("SARVAM_API_KEY");
     if (!SARVAM_API_KEY) throw new Error("Service not configured");
 
-    const { text, language = "en-IN", speaker = "shreya" } = await req.json();
+    const { text, language = "en-IN", speaker = "shubh" } = await req.json();
     if (!text) throw new Error("Text is required");
 
     const truncatedText = text.slice(0, 2500);
@@ -52,8 +52,9 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error("Sarvam TTS error:", response.status);
-      throw new Error("Service temporarily unavailable");
+      const errBody = await response.text();
+      console.error("Sarvam TTS error:", response.status, errBody);
+      throw new Error(`TTS API error: ${response.status} - ${errBody}`);
     }
 
     const result = await response.json();
@@ -63,7 +64,7 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("TTS error:", e);
-    return new Response(JSON.stringify({ error: "Request failed" }), {
+    return new Response(JSON.stringify({ error: e.message || "Request failed" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
