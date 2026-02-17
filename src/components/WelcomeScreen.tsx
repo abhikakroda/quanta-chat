@@ -19,13 +19,14 @@ type Props = {
   selectedModel?: ModelId;
   onSelectModel?: (model: ModelId) => void;
   modelSupportsThinking?: boolean;
+  onSelectSkill?: (skill: string) => void;
 };
 
 const suggestions = [
-  { icon: "🗣️", text: "Text to Speech" },
-  { icon: "🧮", text: "Calculator" },
-  { icon: "🌐", text: "Translate text" },
-  { icon: "🌐", text: "Website Builder" },
+  { icon: "🗣️", text: "Text to Speech", skill: null },
+  { icon: "🧮", text: "Calculator", skill: null },
+  { icon: "🌐", text: "Translate text", skill: null },
+  { icon: "🌐", text: "Website Builder", skill: "code-assistant" },
 ];
 
 export default function WelcomeScreen({
@@ -33,7 +34,7 @@ export default function WelcomeScreen({
   agentMode, onToggleAgent,
   thinkingEnabled, onToggleThinking,
   selectedModel, onSelectModel,
-  modelSupportsThinking,
+  modelSupportsThinking, onSelectSkill,
 }: Props) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 animate-fade-in">
@@ -55,7 +56,13 @@ export default function WelcomeScreen({
         {suggestions.map((s) => (
           <button
             key={s.text}
-            onClick={() => onSend(s.text)}
+            onClick={() => {
+              if (s.skill) {
+                onSelectSkill?.(s.skill);
+              } else {
+                onSend(s.text);
+              }
+            }}
             className="flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
           >
             <span>{s.icon}</span>

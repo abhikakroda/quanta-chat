@@ -407,7 +407,7 @@ export default function Index() {
             <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
           </>
         ) : (
-          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
+          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} />
         )}
       </div>
     </div>
