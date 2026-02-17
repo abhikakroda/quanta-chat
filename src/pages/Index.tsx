@@ -1,14 +1,165 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Menu } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useConversations } from "@/hooks/useConversations";
+import { useMessages } from "@/hooks/useMessages";
+import { streamChat, Message } from "@/lib/chat";
+import ChatSidebar from "@/components/ChatSidebar";
+import ChatMessage from "@/components/ChatMessage";
+import ChatInput from "@/components/ChatInput";
+import WelcomeScreen from "@/components/WelcomeScreen";
+import { Navigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
-const Index = () => {
+export default function Index() {
+  const { user, loading: authLoading } = useAuth();
+  const { conversations, createConversation, deleteConversation, updateTitle, refetch } = useConversations();
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const { messages, addMessage, setMessages } = useMessages(activeId);
+  const [streaming, setStreaming] = useState(false);
+  const [streamContent, setStreamContent] = useState("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, streamContent]);
+
+  if (authLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
+  }
+  if (!user) return <Navigate to="/auth" replace />;
+
+  const handleSend = async (input: string) => {
+    let convId = activeId;
+
+    if (!convId) {
+      const conv = await createConversation(input.slice(0, 50));
+      if (!conv) return;
+      convId = conv.id;
+      setActiveId(conv.id);
+    }
+
+    // Save user message
+    await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: input });
+
+    // Build messages for API
+    const allMessages: Message[] = [
+      ...messages.map((m) => ({ role: m.role, content: m.content })),
+      { role: "user" as const, content: input },
+    ];
+
+    // Optimistically show user message
+    setMessages((prev: any) => [...prev, { id: crypto.randomUUID(), conversation_id: convId!, role: "user", content: input, created_at: new Date().toISOString() }]);
+
+    setStreaming(true);
+    setStreamContent("");
+    let fullContent = "";
+
+    await streamChat({
+      messages: allMessages,
+      onDelta: (text) => {
+        fullContent += text;
+        setStreamContent(fullContent);
+      },
+      onDone: async () => {
+        // Save assistant message
+        const { data } = await supabase
+          .from("messages")
+          .insert({ conversation_id: convId!, role: "assistant" as const, content: fullContent })
+          .select()
+          .single();
+        if (data) {
+          setMessages((prev) => [...prev, data as any]);
+        }
+        setStreamContent("");
+        setStreaming(false);
+
+        // Update conversation title if first message
+        if (messages.length === 0) {
+          await updateTitle(convId!, input.slice(0, 50));
+        }
+      },
+      onError: (err) => {
+        setStreamContent("");
+        setStreaming(false);
+        console.error(err);
+      },
+    });
+  };
+
+  const handleNewChat = async () => {
+    setActiveId(null);
+    setSidebarOpen(false);
+  };
+
+  const handleSelectConv = (id: string) => {
+    setActiveId(id);
+    setSidebarOpen(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    await deleteConversation(id);
+    if (activeId === id) setActiveId(null);
+  };
+
+  const hasMessages = messages.length > 0 || streaming;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="flex h-screen bg-background overflow-hidden">
+      <ChatSidebar
+        conversations={conversations}
+        activeId={activeId}
+        onSelect={handleSelectConv}
+        onNew={handleNewChat}
+        onDelete={handleDelete}
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <header className="flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm">
+          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 rounded-lg hover:bg-accent">
+            <Menu className="w-5 h-5 text-foreground" />
+          </button>
+          <h2 className="font-semibold text-foreground truncate">
+            {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : "Quanta AI"}
+          </h2>
+        </header>
+
+        {/* Messages */}
+        {hasMessages ? (
+          <div ref={scrollRef} className="flex-1 overflow-y-auto">
+            {messages.map((m) => (
+              <ChatMessage key={m.id} role={m.role} content={m.content} />
+            ))}
+            {streaming && streamContent && (
+              <ChatMessage role="assistant" content={streamContent} />
+            )}
+            {streaming && !streamContent && (
+              <div className="flex gap-3 px-4 py-4 max-w-3xl mx-auto">
+                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
+                  <div className="w-2 h-2 rounded-full bg-primary-foreground animate-pulse" />
+                </div>
+                <div className="rounded-2xl px-4 py-3 bg-chat-ai border border-border rounded-bl-md">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <WelcomeScreen onSuggestion={handleSend} />
+        )}
+
+        <ChatInput onSend={handleSend} disabled={streaming} />
       </div>
     </div>
   );
-};
-
-export default Index;
+}
