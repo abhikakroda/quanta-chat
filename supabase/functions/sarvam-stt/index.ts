@@ -21,8 +21,8 @@ serve(async (req) => {
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data, error: authError } = await supabase.auth.getClaims(authHeader.replace("Bearer ", ""));
-    if (authError || !data?.claims?.sub) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(authHeader.replace("Bearer ", ""));
+    if (authError || !user) {
       return new Response(JSON.stringify({ error: "Invalid authentication" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
