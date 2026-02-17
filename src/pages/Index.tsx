@@ -88,7 +88,7 @@ export default function Index() {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'auto' });
     }
   }, [messages, streamContent, streamThinking]);
 
@@ -167,26 +167,36 @@ export default function Index() {
       }
     }
 
-    const { data: insertedMsg } = await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single();
+    // Optimistic: add user message immediately, don't await DB
+    const tempId = crypto.randomUUID();
+    const optimisticMsg = { id: tempId, conversation_id: convId!, role: "user" as const, content: userContent, created_at: new Date().toISOString() };
+    setMessages((prev: any) => [...prev, optimisticMsg]);
+
+    // Store image URL for display
+    const imageFile = files?.find((f) => f.dataUrl && f.type.startsWith("image/"));
+    if (imageFile?.dataUrl) {
+      setMessageImages((prev) => ({ ...prev, [tempId]: imageFile.dataUrl! }));
+    }
+
+    // Fire-and-forget DB insert
+    supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single().then(({ data }) => {
+      if (data) {
+        // Replace temp message with real one
+        setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? data : m));
+        if (imageFile?.dataUrl) {
+          setMessageImages((prev) => {
+            const next = { ...prev, [data.id]: prev[tempId] };
+            delete next[tempId];
+            return next;
+          });
+        }
+      }
+    });
 
     const allMessages: Message[] = [
       ...messages.map((m) => ({ role: m.role, content: m.content })),
       { role: "user" as const, content: userContent },
     ];
-
-    const msgId = insertedMsg?.id || crypto.randomUUID();
-    
-    // Store image URL for display
-    const imageFile = files?.find((f) => f.dataUrl && f.type.startsWith("image/"));
-    if (imageFile?.dataUrl) {
-      setMessageImages((prev) => ({ ...prev, [msgId]: imageFile.dataUrl! }));
-    }
-
-    if (insertedMsg) {
-      setMessages((prev: any) => [...prev, insertedMsg as any]);
-    } else {
-      setMessages((prev: any) => [...prev, { id: msgId, conversation_id: convId!, role: "user", content: userContent, created_at: new Date().toISOString() }]);
-    }
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -421,7 +431,7 @@ export default function Index() {
           </Suspense>
         ) : hasMessages ? (
           <>
-            <div ref={scrollRef} className="flex-1 overflow-y-auto">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto smooth-scroll">
               {messages.map((m, i) => {
                 let thinking: string | undefined;
                 let displayContent = m.content;
@@ -477,9 +487,9 @@ export default function Index() {
                     </div>
                     <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-muted/60 glass-subtle">
                       <div className="flex items-center gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "0ms" }} />
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "150ms" }} />
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+                       <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
+                       <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
+                       <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
                       </div>
                     </div>
                   </div>

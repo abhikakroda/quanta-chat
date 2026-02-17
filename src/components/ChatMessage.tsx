@@ -232,9 +232,9 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
 
                   {!content && !isThinking && thinking && (
                     <div className="flex gap-1 py-1">
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
                     </div>
                   )}
                 </div>
