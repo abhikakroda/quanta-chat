@@ -243,12 +243,12 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </div>
             )}
 
-            {/* Open Crawl section */}
+            {/* Open Claw section */}
             {!collapsed ? (
               <div className="px-2 mt-1">
                 <div className="flex items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
                   <Bug className="w-3.5 h-3.5" />
-                  <span>Open Crawl</span>
+                  <span>Open Claw</span>
                 </div>
                 <button
                   onClick={onOpenCrawl}
@@ -278,7 +278,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                 <button
                   onClick={onOpenCrawl}
                   className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors touch-manipulation press-scale"
-                  title="Crawl a Website"
+                  title="Open Claw"
                 >
                   <Bug className="w-[18px] h-[18px]" />
                 </button>
