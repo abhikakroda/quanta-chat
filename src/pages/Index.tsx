@@ -24,7 +24,14 @@ export default function Index() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
-  const [selectedModel, setSelectedModel] = useState<ModelId>("qwen");
+  const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
+    const saved = localStorage.getItem("quanta-selected-model");
+    return (saved as ModelId) || "qwen";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("quanta-selected-model", selectedModel);
+  }, [selectedModel]);
   
   const [agentMode, setAgentMode] = useState(false);
   const { dark, toggle: toggleTheme } = useTheme();
