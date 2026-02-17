@@ -31,7 +31,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
   thinkingEnabled, onToggleThinking,
-  selectedModel = "qwen", onSelectModel,
+  selectedModel = "mistral", onSelectModel,
   modelSupportsThinking,
 }, _ref) {
   const [input, setInput] = useState("");
