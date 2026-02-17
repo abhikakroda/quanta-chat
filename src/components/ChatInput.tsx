@@ -113,6 +113,41 @@ export default function ChatInput({
 
   const removeFile = (index: number) => setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
 
+  const [dragging, setDragging] = useState(false);
+  const dragCounter = useRef(0);
+
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragging(false);
+    dragCounter.current = 0;
+    const files = e.dataTransfer.files;
+    if (!files?.length) return;
+    for (const file of Array.from(files)) {
+      const content = await readFileContent(file);
+      setAttachedFiles((prev) => [...prev, { name: file.name, content, type: file.type }]);
+    }
+  }, []);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current++;
+    if (e.dataTransfer.types.includes("Files")) setDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounter.current--;
+    if (dragCounter.current === 0) setDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
   const toggleRecording = useCallback(async () => {
     if (recording) {
       mediaRecorderRef.current?.stop();
@@ -173,10 +208,24 @@ export default function ChatInput({
   const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label || "Auto";
 
   return (
-    <div className="px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2">
+    <div
+      className="px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
       <div className="max-w-[680px] mx-auto">
+        {/* Drag overlay */}
+        {dragging && (
+          <div className="mb-2 flex items-center justify-center rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 py-6 text-sm text-muted-foreground animate-fade-in">
+            <Paperclip className="w-4 h-4 mr-2" />
+            Drop files here
+          </div>
+        )}
+
         {/* Attached files */}
-        {attachedFiles.length > 0 && (
+        {attachedFiles.length > 0 && !dragging && (
           <div className="flex gap-2 mb-2 flex-wrap">
             {attachedFiles.map((f, i) => (
               <div key={i} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-xs text-muted-foreground">
@@ -188,7 +237,10 @@ export default function ChatInput({
           </div>
         )}
 
-        <div className="relative flex flex-col rounded-[26px] glass-strong transition-all duration-300 focus-within:border-foreground/15 shadow-liquid overflow-visible">
+        <div className={cn(
+          "relative flex flex-col rounded-[26px] glass-strong transition-all duration-300 focus-within:border-foreground/15 shadow-liquid overflow-visible",
+          dragging && "ring-2 ring-primary/30"
+        )}>
           {/* Textarea */}
           <textarea
             ref={ref}
