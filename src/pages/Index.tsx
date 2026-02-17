@@ -304,7 +304,7 @@ export default function Index() {
             <Menu className="w-4 h-4 text-muted-foreground" />
           </button>
 
-          <span className="text-sm font-medium text-foreground pl-1 hidden md:block">Quanta</span>
+          <span className="text-[20px] font-extrabold text-foreground tracking-tight lowercase pl-1 hidden md:block">quanta</span>
 
           <div className="flex-1" />
 
