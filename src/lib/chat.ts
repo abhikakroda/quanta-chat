@@ -29,6 +29,7 @@ export async function streamChat({
   enableThinking = true,
   skillPrompt,
   agentMode = false,
+  imageData,
   onThinkingDelta,
   onDelta,
   onDone,
@@ -41,6 +42,7 @@ export async function streamChat({
   enableThinking?: boolean;
   skillPrompt?: string;
   agentMode?: boolean;
+  imageData?: { base64: string; mimeType: string };
   onThinkingDelta?: (text: string) => void;
   onDelta: (text: string) => void;
   onDone: () => void;
@@ -73,6 +75,19 @@ export async function streamChat({
     const token = session?.access_token;
     if (!token) { onError("Not authenticated"); return; }
 
+    const bodyPayload: any = {
+      messages: currentMessages,
+      enableThinking: effectiveThinking,
+      model: effectiveModel,
+      skillPrompt: effectiveSkillPrompt,
+    };
+    // Only send imageData on the first step
+    if (imageData && agentStep === 1) {
+      bodyPayload.imageData = imageData;
+    } else if (imageData && !agentMode) {
+      bodyPayload.imageData = imageData;
+    }
+
     const resp = await fetch(url, {
       method: "POST",
       headers: {
@@ -80,12 +95,7 @@ export async function streamChat({
         Authorization: `Bearer ${token}`,
         apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       },
-      body: JSON.stringify({
-        messages: currentMessages,
-        enableThinking: effectiveThinking,
-        model: effectiveModel,
-        skillPrompt: effectiveSkillPrompt,
-      }),
+      body: JSON.stringify(bodyPayload),
       signal,
     });
 

@@ -6,6 +6,7 @@ type AttachedFile = {
   name: string;
   content: string;
   type: string;
+  dataUrl?: string;
 };
 
 type Props = {

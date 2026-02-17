@@ -10,6 +10,7 @@ type AttachedFile = {
   name: string;
   content: string;
   type: string;
+  dataUrl?: string; // base64 data URL for images
 };
 
 type Props = {
@@ -89,14 +90,25 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     }
   };
 
-  const readFileContent = async (file: File): Promise<string> => {
+  const readFileContent = async (file: File): Promise<{ content: string; dataUrl?: string }> => {
     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      return readPdfContent(file);
+      return { content: await readPdfContent(file) };
+    }
+    if (file.type.startsWith("image/")) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          resolve({ content: `[Image: ${file.name}]`, dataUrl });
+        };
+        reader.onerror = () => resolve({ content: `[Could not read image: ${file.name}]` });
+        reader.readAsDataURL(file);
+      });
     }
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => resolve(`[Could not read file: ${file.name}]`);
+      reader.onload = () => resolve({ content: reader.result as string });
+      reader.onerror = () => resolve({ content: `[Could not read file: ${file.name}]` });
       reader.readAsText(file);
     });
   };
@@ -105,8 +117,8 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     const files = e.target.files;
     if (!files) return;
     for (const file of Array.from(files)) {
-      const content = await readFileContent(file);
-      setAttachedFiles((prev) => [...prev, { name: file.name, content, type: file.type }]);
+      const result = await readFileContent(file);
+      setAttachedFiles((prev) => [...prev, { name: file.name, content: result.content, type: file.type, dataUrl: result.dataUrl }]);
     }
     e.target.value = "";
   };
@@ -124,8 +136,8 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     const files = e.dataTransfer.files;
     if (!files?.length) return;
     for (const file of Array.from(files)) {
-      const content = await readFileContent(file);
-      setAttachedFiles((prev) => [...prev, { name: file.name, content, type: file.type }]);
+      const result = await readFileContent(file);
+      setAttachedFiles((prev) => [...prev, { name: file.name, content: result.content, type: file.type, dataUrl: result.dataUrl }]);
     }
   }, []);
 
@@ -234,7 +246,11 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           <div className="flex gap-2 mb-2 flex-wrap">
             {attachedFiles.map((f, i) => (
               <div key={i} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-xs text-muted-foreground">
-                <Paperclip className="w-3 h-3" />
+                {f.dataUrl ? (
+                  <img src={f.dataUrl} alt={f.name} className="w-8 h-8 rounded object-cover" />
+                ) : (
+                  <Paperclip className="w-3 h-3" />
+                )}
                 <span className="truncate max-w-[120px]">{f.name}</span>
                 <button onClick={() => removeFile(i)} className="text-muted-foreground/50 hover:text-foreground ml-0.5">×</button>
               </div>
@@ -264,7 +280,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           <div className="flex items-center justify-between px-2.5 pb-2.5 pt-0.5">
             {/* Left: attach + settings */}
             <div className="flex items-center gap-0.5">
-              <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf" multiple className="hidden" onChange={handleFileSelect} />
+              <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,image/*" multiple className="hidden" onChange={handleFileSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
                 className="p-2 rounded-xl border border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground transition-colors touch-manipulation ripple-container press-scale"
