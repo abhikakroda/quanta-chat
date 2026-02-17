@@ -61,44 +61,47 @@ export default function CalculatorTool() {
   ];
 
   return (
-    <div className="max-w-xs mx-auto p-4 space-y-3 animate-fade-in">
-      <div className="flex items-center gap-2 mb-2">
-        <Calculator className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Calculator</h2>
+    <div className="max-w-[320px] mx-auto p-5 space-y-4 animate-fade-in">
+      <div className="flex items-center justify-center gap-2.5 mb-3">
+        <Calculator className="w-6 h-6 text-foreground" />
+        <h2 className="text-xl font-semibold text-foreground tracking-tight">Calculator</h2>
       </div>
 
       {/* Display */}
-      <div className="bg-muted/50 border border-border rounded-2xl p-4">
-        <div className="text-right text-xs text-muted-foreground/50 min-h-[1.2em] truncate">
+      <div className="bg-muted/40 border border-border rounded-2xl px-5 py-6">
+        <div className="text-right text-xs text-muted-foreground/40 min-h-[1.2em] truncate">
           {expression && hasResult ? "" : expression || ""}
         </div>
-        <div className="text-right text-3xl font-mono font-semibold text-foreground truncate">
+        <div className="text-right text-4xl font-semibold text-foreground truncate tracking-tight">
           {display}
         </div>
       </div>
 
       {/* Buttons */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {buttons.map((row, ri) => (
-          <div key={ri} className="flex gap-2">
+          <div key={ri} className="flex gap-3 justify-center">
             {row.map((btn) => (
               <button
                 key={btn}
                 onClick={() => handleInput(btn)}
                 className={cn(
-                  "flex-1 py-3 rounded-xl text-base font-medium transition-all duration-150 active:scale-95 touch-manipulation",
+                  "transition-all duration-150 active:scale-95 touch-manipulation font-medium text-lg",
                   btn === "="
-                    ? "bg-primary text-primary-foreground hover:opacity-90"
-                    : btn === "C"
-                    ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                    : btn === "⌫"
-                    ? "bg-muted text-muted-foreground hover:bg-accent"
-                    : /[+\-*/%()]/.test(btn)
-                    ? "bg-accent text-foreground hover:bg-accent/80"
-                    : "bg-muted/50 text-foreground hover:bg-muted border border-border"
+                    ? "w-full h-14 rounded-2xl bg-primary text-primary-foreground hover:opacity-90"
+                    : "w-14 h-14 rounded-[1.25rem]",
+                  btn !== "=" && (
+                    btn === "C"
+                      ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                      : btn === "⌫"
+                      ? "bg-muted text-muted-foreground hover:bg-accent"
+                      : /[+\-*/%()]/.test(btn)
+                      ? "bg-accent text-foreground/70 hover:bg-accent/80"
+                      : "bg-muted/40 text-foreground hover:bg-muted border border-border/50"
+                  )
                 )}
               >
-                {btn === "⌫" ? <Delete className="w-4 h-4 mx-auto" /> : btn}
+                {btn === "⌫" ? <Delete className="w-5 h-5 mx-auto" /> : btn}
               </button>
             ))}
           </div>
