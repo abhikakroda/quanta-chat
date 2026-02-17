@@ -26,7 +26,7 @@ export default function Index() {
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
-    return (saved as ModelId) || "qwen";
+    return (saved as ModelId) || "mistral";
   });
 
   useEffect(() => {
