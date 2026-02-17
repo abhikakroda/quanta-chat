@@ -22,10 +22,10 @@ type Props = {
 };
 
 const suggestions = [
-  { icon: "💻", text: "Write code" },
-  { icon: "📖", text: "Learn something" },
-  { icon: "✏️", text: "Write or edit" },
-  { icon: "💡", text: "Step-by-step help" },
+  { icon: "🗣️", text: "Text to Speech" },
+  { icon: "🧮", text: "Calculator" },
+  { icon: "🌐", text: "Translate text" },
+  { icon: "📰", text: "Latest news" },
 ];
 
 export default function WelcomeScreen({

@@ -3,7 +3,7 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Zap, Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
-  FilePen
+  FilePen, Newspaper
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,6 +37,7 @@ export const TOOLS = [
   { id: "pdf-editor", icon: FilePen, label: "PDF Editor", badge: "AI", prompt: "You are a document editing assistant." },
   { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant." },
   { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
+  { id: "news", icon: Newspaper, label: "News", badge: "Live", prompt: "You are a news assistant." },
   { id: "image-describer", icon: Image, label: "Image Describer", prompt: "You are an image analysis assistant." },
   { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: "Sarvam", prompt: "You are a voice assistant." },
   { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents." },
