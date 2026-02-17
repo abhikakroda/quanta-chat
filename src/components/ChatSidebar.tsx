@@ -257,21 +257,6 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                   <Globe className="w-4 h-4 shrink-0" />
                   <span className="flex-1 truncate">Crawl a Website</span>
                 </button>
-                <button
-                  onClick={() => {
-                    onSelectSkill?.("web-scraper");
-                    onNew();
-                  }}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale",
-                    activeSkill === "web-scraper"
-                      ? "bg-primary/10 text-primary"
-                      : "text-sidebar-foreground/60 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
-                  )}
-                >
-                  <Search className="w-4 h-4 shrink-0" />
-                  <span className="flex-1 truncate">Web Search Chat</span>
-                </button>
               </div>
             ) : (
               <div className="px-1.5 space-y-0.5 mt-1">
