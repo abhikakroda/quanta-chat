@@ -1,6 +1,6 @@
 import { useState, memo } from "react";
 import ReactMarkdown from "react-markdown";
-import { Sparkles, User, ChevronDown, ChevronRight, Brain } from "lucide-react";
+import { ChevronDown, ChevronRight, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -16,80 +16,60 @@ function ChatMessage({ role, content, thinking, isThinking }: Props) {
 
   return (
     <div className="animate-message-in">
-      <div className={cn(
-        "py-5 px-4",
-        isUser ? "" : "bg-muted/30"
-      )}>
-        <div className="max-w-3xl mx-auto flex gap-4">
-          {/* Avatar */}
-          <div className="shrink-0 mt-0.5">
-            {isUser ? (
-              <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center">
-                <User className="w-3.5 h-3.5 text-muted-foreground" />
-              </div>
-            ) : (
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
-              </div>
-            )}
+      <div className={cn("py-4 px-4", isUser ? "" : "")}>
+        <div className="max-w-2xl mx-auto flex gap-3">
+          {/* Avatar - tiny dot */}
+          <div className="shrink-0 mt-1.5">
+            <div className={cn(
+              "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold",
+              isUser ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
+            )}>
+              {isUser ? "Y" : "Q"}
+            </div>
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-semibold text-foreground/70 mb-1.5 uppercase tracking-wider">
-              {isUser ? "You" : "Quanta"}
-            </div>
-
             {isUser ? (
-              <p className="text-[15px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
+              <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap">{content}</p>
             ) : (
-              <div className="space-y-3">
-                {/* Thinking indicator */}
+              <div className="space-y-2">
                 {isThinking && !thinking && (
-                  <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                    <Brain className="w-3.5 h-3.5 animate-pulse text-primary" />
-                    <span className="animate-shimmer px-2 py-0.5 rounded-full">Thinking...</span>
+                  <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                    <Brain className="w-3 h-3" />
+                    <span>Thinking…</span>
                   </div>
                 )}
 
-                {/* Thinking block */}
                 {thinking && (
-                  <div className="rounded-lg border border-border/60 overflow-hidden bg-card/50">
-                    <button
-                      onClick={() => setThinkingOpen((o) => !o)}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-xs text-muted-foreground hover:bg-muted/50 transition-colors"
-                    >
-                      <Brain className="w-3.5 h-3.5 text-primary/60" />
-                      <span className="font-medium">Reasoning</span>
-                      {thinkingOpen ? (
-                        <ChevronDown className="w-3.5 h-3.5 ml-auto" />
-                      ) : (
-                        <ChevronRight className="w-3.5 h-3.5 ml-auto" />
-                      )}
-                    </button>
-                    {thinkingOpen && (
-                      <div className="px-3 py-2.5 border-t border-border/60 text-xs text-muted-foreground max-h-60 overflow-y-auto bg-muted/20">
-                        <div className="prose prose-xs max-w-none prose-p:my-0.5 prose-p:text-muted-foreground">
-                          <ReactMarkdown>{thinking}</ReactMarkdown>
-                        </div>
-                      </div>
-                    )}
+                  <button
+                    onClick={() => setThinkingOpen((o) => !o)}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Brain className="w-3 h-3" />
+                    <span>Reasoning</span>
+                    {thinkingOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  </button>
+                )}
+                {thinking && thinkingOpen && (
+                  <div className="pl-4 border-l-2 border-border text-xs text-muted-foreground max-h-48 overflow-y-auto">
+                    <div className="prose prose-xs max-w-none prose-p:my-0.5 prose-p:text-muted-foreground">
+                      <ReactMarkdown>{thinking}</ReactMarkdown>
+                    </div>
                   </div>
                 )}
 
-                {/* Main answer */}
                 {content && (
-                  <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-p:leading-relaxed prose-headings:my-3 prose-pre:bg-muted prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-code:text-primary prose-code:font-mono prose-code:text-[13px] prose-a:text-primary prose-a:no-underline hover:prose-a:underline text-[15px]">
+                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:bg-muted prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[14px]">
                     <ReactMarkdown>{content}</ReactMarkdown>
                   </div>
                 )}
 
-                {/* Loading dots when thinking is done but no answer yet */}
                 {!content && !isThinking && thinking && (
-                  <div className="flex gap-1.5 py-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <div className="flex gap-1 py-1">
+                    <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 )}
               </div>
