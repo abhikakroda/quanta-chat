@@ -14,6 +14,10 @@ export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean }[
   { id: "sarvam", label: "Sarvam M", supportsThinking: true },
 ];
 
+export function getModelLabel(modelId: ModelId): string {
+  return MODELS.find((m) => m.id === modelId)?.label || modelId;
+}
+
 // Auto-select the best model based on the active skill/tool
 const AUTO_MODEL_MAP: Record<string, ModelId> = {
   "code-assistant": "qwen-coder",
