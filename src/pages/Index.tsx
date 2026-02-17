@@ -232,8 +232,8 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center gap-2 px-3 h-11 border-b border-border shrink-0">
-          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1 rounded-md hover:bg-accent transition-colors">
+        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 border-b border-border shrink-0">
+          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
             <Menu className="w-4 h-4 text-muted-foreground" />
           </button>
           {sidebarCollapsed && (
@@ -242,26 +242,26 @@ export default function Index() {
             </button>
           )}
 
-          <span className="text-[13px] text-muted-foreground truncate flex-1">
+          <span className="text-[12px] sm:text-[13px] text-muted-foreground truncate flex-1 min-w-0">
             {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : ""}
           </span>
 
           {/* Model selector */}
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
+          <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setModelMenuOpen((o) => !o)}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 rounded-md text-[11px] sm:text-xs text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent transition-colors touch-manipulation"
             >
-              {selectedModelLabel}
-              <ChevronDown className={`w-3 h-3 transition-transform duration-150 ${modelMenuOpen ? 'rotate-180' : ''}`} />
+              <span className="truncate max-w-[80px] sm:max-w-none">{selectedModelLabel}</span>
+              <ChevronDown className={`w-3 h-3 shrink-0 transition-transform duration-150 ${modelMenuOpen ? 'rotate-180' : ''}`} />
             </button>
             {modelMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-float z-50 min-w-[140px] py-0.5 animate-message-in">
+              <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-float z-50 min-w-[160px] py-0.5 animate-message-in">
                 {MODELS.map((m) => (
                   <button
                     key={m.id}
                     onClick={() => { setSelectedModel(m.id); setModelMenuOpen(false); }}
-                    className={`w-full text-left px-2.5 py-1.5 text-xs transition-colors ${
+                    className={`w-full text-left px-3 py-2 sm:px-2.5 sm:py-1.5 text-xs transition-colors touch-manipulation ${
                       selectedModel === m.id ? 'text-foreground font-medium bg-accent' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
                     }`}
                   >
@@ -275,14 +275,14 @@ export default function Index() {
           {modelSupportsThinking && (
             <button
               onClick={() => setThinkingEnabled((t) => !t)}
-              className={`p-1 rounded-md transition-colors ${thinkingEnabled ? 'text-foreground' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
+              className={`shrink-0 p-1.5 rounded-md transition-colors touch-manipulation ${thinkingEnabled ? 'text-foreground' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title={thinkingEnabled ? "Thinking on" : "Thinking off"}
             >
               <Brain className="w-3.5 h-3.5" />
             </button>
           )}
 
-          <button onClick={toggleTheme} className="p-1 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors">
+          <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
             {dark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </button>
         </header>
@@ -301,11 +301,18 @@ export default function Index() {
                 displayContent = thinkMatch[2];
               }
 
-              // Handle raw <think>...</think> tags in stored content
-              const rawThinkMatch = displayContent.match(/^<think>([\s\S]*?)<\/think>([\s\S]*)$/);
+              // Handle raw <think>...</think> tags in stored content (even mid-string)
+              const rawThinkMatch = displayContent.match(/([\s\S]*?)<think>([\s\S]*?)<\/think>([\s\S]*)$/);
               if (rawThinkMatch) {
-                thinking = rawThinkMatch[1].trim();
-                displayContent = rawThinkMatch[2].trim();
+                thinking = rawThinkMatch[2].trim();
+                displayContent = (rawThinkMatch[1] + rawThinkMatch[3]).trim();
+              }
+
+              // Handle content that has </think> without <think> (legacy data)
+              if (!thinking && displayContent.includes('</think>')) {
+                const parts = displayContent.split('</think>');
+                thinking = parts[0].trim();
+                displayContent = parts.slice(1).join('').trim();
               }
 
               return (
@@ -328,8 +335,8 @@ export default function Index() {
               />
             )}
             {streaming && !streamContent && !streamThinking && (
-              <div className="py-4 px-4 animate-message-in">
-                <div className="max-w-2xl mx-auto flex gap-3">
+              <div className="py-3 sm:py-4 px-3 sm:px-4 animate-message-in">
+                <div className="max-w-2xl mx-auto flex gap-2.5 sm:gap-3">
                   <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">Q</div>
                   <div className="flex items-center gap-1 pt-1">
                     <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "0ms" }} />

@@ -26,7 +26,7 @@ export default function ChatInput({ onSend, onStop, disabled, streaming }: Props
   };
 
   return (
-    <div className="px-4 pb-5 pt-2">
+    <div className="px-3 sm:px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-2">
       <div className="max-w-2xl mx-auto">
         <div className="relative rounded-xl border border-border bg-card transition-all duration-150 focus-within:border-foreground/20">
           <textarea
@@ -41,14 +41,14 @@ export default function ChatInput({ onSend, onStop, disabled, streaming }: Props
             }}
             placeholder="Message Quanta…"
             rows={1}
-            className="w-full resize-none bg-transparent outline-none text-[14px] text-foreground placeholder:text-muted-foreground/50 min-h-[44px] max-h-[200px] px-3.5 py-3 pr-12"
+            className="w-full resize-none bg-transparent outline-none text-[14px] text-foreground placeholder:text-muted-foreground/50 min-h-[44px] max-h-[200px] px-3 sm:px-3.5 py-3 pr-12"
             disabled={disabled}
           />
           <div className="absolute right-2 bottom-2">
             {streaming ? (
               <button
                 onClick={onStop}
-                className="w-7 h-7 rounded-lg bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center"
+                className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg bg-foreground text-background hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
               >
                 <Square className="w-3 h-3" fill="currentColor" />
               </button>
@@ -56,7 +56,7 @@ export default function ChatInput({ onSend, onStop, disabled, streaming }: Props
               <button
                 onClick={handleSubmit}
                 disabled={!input.trim() || disabled}
-                className="w-7 h-7 rounded-lg bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-opacity flex items-center justify-center"
+                className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg bg-foreground text-background disabled:opacity-20 hover:opacity-80 active:opacity-70 transition-opacity flex items-center justify-center touch-manipulation"
               >
                 <ArrowUp className="w-3.5 h-3.5" strokeWidth={2.5} />
               </button>

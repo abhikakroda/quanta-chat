@@ -11,23 +11,23 @@ const suggestions = [
 
 export default function WelcomeScreen({ onSuggestion }: Props) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
-      <h1 className="text-2xl font-semibold text-foreground mb-1 tracking-tight">
+    <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:py-16">
+      <h1 className="text-xl sm:text-2xl font-semibold text-foreground mb-1 tracking-tight text-center">
         What can I help with?
       </h1>
-      <p className="text-sm text-muted-foreground mb-10">
+      <p className="text-sm text-muted-foreground mb-8 sm:mb-10 text-center">
         Ask anything or pick a suggestion below.
       </p>
 
-      <div className="flex flex-wrap justify-center gap-2 max-w-lg">
+      <div className="flex flex-col sm:flex-wrap sm:flex-row justify-center gap-2 w-full max-w-lg px-2 sm:px-0">
         {suggestions.map((s) => (
           <button
             key={s.text}
             onClick={() => onSuggestion(s.text)}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-full border border-border bg-card hover:bg-accent text-sm text-foreground/80 hover:text-foreground transition-colors duration-150"
+            className="flex items-center gap-2 px-3.5 py-2.5 sm:py-2 rounded-full border border-border bg-card hover:bg-accent active:bg-accent text-sm text-foreground/80 hover:text-foreground transition-colors duration-150 touch-manipulation"
           >
-            <s.icon className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="truncate max-w-[200px]">{s.text}</span>
+            <s.icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+            <span className="truncate">{s.text}</span>
           </button>
         ))}
       </div>

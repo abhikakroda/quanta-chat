@@ -35,10 +35,10 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
 
   return (
     <div className="group animate-message-in">
-      <div className={cn("py-4 px-4", isUser ? "" : "")}>
-        <div className="max-w-2xl mx-auto flex gap-3">
+      <div className="py-3 sm:py-4 px-3 sm:px-4">
+        <div className="max-w-2xl mx-auto flex gap-2.5 sm:gap-3">
           {/* Avatar */}
-          <div className="shrink-0 mt-1.5">
+          <div className="shrink-0 mt-1">
             <div className={cn(
               "w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold",
               isUser ? "bg-foreground text-background" : "bg-muted text-muted-foreground"
@@ -48,7 +48,7 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
           </div>
 
           {/* Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             {isUser ? (
               editing ? (
                 <div className="space-y-2">
@@ -56,21 +56,21 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEditSubmit(); } }}
-                    className="w-full resize-none bg-muted/50 border border-border rounded-lg outline-none text-[14px] text-foreground p-2 min-h-[60px] focus:border-foreground/20"
+                    className="w-full resize-none bg-muted/50 border border-border rounded-lg outline-none text-[14px] text-foreground p-2.5 min-h-[60px] focus:border-foreground/20 transition-colors"
                     autoFocus
                   />
-                  <div className="flex gap-1.5">
-                    <button onClick={handleEditSubmit} className="px-2.5 py-1 text-xs rounded-md bg-foreground text-background hover:opacity-80 transition-opacity">Send</button>
-                    <button onClick={() => { setEditing(false); setEditValue(content); }} className="px-2.5 py-1 text-xs rounded-md text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
+                  <div className="flex gap-2">
+                    <button onClick={handleEditSubmit} className="px-3 py-1.5 text-xs rounded-md bg-foreground text-background hover:opacity-80 transition-opacity">Send</button>
+                    <button onClick={() => { setEditing(false); setEditValue(content); }} className="px-3 py-1.5 text-xs rounded-md text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                   </div>
                 </div>
               ) : (
-                <div className="relative">
-                  <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap pr-7">{content}</p>
+                <div className="flex items-start gap-1">
+                  <p className="text-[14px] text-foreground leading-relaxed whitespace-pre-wrap flex-1 min-w-0 break-words">{content}</p>
                   {onEdit && (
                     <button
                       onClick={() => { setEditValue(content); setEditing(true); }}
-                      className="absolute top-0 right-0 p-1 rounded-md text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors"
+                      className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors"
                       title="Edit message"
                     >
                       <Pencil className="w-3 h-3" />
@@ -98,36 +98,37 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                   </button>
                 )}
                 {thinking && thinkingOpen && (
-                  <div className="pl-4 border-l-2 border-border text-xs text-muted-foreground max-h-48 overflow-y-auto">
-                    <div className="prose prose-xs max-w-none prose-p:my-0.5 prose-p:text-muted-foreground">
+                  <div className="pl-3 sm:pl-4 border-l-2 border-border text-xs text-muted-foreground max-h-48 overflow-y-auto">
+                    <div className="prose prose-xs max-w-none prose-p:my-0.5 prose-p:text-muted-foreground break-words">
                       <ReactMarkdown>{thinking}</ReactMarkdown>
                     </div>
                   </div>
                 )}
 
                 {content && (
-                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:bg-muted prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[14px]">
+                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:bg-muted prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-pre:overflow-x-auto prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[14px] break-words overflow-hidden">
                     <ReactMarkdown>{content}</ReactMarkdown>
                   </div>
                 )}
 
+                {/* Action buttons - always visible on mobile, hover on desktop */}
                 {content && !isThinking && (
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-3 mt-1.5">
                     <button
                       onClick={handleCopy}
-                      className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors"
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground/50 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors touch-manipulation"
                       title="Copy response"
                     >
-                      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copied ? "Copied" : "Copy"}</span>
                     </button>
                     {onRegenerate && (
                       <button
                         onClick={onRegenerate}
-                        className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors"
+                        className="flex items-center gap-1 text-[11px] text-muted-foreground/50 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors touch-manipulation"
                         title="Regenerate response"
                       >
-                        <RefreshCw className="w-3 h-3" />
+                        <RefreshCw className="w-3.5 h-3.5" />
                         <span>Regenerate</span>
                       </button>
                     )}
