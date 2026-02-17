@@ -54,6 +54,7 @@ export default function Index() {
   const { conversations, createConversation, deleteConversation, updateTitle, refetch } = useConversations();
   const [activeId, setActiveId] = useState<string | null>(null);
   const { messages, addMessage, setMessages } = useMessages(activeId);
+  const [messageImages, setMessageImages] = useState<Record<string, string>>({});
   const [streaming, setStreaming] = useState(false);
   const [streamContent, setStreamContent] = useState("");
   const [streamThinking, setStreamThinking] = useState("");
@@ -172,7 +173,15 @@ export default function Index() {
       { role: "user" as const, content: userContent },
     ];
 
-    setMessages((prev: any) => [...prev, { id: crypto.randomUUID(), conversation_id: convId!, role: "user", content: userContent, created_at: new Date().toISOString() }]);
+    const msgId = crypto.randomUUID();
+    
+    // Store image URL for display
+    const imageFile = files?.find((f) => f.dataUrl && f.type.startsWith("image/"));
+    if (imageFile?.dataUrl) {
+      setMessageImages((prev) => ({ ...prev, [msgId]: imageFile.dataUrl! }));
+    }
+
+    setMessages((prev: any) => [...prev, { id: msgId, conversation_id: convId!, role: "user", content: userContent, created_at: new Date().toISOString() }]);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -258,11 +267,13 @@ export default function Index() {
 
   const handleNewChat = async () => {
     setActiveId(null);
+    setMessageImages({});
     setSidebarOpen(false);
   };
 
   const handleSelectConv = (id: string) => {
     setActiveId(id);
+    setMessageImages({});
     setSidebarOpen(false);
   };
 
@@ -435,6 +446,7 @@ export default function Index() {
                     role={m.role}
                     content={displayContent}
                     thinking={thinking}
+                    imageUrl={messageImages[m.id]}
                     onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
                     onRegenerate={m.role === "assistant" && !streaming ? () => handleRegenerate(i) : undefined}
                   />
