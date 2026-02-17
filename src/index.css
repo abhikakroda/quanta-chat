@@ -323,3 +323,37 @@
 .dark .hljs-bullet { color: hsl(340 70% 65%); }
 .dark .hljs-selector-class,
 .dark .hljs-selector-id { color: hsl(210 70% 65%); }
+
+/* Animated gradient background */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient-bg {
+  position: relative;
+}
+.animated-gradient-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(ellipse at 20% 50%, hsl(220 60% 92% / 0.5) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, hsl(270 50% 90% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 40% 80%, hsl(190 50% 90% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, hsl(340 40% 92% / 0.3) 0%, transparent 50%);
+  background-size: 200% 200%;
+  animation: gradient-shift 20s ease-in-out infinite;
+  pointer-events: none;
+}
+.dark .animated-gradient-bg::before {
+  background: radial-gradient(ellipse at 20% 50%, hsl(220 60% 15% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, hsl(270 50% 18% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 40% 80%, hsl(190 50% 14% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, hsl(340 40% 16% / 0.25) 0%, transparent 50%);
+  background-size: 200% 200%;
+  animation: gradient-shift 20s ease-in-out infinite;
+}

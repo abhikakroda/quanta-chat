@@ -233,9 +233,9 @@ export default function Index() {
         onSelectSkill={setActiveSkill}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 animated-gradient-bg">
         {/* Header - minimal */}
-        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0 glass-subtle border-b border-border/30">
+        <header className="relative z-10 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0 glass-subtle border-b border-border/30">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
             <Menu className="w-4 h-4 text-muted-foreground" />
           </button>
