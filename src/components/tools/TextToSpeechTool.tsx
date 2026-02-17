@@ -4,16 +4,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
 const VOICES = [
-  { id: "anushka", label: "Anushka", gender: "Female" },
-  { id: "manisha", label: "Manisha", gender: "Female" },
-  { id: "vidya", label: "Vidya", gender: "Female" },
-  { id: "arya", label: "Arya", gender: "Female" },
+  { id: "shubh", label: "Shubh", gender: "Male" },
+  { id: "aditya", label: "Aditya", gender: "Male" },
+  { id: "rahul", label: "Rahul", gender: "Male" },
+  { id: "rohan", label: "Rohan", gender: "Male" },
+  { id: "amit", label: "Amit", gender: "Male" },
+  { id: "dev", label: "Dev", gender: "Male" },
+  { id: "soham", label: "Soham", gender: "Male" },
+  { id: "mohit", label: "Mohit", gender: "Male" },
+  { id: "rehan", label: "Rehan", gender: "Male" },
+  { id: "vijay", label: "Vijay", gender: "Male" },
+  { id: "gokul", label: "Gokul", gender: "Male" },
   { id: "ritu", label: "Ritu", gender: "Female" },
   { id: "priya", label: "Priya", gender: "Female" },
-  { id: "abhilash", label: "Abhilash", gender: "Male" },
-  { id: "karun", label: "Karun", gender: "Male" },
-  { id: "hitesh", label: "Hitesh", gender: "Male" },
-  { id: "rahul", label: "Rahul", gender: "Male" },
+  { id: "neha", label: "Neha", gender: "Female" },
+  { id: "pooja", label: "Pooja", gender: "Female" },
+  { id: "simran", label: "Simran", gender: "Female" },
+  { id: "kavya", label: "Kavya", gender: "Female" },
+  { id: "ishita", label: "Ishita", gender: "Female" },
+  { id: "shreya", label: "Shreya", gender: "Female" },
+  { id: "rupali", label: "Rupali", gender: "Female" },
+  { id: "shruti", label: "Shruti", gender: "Female" },
+  { id: "suhani", label: "Suhani", gender: "Female" },
+  { id: "kavitha", label: "Kavitha", gender: "Female" },
 ];
 
 const LANGUAGES = [
@@ -31,7 +44,7 @@ const LANGUAGES = [
 
 export default function TextToSpeechTool() {
   const [text, setText] = useState("");
-  const [voice, setVoice] = useState("anushka");
+  const [voice, setVoice] = useState("shubh");
   const [language, setLanguage] = useState("en-IN");
   const [loading, setLoading] = useState(false);
   const [playing, setPlaying] = useState(false);
