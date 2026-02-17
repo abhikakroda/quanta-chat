@@ -1,8 +1,14 @@
 import ChatInput from "./ChatInput";
 import { ModelId } from "@/lib/chat";
 
+type AttachedFile = {
+  name: string;
+  content: string;
+  type: string;
+};
+
 type Props = {
-  onSend: (text: string) => void;
+  onSend: (text: string, files?: AttachedFile[]) => void;
   onStop?: () => void;
   disabled: boolean;
   streaming?: boolean;

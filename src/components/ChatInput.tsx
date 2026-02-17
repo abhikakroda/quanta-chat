@@ -3,8 +3,14 @@ import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
 
+type AttachedFile = {
+  name: string;
+  content: string;
+  type: string;
+};
+
 type Props = {
-  onSend: (message: string) => void;
+  onSend: (message: string, files?: AttachedFile[]) => void;
   onStop?: () => void;
   disabled: boolean;
   streaming?: boolean;
@@ -25,7 +31,7 @@ export default function ChatInput({
   modelSupportsThinking,
 }: Props) {
   const [input, setInput] = useState("");
-  const [attachedFiles, setAttachedFiles] = useState<{ name: string }[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const [agentPopover, setAgentPopover] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -58,22 +64,27 @@ export default function ChatInput({
   const handleSubmit = () => {
     const trimmed = input.trim();
     if (!trimmed || disabled) return;
-    let message = trimmed;
-    if (attachedFiles.length > 0) {
-      const fileNames = attachedFiles.map((f) => f.name).join(", ");
-      message = `[Attached: ${fileNames}]\n\n${trimmed}`;
-    }
-    onSend(message);
+    onSend(trimmed, attachedFiles.length > 0 ? attachedFiles : undefined);
     setInput("");
     setAttachedFiles([]);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const readFileContent = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => resolve(`[Could not read file: ${file.name}]`);
+      reader.readAsText(file);
+    });
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
-    Array.from(files).forEach((file) => {
-      setAttachedFiles((prev) => [...prev, { name: file.name }]);
-    });
+    for (const file of Array.from(files)) {
+      const content = await readFileContent(file);
+      setAttachedFiles((prev) => [...prev, { name: file.name, content, type: file.type }]);
+    }
     e.target.value = "";
   };
 
@@ -173,7 +184,7 @@ export default function ChatInput({
           <div className="flex items-center justify-between px-2.5 pb-2.5 pt-0.5">
             {/* Left: attach + settings */}
             <div className="flex items-center gap-0.5">
-              <input ref={fileRef} type="file" accept="image/*,.pdf,.txt,.md,.csv,.json" multiple className="hidden" onChange={handleFileSelect} />
+              <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf" multiple className="hidden" onChange={handleFileSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
                 className="p-2 rounded-xl border border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground transition-colors touch-manipulation ripple-container press-scale"
