@@ -29,7 +29,7 @@ const ConversationalAgentTool = lazy(() => import("@/components/tools/Conversati
 
 const WebScraperTool = lazy(() => import("@/components/tools/WebScraperTool"));
 const NewsTool = lazy(() => import("@/components/tools/NewsTool"));
-const TextToSpeechTool = lazy(() => import("@/components/tools/TextToSpeechTool"));
+
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "calculator": CalculatorTool,
@@ -46,7 +46,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   
   "web-scraper": WebScraperTool,
   "news": NewsTool,
-  "text-to-speech": TextToSpeechTool,
+  
 };
 
 export default function Index() {

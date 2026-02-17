@@ -33,7 +33,7 @@ export const SKILLS = [
 
 export const TOOLS = [
   { id: "conversational-agent", icon: Phone, label: "Conversational Agent", badge: "Sarvam", prompt: "You are a conversational AI agent." },
-  { id: "text-to-speech", icon: Volume2, label: "Text to Speech", badge: "Sarvam", prompt: "You are a TTS assistant." },
+  
   
   { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant." },
   { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
