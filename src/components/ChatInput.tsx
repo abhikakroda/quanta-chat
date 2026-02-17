@@ -24,9 +24,9 @@ export default function ChatInput({ onSend, disabled }: Props) {
   };
 
   return (
-    <div className="px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
-      <div className="max-w-3xl mx-auto">
-        <div className="relative rounded-2xl border border-border bg-card shadow-elegant transition-all duration-200 focus-within:shadow-float focus-within:border-primary/30">
+    <div className="px-4 pb-5 pt-2">
+      <div className="max-w-2xl mx-auto">
+        <div className="relative rounded-xl border border-border bg-card transition-all duration-150 focus-within:border-foreground/20">
           <textarea
             ref={ref}
             value={input}
@@ -37,24 +37,21 @@ export default function ChatInput({ onSend, disabled }: Props) {
                 handleSubmit();
               }
             }}
-            placeholder="Message Quanta..."
+            placeholder="Message Quanta…"
             rows={1}
-            className="w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/60 min-h-[52px] max-h-[200px] px-4 py-3.5 pr-14"
+            className="w-full resize-none bg-transparent outline-none text-[14px] text-foreground placeholder:text-muted-foreground/50 min-h-[44px] max-h-[200px] px-3.5 py-3 pr-12"
             disabled={disabled}
           />
           <div className="absolute right-2 bottom-2">
             <button
               onClick={handleSubmit}
               disabled={!input.trim() || disabled}
-              className="w-8 h-8 rounded-lg bg-primary text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed"
+              className="w-7 h-7 rounded-lg bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-opacity flex items-center justify-center"
             >
-              <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
+              <ArrowUp className="w-3.5 h-3.5" strokeWidth={2.5} />
             </button>
           </div>
         </div>
-        <p className="text-[11px] text-muted-foreground/50 text-center mt-2">
-          Quanta can make mistakes. Verify important information.
-        </p>
       </div>
     </div>
   );
