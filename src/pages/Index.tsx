@@ -4,7 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
-import { streamChat, Message, MODELS, ModelId } from "@/lib/chat";
+import { streamChat, Message, MODELS, ModelId, resolveAutoModel } from "@/lib/chat";
 import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -67,7 +67,7 @@ export default function Index() {
   const [agentStep, setAgentStep] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
-    return (saved as ModelId) || "mistral";
+    return (saved as ModelId) || "auto";
   });
 
   useEffect(() => {
@@ -194,6 +194,7 @@ export default function Index() {
       model: selectedModel,
       enableThinking: thinkingEnabled,
       skillPrompt: skillDef?.prompt,
+      activeSkill,
       agentMode,
       imageData,
       signal: controller.signal,
@@ -309,6 +310,7 @@ export default function Index() {
       model: selectedModel,
       enableThinking: thinkingEnabled,
       skillPrompt: skillDef2?.prompt,
+      activeSkill,
       agentMode,
       signal: controller.signal,
       onAgentStep: (step) => setAgentStep(step),
@@ -335,7 +337,8 @@ export default function Index() {
   };
 
   const hasMessages = messages.length > 0 || streaming;
-  const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
+  const resolvedModel = resolveAutoModel(selectedModel, activeSkill);
+  const modelSupportsThinking = MODELS.find((m) => m.id === resolvedModel)?.supportsThinking ?? false;
 
   return (
     <div className="flex h-[100dvh] bg-background overflow-hidden">

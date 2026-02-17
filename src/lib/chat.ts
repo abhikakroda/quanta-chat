@@ -2,9 +2,10 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Message = { role: "user" | "assistant"; content: string };
 
-export type ModelId = "qwen" | "qwen-coder" | "mistral" | "minimax" | "deepseek" | "sarvam";
+export type ModelId = "auto" | "qwen" | "qwen-coder" | "mistral" | "minimax" | "deepseek" | "sarvam";
 
 export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean }[] = [
+  { id: "auto", label: "Auto", supportsThinking: true },
   { id: "qwen", label: "Qwen 3.5", supportsThinking: true },
   { id: "qwen-coder", label: "Qwen3 Coder", supportsThinking: true },
   { id: "mistral", label: "Mistral Small" },
@@ -12,6 +13,30 @@ export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean }[
   { id: "deepseek", label: "DeepSeek V3.2", supportsThinking: true },
   { id: "sarvam", label: "Sarvam M", supportsThinking: true },
 ];
+
+// Auto-select the best model based on the active skill/tool
+const AUTO_MODEL_MAP: Record<string, ModelId> = {
+  "code-assistant": "qwen-coder",
+  "deep-research": "deepseek",
+  "summarizer": "qwen",
+  "writer": "mistral",
+  "quick-tasks": "mistral",
+  "conversational-agent": "sarvam",
+  "translator": "sarvam",
+  "voice-chat": "sarvam",
+  "calculator": "qwen",
+  "image-describer": "qwen",
+  "vision": "qwen",
+  "task-scheduler": "mistral",
+  "news": "mistral",
+  "web-scraper": "qwen",
+};
+
+export function resolveAutoModel(model: ModelId, activeSkill?: string | null): ModelId {
+  if (model !== "auto") return model;
+  if (activeSkill && AUTO_MODEL_MAP[activeSkill]) return AUTO_MODEL_MAP[activeSkill];
+  return "qwen"; // default fallback for general chat
+}
 
 const AGENT_SYSTEM_PROMPT = `You are an advanced AI agent capable of multi-step reasoning. When given a complex task:
 
@@ -28,6 +53,7 @@ export async function streamChat({
   model = "qwen",
   enableThinking = true,
   skillPrompt,
+  activeSkill,
   agentMode = false,
   imageData,
   onThinkingDelta,
@@ -41,6 +67,7 @@ export async function streamChat({
   model?: ModelId;
   enableThinking?: boolean;
   skillPrompt?: string;
+  activeSkill?: string | null;
   agentMode?: boolean;
   imageData?: { base64: string; mimeType: string };
   onThinkingDelta?: (text: string) => void;
@@ -50,8 +77,9 @@ export async function streamChat({
   onAgentStep?: (step: number, total: number | null) => void;
   signal?: AbortSignal;
 }) {
-  // Agent mode forces best model and thinking
-  const effectiveModel = agentMode ? "qwen" : model;
+  // Resolve auto model based on active skill, then agent mode overrides
+  const resolvedModel = resolveAutoModel(model || "auto", activeSkill);
+  const effectiveModel = agentMode ? "qwen" : resolvedModel;
   const effectiveThinking = agentMode ? true : enableThinking;
   const effectiveSkillPrompt = agentMode
     ? (skillPrompt ? `${AGENT_SYSTEM_PROMPT}\n\nAdditional context: ${skillPrompt}` : AGENT_SYSTEM_PROMPT)
