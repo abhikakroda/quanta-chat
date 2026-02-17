@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Menu, Moon, Sun, Brain, ChevronDown, Sparkles } from "lucide-react";
+import { Menu, Moon, Sun, Brain, ChevronDown, Sparkles, PanelLeftOpen } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -22,6 +22,7 @@ export default function Index() {
   const [streamThinking, setStreamThinking] = useState("");
   const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [selectedModel, setSelectedModel] = useState<ModelId>("qwen");
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
@@ -155,14 +156,30 @@ export default function Index() {
         onDelete={handleDelete}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
         <header className="flex items-center gap-3 px-4 h-12 border-b border-border/60 bg-background/80 backdrop-blur-md shrink-0">
-          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-lg hover:bg-accent transition-colors">
+          {/* Mobile menu */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="md:hidden p-1.5 rounded-lg hover:bg-accent transition-colors"
+          >
             <Menu className="w-5 h-5 text-foreground/70" />
           </button>
+          {/* Desktop sidebar toggle (only when collapsed) */}
+          {sidebarCollapsed && (
+            <button
+              onClick={() => setSidebarCollapsed(false)}
+              className="hidden md:flex p-1.5 rounded-lg hover:bg-accent transition-colors"
+              title="Show sidebar"
+            >
+              <PanelLeftOpen className="w-5 h-5 text-foreground/70" />
+            </button>
+          )}
 
           <h2 className="text-sm font-medium text-foreground/80 truncate flex-1">
             {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : "New chat"}
