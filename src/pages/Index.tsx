@@ -19,6 +19,8 @@ export default function Index() {
   const { messages, addMessage, setMessages } = useMessages(activeId);
   const [streaming, setStreaming] = useState(false);
   const [streamContent, setStreamContent] = useState("");
+  const [streamThinking, setStreamThinking] = useState("");
+  const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -27,7 +29,7 @@ export default function Index() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, streamContent]);
+  }, [messages, streamContent, streamThinking]);
 
   if (authLoading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
@@ -58,25 +60,38 @@ export default function Index() {
 
     setStreaming(true);
     setStreamContent("");
+    setStreamThinking("");
+    setIsThinkingPhase(true);
     let fullContent = "";
+    let fullThinking = "";
 
     await streamChat({
       messages: allMessages,
+      onThinkingDelta: (text) => {
+        fullThinking += text;
+        setStreamThinking(fullThinking);
+      },
       onDelta: (text) => {
+        setIsThinkingPhase(false);
         fullContent += text;
         setStreamContent(fullContent);
       },
       onDone: async () => {
-        // Save assistant message
+        // Save assistant message (store thinking as metadata prefix)
+        const savedContent = fullThinking
+          ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${fullContent}`
+          : fullContent;
         const { data } = await supabase
           .from("messages")
-          .insert({ conversation_id: convId!, role: "assistant" as const, content: fullContent })
+          .insert({ conversation_id: convId!, role: "assistant" as const, content: savedContent })
           .select()
           .single();
         if (data) {
           setMessages((prev) => [...prev, data as any]);
         }
         setStreamContent("");
+        setStreamThinking("");
+        setIsThinkingPhase(false);
         setStreaming(false);
 
         // Update conversation title if first message
@@ -86,6 +101,8 @@ export default function Index() {
       },
       onError: (err) => {
         setStreamContent("");
+        setStreamThinking("");
+        setIsThinkingPhase(false);
         setStreaming(false);
         console.error(err);
       },
@@ -138,11 +155,23 @@ export default function Index() {
         {/* Messages */}
         {hasMessages ? (
           <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            {messages.map((m) => (
-              <ChatMessage key={m.id} role={m.role} content={m.content} />
-            ))}
-            {streaming && streamContent && (
-              <ChatMessage role="assistant" content={streamContent} />
+            {messages.map((m) => {
+              let thinking: string | undefined;
+              let displayContent = m.content;
+              const thinkMatch = m.content.match(/^<!--thinking:(.+?)-->(.*)$/s);
+              if (thinkMatch) {
+                try { thinking = decodeURIComponent(atob(thinkMatch[1])); } catch { /* ignore */ }
+                displayContent = thinkMatch[2];
+              }
+              return <ChatMessage key={m.id} role={m.role} content={displayContent} thinking={thinking} />;
+            })}
+            {streaming && (streamThinking || streamContent) && (
+              <ChatMessage
+                role="assistant"
+                content={streamContent}
+                thinking={streamThinking || undefined}
+                isThinking={isThinkingPhase}
+              />
             )}
             {streaming && !streamContent && (
               <div className="flex gap-3 px-4 py-4 max-w-3xl mx-auto">

@@ -2,11 +2,13 @@ export type Message = { role: "user" | "assistant"; content: string };
 
 export async function streamChat({
   messages,
+  onThinkingDelta,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Message[];
+  onThinkingDelta?: (text: string) => void;
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
@@ -36,6 +38,8 @@ export async function streamChat({
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let inThinking = false;
+  let thinkingDone = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -53,7 +57,47 @@ export async function streamChat({
       try {
         const parsed = JSON.parse(json);
         const content = parsed.choices?.[0]?.delta?.content;
-        if (content) onDelta(content);
+        if (content) {
+          // Parse <think>...</think> tags from the stream
+          let remaining = content as string;
+
+          while (remaining.length > 0) {
+            if (!inThinking && !thinkingDone) {
+              // Look for <think> opening tag
+              const thinkStart = remaining.indexOf("<think>");
+              if (thinkStart !== -1) {
+                // Text before <think> goes to answer
+                const before = remaining.slice(0, thinkStart);
+                if (before) onDelta(before);
+                inThinking = true;
+                remaining = remaining.slice(thinkStart + 7);
+                continue;
+              }
+            }
+
+            if (inThinking) {
+              // Look for </think> closing tag
+              const thinkEnd = remaining.indexOf("</think>");
+              if (thinkEnd !== -1) {
+                const thinkContent = remaining.slice(0, thinkEnd);
+                if (thinkContent && onThinkingDelta) onThinkingDelta(thinkContent);
+                inThinking = false;
+                thinkingDone = true;
+                remaining = remaining.slice(thinkEnd + 8);
+                continue;
+              } else {
+                // All remaining is thinking content
+                if (onThinkingDelta) onThinkingDelta(remaining);
+                remaining = "";
+                continue;
+              }
+            }
+
+            // Normal answer content
+            onDelta(remaining);
+            remaining = "";
+          }
+        }
       } catch { /* partial */ }
     }
   }
