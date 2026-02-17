@@ -20,7 +20,7 @@ const AUTO_MODEL_MAP: Record<string, ModelId> = {
   "deep-research": "deepseek",
   "summarizer": "qwen",
   "writer": "mistral",
-  "quick-tasks": "mistral",
+  
   "conversational-agent": "sarvam",
   "translator": "sarvam",
   "voice-chat": "sarvam",
