@@ -219,7 +219,7 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header - minimal */}
-        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0">
+        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0 glass-subtle border-b border-border/30">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
             <Menu className="w-4 h-4 text-muted-foreground" />
           </button>
