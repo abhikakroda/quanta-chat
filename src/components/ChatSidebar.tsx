@@ -2,7 +2,7 @@ import { memo, useState, useMemo } from "react";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Zap, Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
-  Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo
+  Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,6 +32,7 @@ export const SKILLS = [
 ] as const;
 
 export const TOOLS = [
+  { id: "conversational-agent", icon: Phone, label: "Conversational Agent", badge: "Sarvam", prompt: "You are a conversational AI agent." },
   { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant." },
   { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
   { id: "image-describer", icon: Image, label: "Image Describer", prompt: "You are an image analysis assistant." },
