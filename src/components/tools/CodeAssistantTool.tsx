@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Code2, Loader2, Send, Eye, CodeXml, Copy, Check, RotateCcw, Sparkles, AlertTriangle, Download, Smartphone, Monitor, Tablet, GripVertical, MessageSquare } from "lucide-react";
+import { Code2, Loader2, Send, Eye, CodeXml, Copy, Check, RotateCcw, Sparkles, AlertTriangle, Download, Smartphone, Monitor, Tablet, GripVertical, MessageSquare, Maximize2, Minimize2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
@@ -28,6 +28,7 @@ export default function CodeAssistantTool() {
   const [chatWidth, setChatWidth] = useState(360);
   const [isDragging, setIsDragging] = useState(false);
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -430,6 +431,9 @@ After the code block, list what was added/changed as bullet points.`,
                   <AlertTriangle className="w-3 h-3" /> {iframeErrors.length}
                 </button>
               )}
+              <button onClick={() => setIsFullscreen(true)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors" title="Fullscreen preview">
+                <Maximize2 className="w-3.5 h-3.5" />
+              </button>
             </>
           )}
           {hasPreview && isMobile && (
@@ -439,6 +443,9 @@ After the code block, list what was added/changed as bullet points.`,
               </button>
               <button onClick={downloadHtml} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors" title="Download">
                 <Download className="w-4 h-4" />
+              </button>
+              <button onClick={() => setIsFullscreen(true)} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors" title="Fullscreen">
+                <Maximize2 className="w-4 h-4" />
               </button>
             </>
           )}
@@ -495,6 +502,31 @@ After the code block, list what was added/changed as bullet points.`,
           </>
         )}
       </div>
+
+      {/* Fullscreen overlay */}
+      {isFullscreen && activeHtml && (
+        <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
+          <div className="flex items-center justify-between px-4 py-2 border-b border-border/30">
+            <span className="text-sm font-medium text-foreground">Fullscreen Preview</span>
+            <div className="flex items-center gap-2">
+              {!isMobile && (
+                <div className="flex items-center gap-0.5 bg-muted/30 rounded-lg p-0.5">
+                  <button onClick={() => setViewport("mobile")} className={cn("p-1.5 rounded-md transition-colors", viewport === "mobile" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}><Smartphone className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setViewport("tablet")} className={cn("p-1.5 rounded-md transition-colors", viewport === "tablet" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}><Tablet className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setViewport("desktop")} className={cn("p-1.5 rounded-md transition-colors", viewport === "desktop" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}><Monitor className="w-3.5 h-3.5" /></button>
+                </div>
+              )}
+              <button onClick={downloadHtml} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"><Download className="w-4 h-4" /></button>
+              <button onClick={() => setIsFullscreen(false)} className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors" title="Exit fullscreen"><Minimize2 className="w-4 h-4" /></button>
+            </div>
+          </div>
+          <div className="flex-1 bg-white flex items-start justify-center overflow-hidden">
+            <div className={cn("h-full transition-all duration-300", isMobile ? "w-full" : viewportStyles[viewport])}>
+              <iframe srcDoc={wrapHtmlWithErrorCatcher(activeHtml)} className="w-full h-full" sandbox="allow-scripts" title="Fullscreen Preview" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
