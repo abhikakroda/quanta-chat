@@ -55,7 +55,7 @@ export default function Index() {
   }
   if (!user) return <Navigate to="/auth" replace />;
 
-  const handleSend = async (input: string) => {
+  const handleSend = async (input: string, files?: { name: string; content: string; type: string }[]) => {
     let convId = activeId;
 
     if (!convId) {
@@ -65,14 +65,21 @@ export default function Index() {
       setActiveId(conv.id);
     }
 
-    await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: input });
+    // Build user message with file contents
+    let userContent = input;
+    if (files && files.length > 0) {
+      const fileSection = files.map((f) => `--- File: ${f.name} ---\n${f.content}`).join("\n\n");
+      userContent = `${fileSection}\n\n${input}`;
+    }
+
+    await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent });
 
     const allMessages: Message[] = [
       ...messages.map((m) => ({ role: m.role, content: m.content })),
-      { role: "user" as const, content: input },
+      { role: "user" as const, content: userContent },
     ];
 
-    setMessages((prev: any) => [...prev, { id: crypto.randomUUID(), conversation_id: convId!, role: "user", content: input, created_at: new Date().toISOString() }]);
+    setMessages((prev: any) => [...prev, { id: crypto.randomUUID(), conversation_id: convId!, role: "user", content: userContent, created_at: new Date().toISOString() }]);
 
     const controller = new AbortController();
     abortRef.current = controller;
