@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Menu, Moon, Sun, Brain, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Menu, Moon, Sun, Brain, ChevronDown, Sparkles } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -34,8 +34,25 @@ export default function Index() {
     }
   }, [messages, streamContent, streamThinking]);
 
+  // Close model menu on outside click
+  useEffect(() => {
+    if (!modelMenuOpen) return;
+    const handler = () => setModelMenuOpen(false);
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, [modelMenuOpen]);
+
   if (authLoading) {
-    return <div className="min-h-screen flex items-center justify-center bg-background"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center glow-primary animate-float">
+            <Sparkles className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <span className="text-sm text-muted-foreground">Loading...</span>
+        </div>
+      </div>
+    );
   }
   if (!user) return <Navigate to="/auth" replace />;
 
@@ -49,16 +66,13 @@ export default function Index() {
       setActiveId(conv.id);
     }
 
-    // Save user message
     await supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: input });
 
-    // Build messages for API
     const allMessages: Message[] = [
       ...messages.map((m) => ({ role: m.role, content: m.content })),
       { role: "user" as const, content: input },
     ];
 
-    // Optimistically show user message
     setMessages((prev: any) => [...prev, { id: crypto.randomUUID(), conversation_id: convId!, role: "user", content: input, created_at: new Date().toISOString() }]);
 
     setStreaming(true);
@@ -82,7 +96,6 @@ export default function Index() {
         setStreamContent(fullContent);
       },
       onDone: async () => {
-        // Save assistant message (store thinking as metadata prefix)
         const savedContent = fullThinking
           ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${fullContent}`
           : fullContent;
@@ -99,7 +112,6 @@ export default function Index() {
         setIsThinkingPhase(false);
         setStreaming(false);
 
-        // Update conversation title if first message
         if (messages.length === 0) {
           await updateTitle(convId!, input.slice(0, 50));
         }
@@ -130,6 +142,7 @@ export default function Index() {
   };
 
   const hasMessages = messages.length > 0 || streaming;
+  const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label;
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -145,28 +158,35 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-sm">
-          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 rounded-lg hover:bg-accent">
-            <Menu className="w-5 h-5 text-foreground" />
+        <header className="flex items-center gap-3 px-4 h-12 border-b border-border/60 bg-background/80 backdrop-blur-md shrink-0">
+          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-lg hover:bg-accent transition-colors">
+            <Menu className="w-5 h-5 text-foreground/70" />
           </button>
-          <h2 className="font-semibold text-foreground truncate flex-1">
-            {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : "Quanta AI"}
+
+          <h2 className="text-sm font-medium text-foreground/80 truncate flex-1">
+            {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : "New chat"}
           </h2>
-          <div className="relative">
+
+          {/* Model selector */}
+          <div className="relative" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setModelMenuOpen((o) => !o)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-card hover:bg-accent transition-colors text-foreground"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
             >
-              {MODELS.find((m) => m.id === selectedModel)?.label}
-              <ChevronDown className="w-3.5 h-3.5" />
+              {selectedModelLabel}
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${modelMenuOpen ? 'rotate-180' : ''}`} />
             </button>
             {modelMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-lg z-50 min-w-[140px] py-1">
+              <div className="absolute right-0 top-full mt-1.5 bg-card border border-border rounded-xl shadow-float z-50 min-w-[160px] py-1 animate-message-in">
                 {MODELS.map((m) => (
                   <button
                     key={m.id}
                     onClick={() => { setSelectedModel(m.id); setModelMenuOpen(false); }}
-                    className={`w-full text-left px-3 py-2 text-xs hover:bg-accent transition-colors ${selectedModel === m.id ? 'text-primary font-medium' : 'text-foreground'}`}
+                    className={`w-full text-left px-3 py-2 text-xs transition-colors rounded-lg mx-0 ${
+                      selectedModel === m.id
+                        ? 'text-primary font-semibold bg-accent/50'
+                        : 'text-foreground/70 hover:bg-accent/30 hover:text-foreground'
+                    }`}
                   >
                     {m.label}
                   </button>
@@ -174,16 +194,28 @@ export default function Index() {
               </div>
             )}
           </div>
+
+          {/* Thinking toggle */}
           <button
             onClick={() => setThinkingEnabled((t) => !t)}
-            className={`p-2 rounded-lg transition-colors ${thinkingEnabled ? 'bg-primary/15 text-primary' : 'hover:bg-accent text-muted-foreground'}`}
+            className={`p-1.5 rounded-lg transition-all duration-200 ${
+              thinkingEnabled
+                ? 'text-primary bg-primary/10'
+                : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50'
+            }`}
             aria-label="Toggle thinking mode"
-            title={thinkingEnabled ? "Thinking mode on" : "Thinking mode off"}
+            title={thinkingEnabled ? "Thinking on" : "Thinking off"}
           >
-            <Brain className="w-5 h-5" />
+            <Brain className="w-4 h-4" />
           </button>
-          <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-accent transition-colors" aria-label="Toggle theme">
-            {dark ? <Sun className="w-5 h-5 text-foreground" /> : <Moon className="w-5 h-5 text-foreground" />}
+
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-muted-foreground hover:bg-accent/50 transition-all duration-200"
+            aria-label="Toggle theme"
+          >
+            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </header>
 
@@ -208,16 +240,16 @@ export default function Index() {
                 isThinking={isThinkingPhase}
               />
             )}
-            {streaming && !streamContent && (
-              <div className="flex gap-3 px-4 py-4 max-w-3xl mx-auto">
-                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-primary-foreground animate-pulse" />
-                </div>
-                <div className="rounded-2xl px-4 py-3 bg-chat-ai border border-border rounded-bl-md">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+            {streaming && !streamContent && !streamThinking && (
+              <div className="py-5 px-4 bg-muted/30 animate-message-in">
+                <div className="max-w-3xl mx-auto flex gap-4">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center">
+                    <Sparkles className="w-3.5 h-3.5 text-primary-foreground" />
+                  </div>
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 </div>
               </div>
