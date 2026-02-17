@@ -74,6 +74,27 @@ serve(async (req) => {
           top_p: 0.95,
         }),
       });
+    } else if (model === "deepseek") {
+      const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
+      if (!NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY not configured");
+
+      response = await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${NVIDIA_API_KEY}`,
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+        },
+        body: JSON.stringify({
+          model: "deepseek-ai/deepseek-v3.2",
+          messages: allMessages,
+          stream: true,
+          max_tokens: 8192,
+          temperature: 1,
+          top_p: 0.95,
+          chat_template_kwargs: { thinking: enableThinking },
+        }),
+      });
     } else {
       // Default: NVIDIA Qwen
       const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
