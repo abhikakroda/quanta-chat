@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Code2, Loader2, Send, Eye, CodeXml, Copy, Check, RotateCcw, Sparkles, AlertTriangle, Download, Smartphone, Monitor, Tablet, GripVertical, MessageSquare, Maximize2, Minimize2 } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Code2, Loader2, Send, Eye, CodeXml, Copy, Check, RotateCcw, Sparkles, AlertTriangle, Download, Smartphone, Monitor, Tablet, GripVertical, MessageSquare, Maximize2, Minimize2, FolderOpen, Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,14 @@ type ChatMsg = {
 };
 
 type ViewportSize = "desktop" | "tablet" | "mobile";
+
+type SavedProject = {
+  id: string;
+  title: string;
+  messages: ChatMsg[];
+  active_html: string;
+  updated_at: string;
+};
 
 export default function CodeAssistantTool() {
   const [input, setInput] = useState("");
@@ -29,11 +37,82 @@ export default function CodeAssistantTool() {
   const [isDragging, setIsDragging] = useState(false);
   const [mobileTab, setMobileTab] = useState<"chat" | "preview">("chat");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [savedProjects, setSavedProjects] = useState<SavedProject[]>([]);
+  const [showProjects, setShowProjects] = useState(false);
+  const [loadingProjects, setLoadingProjects] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const dragRef = useRef<{ startX: number; startWidth: number } | null>(null);
   const isMobile = useIsMobile();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Load saved projects on mount
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const loadProjects = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    setLoadingProjects(true);
+    const { data } = await supabase
+      .from("website_builder_projects")
+      .select("id, title, messages, active_html, updated_at")
+      .order("updated_at", { ascending: false });
+    if (data) setSavedProjects(data as unknown as SavedProject[]);
+    setLoadingProjects(false);
+  };
+
+  // Auto-save current project (debounced)
+  const saveProject = useCallback(async (msgs: ChatMsg[], html: string, projectId: string | null) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || msgs.length === 0) return;
+
+    const title = msgs[0]?.content?.slice(0, 50) || "Untitled Project";
+
+    if (projectId) {
+      await supabase
+        .from("website_builder_projects")
+        .update({ messages: msgs as any, active_html: html, title })
+        .eq("id", projectId);
+    } else {
+      const { data } = await supabase
+        .from("website_builder_projects")
+        .insert({ user_id: session.user.id, messages: msgs as any, active_html: html, title })
+        .select("id")
+        .single();
+      if (data) setCurrentProjectId(data.id);
+    }
+    loadProjects();
+  }, []);
+
+  const debouncedSave = useCallback((msgs: ChatMsg[], html: string, projectId: string | null) => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => saveProject(msgs, html, projectId), 1500);
+  }, [saveProject]);
+
+  const loadProject = (project: SavedProject) => {
+    setMessages(project.messages);
+    setActiveHtml(project.active_html || "");
+    setCurrentProjectId(project.id);
+    setShowProjects(false);
+    setShowCode(false);
+    setError("");
+    setIframeErrors([]);
+  };
+
+  const deleteProject = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await supabase.from("website_builder_projects").delete().eq("id", id);
+    if (currentProjectId === id) {
+      setMessages([]);
+      setActiveHtml("");
+      setCurrentProjectId(null);
+    }
+    loadProjects();
+  };
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -188,6 +267,7 @@ After the code block, list what was added/changed as bullet points.`,
       setTimeout(() => setBuildProgress(0), 1000);
 
       const html = extractHtml(fullResult);
+      const finalMessages = [...messages, userMsg, { role: "assistant" as const, content: fullResult, html: html || undefined }];
       if (html) {
         setActiveHtml(html);
         setMessages((prev) => {
@@ -196,6 +276,8 @@ After the code block, list what was added/changed as bullet points.`,
           return updated;
         });
       }
+      // Auto-save after response
+      debouncedSave(finalMessages, html || activeHtml, currentProjectId);
     } catch (err: any) {
       setError(err.message || "Generation failed");
     } finally {
@@ -233,6 +315,7 @@ After the code block, list what was added/changed as bullet points.`,
     setError("");
     setIframeErrors([]);
     setMobileTab("chat");
+    setCurrentProjectId(null);
   };
 
   const hasPreview = !!activeHtml;
@@ -404,6 +487,9 @@ After the code block, list what was added/changed as bullet points.`,
           )}
         </div>
         <div className="flex items-center gap-1">
+          <button onClick={() => { setShowProjects((p) => !p); if (!showProjects) loadProjects(); }} className={cn("p-1.5 rounded-lg transition-colors", showProjects ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted/50")} title="Projects">
+            <FolderOpen className="w-3.5 h-3.5" />
+          </button>
           {hasPreview && !isMobile && (
             <>
               <div className="flex items-center gap-0.5 bg-muted/30 rounded-lg p-0.5">
@@ -458,6 +544,51 @@ After the code block, list what was added/changed as bullet points.`,
       </div>
 
       {/* Mobile tab switcher */}
+      {/* Projects panel */}
+      {showProjects && (
+        <div className="border-b border-border/30 bg-muted/20 max-h-[240px] overflow-y-auto animate-fade-in">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-border/20">
+            <span className="text-xs font-medium text-muted-foreground">Saved Projects ({savedProjects.length})</span>
+            <button onClick={handleReset} className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors">
+              <Plus className="w-3 h-3" /> New
+            </button>
+          </div>
+          {loadingProjects ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : savedProjects.length === 0 ? (
+            <p className="text-xs text-muted-foreground text-center py-6">No saved projects yet</p>
+          ) : (
+            <div className="p-1.5 space-y-0.5">
+              {savedProjects.map((p) => (
+                <button
+                  key={p.id}
+                  onClick={() => loadProject(p)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-xs transition-colors group",
+                    currentProjectId === p.id ? "bg-primary/10 text-foreground" : "hover:bg-muted/50 text-foreground/70"
+                  )}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate font-medium">{p.title}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      {new Date(p.updated_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => deleteProject(p.id, e)}
+                    className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {isMobile && hasPreview && (
         <div className="flex border-b border-border/30">
           <button
