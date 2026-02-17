@@ -1,7 +1,31 @@
 import { useState, memo, useCallback } from "react";
 import ReactMarkdown from "react-markdown";
-import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+function CodeBlock({ lang, code }: { lang: string; code: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <div className="relative group/code rounded-lg border border-border bg-muted overflow-hidden my-2">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-muted/80">
+        <span className="text-[11px] text-muted-foreground font-mono">{lang || "code"}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
+        >
+          {copied ? <ClipboardCheck className="w-3.5 h-3.5" /> : <Clipboard className="w-3.5 h-3.5" />}
+          <span>{copied ? "Copied" : "Copy"}</span>
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-3 text-[13px] leading-relaxed"><code>{code}</code></pre>
+    </div>
+  );
+}
 
 type Props = {
   role: "user" | "assistant";
@@ -106,8 +130,30 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                 )}
 
                 {content && (
-                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:bg-muted prose-pre:rounded-lg prose-pre:border prose-pre:border-border prose-pre:overflow-x-auto prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[14px] break-words overflow-hidden">
-                    <ReactMarkdown>{content}</ReactMarkdown>
+                  <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[14px] break-words overflow-hidden">
+                    <ReactMarkdown
+                      components={{
+                        code({ className, children, ...props }) {
+                          const match = /language-(\w+)/.exec(className || "");
+                          const isBlock = match || (typeof children === "string" && children.includes("\n"));
+                          if (isBlock) {
+                            const lang = match?.[1] || "";
+                            const codeStr = String(children).replace(/\n$/, "");
+                            return <CodeBlock lang={lang} code={codeStr} />;
+                          }
+                          return (
+                            <code className="px-1.5 py-0.5 rounded bg-muted text-[13px]" {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
+                        pre({ children }) {
+                          return <>{children}</>;
+                        },
+                      }}
+                    >
+                      {content}
+                    </ReactMarkdown>
                   </div>
                 )}
 
