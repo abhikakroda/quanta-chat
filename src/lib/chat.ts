@@ -17,6 +17,7 @@ export async function streamChat({
   messages,
   model = "qwen",
   enableThinking = true,
+  skillPrompt,
   onThinkingDelta,
   onDelta,
   onDone,
@@ -26,6 +27,7 @@ export async function streamChat({
   messages: Message[];
   model?: ModelId;
   enableThinking?: boolean;
+  skillPrompt?: string;
   onThinkingDelta?: (text: string) => void;
   onDelta: (text: string) => void;
   onDone: () => void;
@@ -45,7 +47,7 @@ export async function streamChat({
       Authorization: `Bearer ${token}`,
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
-    body: JSON.stringify({ messages, enableThinking, model }),
+    body: JSON.stringify({ messages, enableThinking, model, skillPrompt }),
     signal,
   });
 

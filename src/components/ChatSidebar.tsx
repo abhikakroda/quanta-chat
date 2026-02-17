@@ -17,18 +17,21 @@ type Props = {
   onClose: () => void;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  activeSkill?: string | null;
+  onSelectSkill?: (skill: string | null) => void;
 };
 
-const FEATURES = [
-  { icon: SquarePen, label: "New Chat", action: "new" as const },
-  { icon: Globe, label: "Deep Research", badge: null, action: "skill" as const },
-  { icon: Code2, label: "Code Assistant", badge: "Pro", action: "skill" as const },
-  { icon: Sparkles, label: "Summarizer", badge: null, action: "skill" as const },
-  { icon: FileText, label: "Writer", badge: null, action: "skill" as const },
-  { icon: Zap, label: "Quick Tasks", badge: null, action: "skill" as const },
-];
+export const SKILLS = [
+  { id: "deep-research", icon: Globe, label: "Deep Research", badge: null, prompt: "You are a deep research assistant. Analyze topics thoroughly from multiple angles, provide comprehensive findings with citations and evidence. Structure your responses with clear sections, key findings, and actionable insights." },
+  { id: "code-assistant", icon: Code2, label: "Code Assistant", badge: "Pro", prompt: "You are an expert coding assistant. Write clean, efficient, well-documented code. Explain your approach, suggest best practices, handle edge cases, and provide working examples. Support debugging and code review." },
+  { id: "summarizer", icon: Sparkles, label: "Summarizer", badge: null, prompt: "You are a summarization expert. Condense long texts into clear, concise summaries. Preserve key points, main arguments, and critical details. Provide bullet-point summaries and brief overviews." },
+  { id: "writer", icon: FileText, label: "Writer", badge: null, prompt: "You are a professional writer and editor. Help craft compelling content — articles, emails, essays, stories, and more. Focus on clarity, tone, structure, and engagement. Adapt your style to the user's needs." },
+  { id: "quick-tasks", icon: Zap, label: "Quick Tasks", badge: null, prompt: "You are a quick task assistant optimized for speed. Provide direct, concise answers. Handle translations, calculations, conversions, quick lookups, and simple tasks with minimal explanation unless asked." },
+] as const;
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse }: Props) {
+export type SkillId = typeof SKILLS[number]["id"];
+
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
@@ -87,35 +90,61 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           {/* Feature list */}
           {!collapsed ? (
             <div className="px-2 space-y-0.5 pt-1">
-              {FEATURES.map((item) => (
+              {/* New Chat */}
+              <button
+                onClick={() => { onNew(); onSelectSkill?.(null); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left"
+              >
+                <SquarePen className="w-[18px] h-[18px] shrink-0" />
+                <span className="flex-1 truncate">New Chat</span>
+              </button>
+              {SKILLS.map((skill) => (
                 <button
-                  key={item.label}
+                  key={skill.id}
                   onClick={() => {
-                    if (item.action === "new") { onNew(); return; }
-                    navigator.clipboard.writeText(item.label);
+                    onSelectSkill?.(activeSkill === skill.id ? null : skill.id);
+                    onNew();
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left group"
+                  className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left group",
+                    activeSkill === skill.id
+                      ? "bg-primary/10 text-primary"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground"
+                  )}
                 >
-                  <item.icon className="w-[18px] h-[18px] shrink-0" />
-                  <span className="flex-1 truncate">{item.label}</span>
-                  {item.badge && (
-                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/15 text-primary">{item.badge}</span>
+                  <skill.icon className="w-[18px] h-[18px] shrink-0" />
+                  <span className="flex-1 truncate">{skill.label}</span>
+                  {skill.badge && (
+                    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/15 text-primary">{skill.badge}</span>
                   )}
                 </button>
               ))}
             </div>
           ) : (
             <div className="px-1.5 space-y-0.5 pt-1">
-              {FEATURES.map((item) => (
+              <button
+                onClick={() => { onNew(); onSelectSkill?.(null); }}
+                className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors touch-manipulation"
+                title="New Chat"
+              >
+                <SquarePen className="w-[18px] h-[18px]" />
+              </button>
+              {SKILLS.map((skill) => (
                 <button
-                  key={item.label}
+                  key={skill.id}
                   onClick={() => {
-                    if (item.action === "new") { onNew(); return; }
+                    onSelectSkill?.(activeSkill === skill.id ? null : skill.id);
+                    onNew();
                   }}
-                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors touch-manipulation"
-                  title={item.label}
+                  className={cn(
+                    "w-full flex items-center justify-center p-2 rounded-lg transition-colors touch-manipulation",
+                    activeSkill === skill.id
+                      ? "bg-primary/10 text-primary"
+                      : "text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  )}
+                  title={skill.label}
                 >
-                  <item.icon className="w-[18px] h-[18px]" />
+                  <skill.icon className="w-[18px] h-[18px]" />
                 </button>
               ))}
             </div>
