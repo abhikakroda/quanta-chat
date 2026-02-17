@@ -25,7 +25,7 @@ const suggestions = [
   { icon: "🗣️", text: "Text to Speech" },
   { icon: "🧮", text: "Calculator" },
   { icon: "🌐", text: "Translate text" },
-  { icon: "📰", text: "Latest news" },
+  { icon: "🌐", text: "Website Builder" },
 ];
 
 export default function WelcomeScreen({
