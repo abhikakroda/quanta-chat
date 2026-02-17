@@ -12,15 +12,16 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Not authenticated");
+    if (!authHeader?.startsWith("Bearer ")) throw new Error("Not authenticated");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) throw new Error("Not authenticated");
+    const token = authHeader.replace("Bearer ", "");
+    const { data, error: authError } = await supabase.auth.getClaims(token);
+    if (authError || !data?.claims?.sub) throw new Error("Not authenticated");
 
     const { messages, conversationId, enableThinking = true } = await req.json();
     const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
@@ -43,7 +44,7 @@ serve(async (req) => {
           ...messages,
         ],
         stream: true,
-        max_tokens: 16384,
+        max_tokens: 4096,
         temperature: 0.60,
         top_p: 0.95,
         top_k: 20,
