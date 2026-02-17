@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { streamChat, Message, MODELS, ModelId } from "@/lib/chat";
-import ChatSidebar, { SKILLS, SkillId } from "@/components/ChatSidebar";
+import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
@@ -83,7 +83,10 @@ export default function Index() {
     let fullContent = "";
     let fullThinking = "";
 
-    const skillDef = activeSkill ? SKILLS.find((s) => s.id === activeSkill) : null;
+    const WEB_SCRAPER_PROMPT = "You are a web search and crawling assistant. Help users find information from the web, summarize web pages, extract data from URLs, and perform web research tasks.";
+    const skillDef = activeSkill === "web-scraper"
+      ? { prompt: WEB_SCRAPER_PROMPT }
+      : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
 
     await streamChat({
       messages: allMessages,
@@ -184,7 +187,9 @@ export default function Index() {
     let fullContent = "";
     let fullThinking = "";
 
-    const skillDef2 = activeSkill ? SKILLS.find((s) => s.id === activeSkill) : null;
+    const skillDef2 = activeSkill === "web-scraper"
+      ? { prompt: "You are a web search and crawling assistant. Help users find information from the web, summarize web pages, extract data from URLs, and perform web research tasks." }
+      : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
 
     await streamChat({
       messages: history,
@@ -231,11 +236,15 @@ export default function Index() {
         onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
         activeSkill={activeSkill}
         onSelectSkill={setActiveSkill}
+        onOpenCrawl={() => {
+          setActiveSkill("web-scraper");
+          handleNewChat();
+        }}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 animated-gradient-bg">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Header - minimal */}
-        <header className="relative z-10 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0 glass-subtle border-b border-border/30">
+        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0 glass-subtle border-b border-border/30">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
             <Menu className="w-4 h-4 text-muted-foreground" />
           </button>
