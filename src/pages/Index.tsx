@@ -446,6 +446,7 @@ export default function Index() {
                   content={streamContent.replace(/\[(CONTINUE|DONE)\]\s*/g, "")}
                   thinking={streamThinking || undefined}
                   isThinking={isThinkingPhase}
+                  isStreaming={true}
                 />
               )}
               {streaming && !streamContent && !streamThinking && (

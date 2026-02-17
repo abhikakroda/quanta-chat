@@ -72,11 +72,12 @@ type Props = {
   content: string;
   thinking?: string;
   isThinking?: boolean;
+  isStreaming?: boolean;
   onEdit?: (newContent: string) => void;
   onRegenerate?: () => void;
 };
 
-function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate }: Props) {
+function ChatMessage({ role, content, thinking, isThinking, isStreaming, onEdit, onRegenerate }: Props) {
   const isUser = role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -191,7 +192,7 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
               )
             ) : (
               <div className="space-y-2">
-                <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-muted/60 glass-subtle">
+                <div className={cn("px-4 py-3 rounded-2xl rounded-tl-md bg-muted/60 glass-subtle", isStreaming && "streaming-text")}>
                   {isThinking && !thinking && (
                     <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
                       <Brain className="w-3 h-3" />
