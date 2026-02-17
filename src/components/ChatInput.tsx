@@ -232,7 +232,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="max-w-[768px] mx-auto">
+      <div className="max-w-[640px] mx-auto">
         {/* Drag overlay */}
         {dragging && (
           <div className="mb-2 flex items-center justify-center rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 py-6 text-sm text-muted-foreground animate-fade-in">

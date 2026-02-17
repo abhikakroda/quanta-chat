@@ -380,40 +380,36 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0 glass-subtle border-b border-border/30">
+        <header className="flex items-center gap-2 px-3 sm:px-4 h-12 shrink-0 border-b border-border/30">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
-            <Menu className="w-4 h-4 text-muted-foreground" />
+            <Menu className="w-4.5 h-4.5 text-muted-foreground" />
           </button>
 
-          <span className="text-[20px] font-extrabold text-foreground tracking-tight lowercase pl-1 hidden md:block">quanta</span>
+          <span className="text-lg font-bold text-foreground tracking-tight lowercase hidden md:block">quanta</span>
 
-          <div className="flex-1" />
+          <div className="flex-1 flex items-center justify-center min-w-0">
+            {agentStep !== null ? (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 animate-pulse">
+                <Atom className="w-3.5 h-3.5 text-primary" />
+                <span className="text-xs font-medium text-primary">Agent Step {agentStep}</span>
+              </div>
+            ) : activeId ? (
+              <span className="text-xs text-muted-foreground truncate max-w-[240px]">
+                {conversations.find((c) => c.id === activeId)?.title || "Chat"}
+              </span>
+            ) : null}
+          </div>
 
-          {/* Agent step indicator */}
-          {agentStep !== null && (
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 animate-pulse">
-              <Atom className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs font-medium text-primary">Agent Step {agentStep}</span>
-            </div>
-          )}
-
-          {activeId && !agentStep && (
-            <span className="text-xs text-muted-foreground truncate max-w-[200px]">
-              {conversations.find((c) => c.id === activeId)?.title || "Chat"}
-            </span>
-          )}
-
-          <div className="flex-1" />
-
-          {agentMode && !streaming && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
-              Agent ON
-            </span>
-          )}
-
-          <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
-            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
+          <div className="flex items-center gap-1.5">
+            {agentMode && !streaming && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
+                Agent ON
+              </span>
+            )}
+            <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
+              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
         </header>
 
         {/* Content */}
@@ -474,8 +470,8 @@ export default function Index() {
                 />
               )}
               {streaming && !streamContent && !streamThinking && (
-                <div className="py-2 sm:py-3 px-3 sm:px-4 animate-message-in">
-                  <div className="max-w-3xl mx-auto flex gap-2.5 sm:gap-3">
+                <div className="py-2 sm:py-3 px-4 sm:px-6 animate-message-in">
+                  <div className="max-w-[640px] mx-auto flex gap-2.5 sm:gap-3">
                     <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-semibold text-muted-foreground">
                       {agentMode ? <Atom className="w-3.5 h-3.5" /> : "Q"}
                     </div>
