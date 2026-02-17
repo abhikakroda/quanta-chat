@@ -2,6 +2,9 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
+import * as pdfjsLib from "pdfjs-dist";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 type AttachedFile = {
   name: string;
@@ -69,7 +72,27 @@ export default function ChatInput({
     setAttachedFiles([]);
   };
 
-  const readFileContent = (file: File): Promise<string> => {
+  const readPdfContent = async (file: File): Promise<string> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages: string[] = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item: any) => item.str).join(" ");
+        if (pageText.trim()) pages.push(pageText);
+      }
+      return pages.join("\n\n") || "[PDF contained no extractable text]";
+    } catch {
+      return `[Could not read PDF: ${file.name}]`;
+    }
+  };
+
+  const readFileContent = async (file: File): Promise<string> => {
+    if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+      return readPdfContent(file);
+    }
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result as string);
