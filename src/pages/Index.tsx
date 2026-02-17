@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Menu, Moon, Sun, Brain, ChevronDown, PanelLeftOpen } from "lucide-react";
+import { Moon, Sun, Brain, ChevronDown, PanelLeftOpen, Menu } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -22,7 +22,7 @@ export default function Index() {
   const [streamThinking, setStreamThinking] = useState("");
   const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [selectedModel, setSelectedModel] = useState<ModelId>("qwen");
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
@@ -36,7 +36,6 @@ export default function Index() {
     }
   }, [messages, streamContent, streamThinking]);
 
-  // Close model menu on outside click
   useEffect(() => {
     if (!modelMenuOpen) return;
     const handler = () => setModelMenuOpen(false);
@@ -152,27 +151,20 @@ export default function Index() {
 
   const handleEditMessage = async (messageIndex: number, newContent: string) => {
     if (!activeId || streaming) return;
-    // Remove this message and all after it from DB
     const toDelete = messages.slice(messageIndex);
     for (const m of toDelete) {
       await supabase.from("messages").delete().eq("id", m.id);
     }
-    // Update local state
     setMessages(messages.slice(0, messageIndex));
-    // Resend with edited content
     handleSend(newContent);
   };
 
   const handleRegenerate = async (assistantIndex: number) => {
     if (!activeId || streaming) return;
-    // Find the user message before this assistant message
     const userMsg = messages.slice(0, assistantIndex).reverse().find((m) => m.role === "user");
     if (!userMsg) return;
-    // Delete the assistant message from DB and local state
     await supabase.from("messages").delete().eq("id", messages[assistantIndex].id);
     setMessages(messages.filter((_, i) => i !== assistantIndex));
-    // Resend the previous user message
-    // Build history up to (but not including) the deleted assistant message
     const history: Message[] = messages
       .slice(0, assistantIndex)
       .map((m) => ({ role: m.role as "user" | "assistant", content: m.content }));
@@ -231,37 +223,28 @@ export default function Index() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 border-b border-border shrink-0">
+        {/* Header - minimal */}
+        <header className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 h-11 shrink-0">
           <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
             <Menu className="w-4 h-4 text-muted-foreground" />
           </button>
-          {sidebarCollapsed && (
-            <button onClick={() => setSidebarCollapsed(false)} className="hidden md:flex p-1 rounded-md hover:bg-accent transition-colors">
-              <PanelLeftOpen className="w-4 h-4 text-muted-foreground" />
-            </button>
-          )}
 
-          <span className="text-[12px] sm:text-[13px] text-muted-foreground truncate flex-1 min-w-0">
-            {activeId ? conversations.find((c) => c.id === activeId)?.title || "Chat" : ""}
-          </span>
-
-          {/* Model selector */}
+          {/* Model selector - left side like reference */}
           <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setModelMenuOpen((o) => !o)}
-              className="flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1 rounded-md text-[11px] sm:text-xs text-muted-foreground hover:text-foreground hover:bg-accent active:bg-accent transition-colors touch-manipulation"
+              className="flex items-center gap-1 px-1.5 sm:px-2 py-1 rounded-lg text-sm font-medium text-foreground hover:bg-accent active:bg-accent transition-colors touch-manipulation"
             >
-              <span className="truncate max-w-[80px] sm:max-w-none">{selectedModelLabel}</span>
-              <ChevronDown className={`w-3 h-3 shrink-0 transition-transform duration-150 ${modelMenuOpen ? 'rotate-180' : ''}`} />
+              <span className="truncate max-w-[120px] sm:max-w-none">{selectedModelLabel}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground shrink-0 transition-transform duration-150 ${modelMenuOpen ? 'rotate-180' : ''}`} />
             </button>
             {modelMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-float z-50 min-w-[160px] py-0.5 animate-message-in">
+              <div className="absolute left-0 top-full mt-1 bg-card border border-border rounded-xl shadow-float z-50 min-w-[180px] py-1 animate-message-in">
                 {MODELS.map((m) => (
                   <button
                     key={m.id}
                     onClick={() => { setSelectedModel(m.id); setModelMenuOpen(false); }}
-                    className={`w-full text-left px-3 py-2 sm:px-2.5 sm:py-1.5 text-xs transition-colors touch-manipulation ${
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors touch-manipulation ${
                       selectedModel === m.id ? 'text-foreground font-medium bg-accent' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
                     }`}
                   >
@@ -272,86 +255,95 @@ export default function Index() {
             )}
           </div>
 
+          <div className="flex-1" />
+
+          {/* Conversation title */}
+          {activeId && (
+            <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+              {conversations.find((c) => c.id === activeId)?.title || "Chat"}
+            </span>
+          )}
+
+          <div className="flex-1" />
+
           {modelSupportsThinking && (
             <button
               onClick={() => setThinkingEnabled((t) => !t)}
               className={`shrink-0 p-1.5 rounded-md transition-colors touch-manipulation ${thinkingEnabled ? 'text-foreground' : 'text-muted-foreground/40 hover:text-muted-foreground'}`}
               title={thinkingEnabled ? "Thinking on" : "Thinking off"}
             >
-              <Brain className="w-3.5 h-3.5" />
+              <Brain className="w-4 h-4" />
             </button>
           )}
 
           <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
-            {dark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
+            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
         </header>
 
-        {/* Messages */}
+        {/* Content */}
         {hasMessages ? (
-          <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            {messages.map((m, i) => {
-              let thinking: string | undefined;
-              let displayContent = m.content;
+          <>
+            <div ref={scrollRef} className="flex-1 overflow-y-auto">
+              {messages.map((m, i) => {
+                let thinking: string | undefined;
+                let displayContent = m.content;
 
-              // Handle <!--thinking:base64--> format
-              const thinkMatch = m.content.match(/^<!--thinking:(.+?)-->(.*)$/s);
-              if (thinkMatch) {
-                try { thinking = decodeURIComponent(atob(thinkMatch[1])); } catch { /* ignore */ }
-                displayContent = thinkMatch[2];
-              }
+                const thinkMatch = m.content.match(/^<!--thinking:(.+?)-->(.*)$/s);
+                if (thinkMatch) {
+                  try { thinking = decodeURIComponent(atob(thinkMatch[1])); } catch { /* ignore */ }
+                  displayContent = thinkMatch[2];
+                }
 
-              // Handle raw <think>...</think> tags in stored content (even mid-string)
-              const rawThinkMatch = displayContent.match(/([\s\S]*?)<think>([\s\S]*?)<\/think>([\s\S]*)$/);
-              if (rawThinkMatch) {
-                thinking = rawThinkMatch[2].trim();
-                displayContent = (rawThinkMatch[1] + rawThinkMatch[3]).trim();
-              }
+                const rawThinkMatch = displayContent.match(/([\s\S]*?)<think>([\s\S]*?)<\/think>([\s\S]*)$/);
+                if (rawThinkMatch) {
+                  thinking = rawThinkMatch[2].trim();
+                  displayContent = (rawThinkMatch[1] + rawThinkMatch[3]).trim();
+                }
 
-              // Handle content that has </think> without <think> (legacy data)
-              if (!thinking && displayContent.includes('</think>')) {
-                const parts = displayContent.split('</think>');
-                thinking = parts[0].trim();
-                displayContent = parts.slice(1).join('').trim();
-              }
+                if (!thinking && displayContent.includes('</think>')) {
+                  const parts = displayContent.split('</think>');
+                  thinking = parts[0].trim();
+                  displayContent = parts.slice(1).join('').trim();
+                }
 
-              return (
+                return (
+                  <ChatMessage
+                    key={m.id}
+                    role={m.role}
+                    content={displayContent}
+                    thinking={thinking}
+                    onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
+                    onRegenerate={m.role === "assistant" && !streaming ? () => handleRegenerate(i) : undefined}
+                  />
+                );
+              })}
+              {streaming && (streamThinking || streamContent) && (
                 <ChatMessage
-                  key={m.id}
-                  role={m.role}
-                  content={displayContent}
-                  thinking={thinking}
-                  onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
-                  onRegenerate={m.role === "assistant" && !streaming ? () => handleRegenerate(i) : undefined}
+                  role="assistant"
+                  content={streamContent}
+                  thinking={streamThinking || undefined}
+                  isThinking={isThinkingPhase}
                 />
-              );
-            })}
-            {streaming && (streamThinking || streamContent) && (
-              <ChatMessage
-                role="assistant"
-                content={streamContent}
-                thinking={streamThinking || undefined}
-                isThinking={isThinkingPhase}
-              />
-            )}
-            {streaming && !streamContent && !streamThinking && (
-              <div className="py-3 sm:py-4 px-3 sm:px-4 animate-message-in">
-                <div className="max-w-2xl mx-auto flex gap-2.5 sm:gap-3">
-                  <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">Q</div>
-                  <div className="flex items-center gap-1 pt-1">
-                    <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+              )}
+              {streaming && !streamContent && !streamThinking && (
+                <div className="py-3 sm:py-4 px-3 sm:px-4 animate-message-in">
+                  <div className="max-w-2xl mx-auto flex gap-2.5 sm:gap-3">
+                    <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">Q</div>
+                    <div className="flex items-center gap-1 pt-1">
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} />
+          </>
         ) : (
-          <WelcomeScreen onSuggestion={handleSend} />
+          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} />
         )}
-
-        <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} />
       </div>
     </div>
   );
