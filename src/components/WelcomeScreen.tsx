@@ -6,6 +6,8 @@ type Props = {
   onStop?: () => void;
   disabled: boolean;
   streaming?: boolean;
+  agentMode?: boolean;
+  onToggleAgent?: () => void;
 };
 
 const suggestions = [
@@ -15,7 +17,7 @@ const suggestions = [
   { icon: "💡", text: "Step-by-step help" },
 ];
 
-export default function WelcomeScreen({ onSend, onStop, disabled, streaming }: Props) {
+export default function WelcomeScreen({ onSend, onStop, disabled, streaming, agentMode, onToggleAgent }: Props) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4">
       <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-8 sm:mb-10 tracking-tight text-center">
@@ -24,7 +26,7 @@ export default function WelcomeScreen({ onSend, onStop, disabled, streaming }: P
 
       {/* Centered input */}
       <div className="w-full max-w-[680px] mb-6">
-        <ChatInput onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming} />
+        <ChatInput onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming} agentMode={agentMode} onToggleAgent={onToggleAgent} />
       </div>
 
       {/* Suggestion chips */}
