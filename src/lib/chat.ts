@@ -2,8 +2,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Message = { role: "user" | "assistant"; content: string };
 
+export type ModelId = "qwen" | "mistral";
+
+export const MODELS: { id: ModelId; label: string }[] = [
+  { id: "qwen", label: "Qwen 3.5" },
+  { id: "mistral", label: "Mistral Small" },
+];
+
 export async function streamChat({
   messages,
+  model = "qwen",
   enableThinking = true,
   onThinkingDelta,
   onDelta,
@@ -11,6 +19,7 @@ export async function streamChat({
   onError,
 }: {
   messages: Message[];
+  model?: ModelId;
   enableThinking?: boolean;
   onThinkingDelta?: (text: string) => void;
   onDelta: (text: string) => void;
@@ -30,7 +39,7 @@ export async function streamChat({
       Authorization: `Bearer ${token}`,
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
-    body: JSON.stringify({ messages, enableThinking }),
+    body: JSON.stringify({ messages, enableThinking, model }),
   });
 
   if (!resp.ok) {
