@@ -1,7 +1,7 @@
 import { memo, useState, useMemo } from "react";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
-  Zap, Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
+  Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
   FilePen, Newspaper, Volume2
 } from "lucide-react";
@@ -28,7 +28,6 @@ export const SKILLS = [
   { id: "code-assistant", icon: Code2, label: "Code Assistant", badge: "Pro", prompt: "You are an expert coding assistant. Write clean, efficient, well-documented code. Explain your approach, suggest best practices, handle edge cases, and provide working examples. Support debugging and code review." },
   { id: "summarizer", icon: Sparkles, label: "Summarizer", badge: null, prompt: "You are a summarization expert. Condense long texts into clear, concise summaries. Preserve key points, main arguments, and critical details. Provide bullet-point summaries and brief overviews." },
   { id: "writer", icon: FileText, label: "Writer", badge: null, prompt: "You are a professional writer and editor. Help craft compelling content — articles, emails, essays, stories, and more. Focus on clarity, tone, structure, and engagement. Adapt your style to the user's needs." },
-  { id: "quick-tasks", icon: Zap, label: "Quick Tasks", badge: null, prompt: "You are a quick task assistant optimized for speed. Provide direct, concise answers. Handle translations, calculations, conversions, quick lookups, and simple tasks with minimal explanation unless asked." },
 ] as const;
 
 export const TOOLS = [
