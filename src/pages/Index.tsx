@@ -287,13 +287,15 @@ export default function Index() {
                 />
               )}
               {streaming && !streamContent && !streamThinking && (
-                <div className="py-3 sm:py-4 px-3 sm:px-4 animate-message-in">
+                <div className="py-2 sm:py-3 px-3 sm:px-4 animate-message-in">
                   <div className="max-w-2xl mx-auto flex gap-2.5 sm:gap-3">
-                    <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground">Q</div>
-                    <div className="flex items-center gap-1 pt-1">
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-semibold text-muted-foreground">Q</div>
+                    <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-muted/60 glass-subtle">
+                      <div className="flex items-center gap-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
                     </div>
                   </div>
                 </div>
