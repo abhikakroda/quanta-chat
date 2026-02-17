@@ -164,28 +164,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     ))}
                 </div>
               </div>
-            ) : (
-              <div className="px-1.5 space-y-0.5">
-                {SKILLS.map((skill) => (
-                  <button
-                    key={skill.id}
-                    onClick={() => {
-                      onSelectSkill?.(activeSkill === skill.id ? null : skill.id);
-                      onNew();
-                    }}
-                    className={cn(
-                      "w-full flex items-center justify-center p-2 rounded-lg transition-colors touch-manipulation press-scale",
-                      activeSkill === skill.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                    )}
-                    title={skill.label}
-                  >
-                    <skill.icon className="w-[18px] h-[18px]" />
-                  </button>
-                ))}
-              </div>
-            )}
+            ) : null}
 
             {/* Tools section */}
             {!collapsed ? (
@@ -217,28 +196,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     ))}
                 </div>
               </div>
-            ) : (
-              <div className="px-1.5 space-y-0.5 mt-1">
-                {TOOLS.map((tool) => (
-                  <button
-                    key={tool.id}
-                    onClick={() => {
-                      onSelectSkill?.(activeSkill === tool.id ? null : tool.id);
-                      onNew();
-                    }}
-                    className={cn(
-                      "w-full flex items-center justify-center p-2 rounded-lg transition-colors touch-manipulation press-scale",
-                      activeSkill === tool.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                    )}
-                    title={tool.label}
-                  >
-                    <tool.icon className="w-[18px] h-[18px]" />
-                  </button>
-                ))}
-              </div>
-            )}
+            ) : null}
 
             {/* Removed Open Claw section */}
 
