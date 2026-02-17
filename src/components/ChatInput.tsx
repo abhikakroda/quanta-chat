@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
 
@@ -28,10 +28,14 @@ export default function ChatInput({
   const [attachedFiles, setAttachedFiles] = useState<{ name: string }[]>([]);
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
   const [agentPopover, setAgentPopover] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
   const agentRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
 
   useEffect(() => {
     if (ref.current) {
@@ -74,6 +78,63 @@ export default function ChatInput({
   };
 
   const removeFile = (index: number) => setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+
+  const toggleRecording = useCallback(async () => {
+    if (recording) {
+      mediaRecorderRef.current?.stop();
+      setRecording(false);
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunksRef.current.push(e.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+        setTranscribing(true);
+
+        try {
+          const formData = new FormData();
+          formData.append("audio", blob, "recording.webm");
+
+          const resp = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-stt`,
+            {
+              method: "POST",
+              headers: {
+                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+                Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+              },
+              body: formData,
+            }
+          );
+
+          if (!resp.ok) throw new Error("STT failed");
+          const data = await resp.json();
+          if (data.transcript) {
+            setInput((prev) => (prev ? prev + " " + data.transcript : data.transcript));
+          }
+        } catch (err) {
+          console.error("STT error:", err);
+        } finally {
+          setTranscribing(false);
+        }
+      };
+
+      mediaRecorder.start();
+      setRecording(true);
+    } catch (err) {
+      console.error("Microphone access denied:", err);
+    }
+  }, [recording]);
 
   const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label || "Auto";
 
@@ -119,6 +180,21 @@ export default function ChatInput({
                 title="Attach file"
               >
                 <Paperclip className="w-4 h-4" />
+              </button>
+              <button
+                onClick={toggleRecording}
+                disabled={transcribing}
+                className={cn(
+                  "p-2 rounded-xl border transition-all duration-200 touch-manipulation",
+                  recording
+                    ? "border-red-500/50 text-red-500 bg-red-500/10 animate-pulse"
+                    : transcribing
+                    ? "border-border text-muted-foreground/40"
+                    : "border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground"
+                )}
+                title={recording ? "Stop recording" : transcribing ? "Transcribing..." : "Voice input"}
+              >
+                {transcribing ? <Loader2 className="w-4 h-4 animate-spin" /> : recording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </button>
             </div>
 
