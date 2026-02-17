@@ -185,7 +185,7 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                     </button>
                   )}
                   <div className="px-4 py-2.5 rounded-2xl rounded-tr-md bg-chat-user text-chat-user-foreground">
-                    <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{content}</p>
+                    <p className="text-[15px] sm:text-[14px] leading-relaxed whitespace-pre-wrap break-words">{content}</p>
                   </div>
                 </div>
               )
@@ -218,7 +218,7 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                   )}
 
                   {content && (
-                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[14px] break-words overflow-hidden">
+                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] sm:prose-code:text-[13px] text-[15px] sm:text-[14px] break-words overflow-hidden">
                       <ReactMarkdown
                         components={{
                           code({ className, children, ...props }) {
