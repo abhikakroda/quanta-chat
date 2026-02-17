@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send } from "lucide-react";
+import { ArrowUp } from "lucide-react";
 
 type Props = {
   onSend: (message: string) => void;
@@ -24,9 +24,9 @@ export default function ChatInput({ onSend, disabled }: Props) {
   };
 
   return (
-    <div className="border-t border-border bg-background px-4 py-4">
-      <div className="max-w-3xl mx-auto relative">
-        <div className="flex items-end gap-2 rounded-2xl border border-border bg-card shadow-sm px-4 py-3 focus-within:ring-2 focus-within:ring-ring/30 transition-shadow">
+    <div className="px-4 pb-4 pt-2 bg-gradient-to-t from-background via-background to-transparent">
+      <div className="max-w-3xl mx-auto">
+        <div className="relative rounded-2xl border border-border bg-card shadow-elegant transition-all duration-200 focus-within:shadow-float focus-within:border-primary/30">
           <textarea
             ref={ref}
             value={input}
@@ -37,19 +37,24 @@ export default function ChatInput({ onSend, disabled }: Props) {
                 handleSubmit();
               }
             }}
-            placeholder="Ask Quanta anything..."
+            placeholder="Message Quanta..."
             rows={1}
-            className="flex-1 resize-none bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground min-h-[24px] max-h-[200px]"
+            className="w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/60 min-h-[52px] max-h-[200px] px-4 py-3.5 pr-14"
             disabled={disabled}
           />
-          <button
-            onClick={handleSubmit}
-            disabled={!input.trim() || disabled}
-            className="p-2 rounded-xl bg-primary text-primary-foreground disabled:opacity-40 hover:opacity-90 transition-opacity shrink-0"
-          >
-            <Send className="w-4 h-4" />
-          </button>
+          <div className="absolute right-2 bottom-2">
+            <button
+              onClick={handleSubmit}
+              disabled={!input.trim() || disabled}
+              className="w-8 h-8 rounded-lg bg-primary text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all duration-200 flex items-center justify-center disabled:cursor-not-allowed"
+            >
+              <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
+            </button>
+          </div>
         </div>
+        <p className="text-[11px] text-muted-foreground/50 text-center mt-2">
+          Quanta can make mistakes. Verify important information.
+        </p>
       </div>
     </div>
   );
