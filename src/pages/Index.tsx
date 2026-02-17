@@ -63,7 +63,7 @@ export default function Index() {
     const saved = localStorage.getItem("quanta-sidebar-collapsed");
     return saved !== null ? saved === "true" : false; // default open
   });
-  const [thinkingEnabled, setThinkingEnabled] = useState(true);
+  const [thinkingEnabled, setThinkingEnabled] = useState(false);
   const [agentStep, setAgentStep] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
