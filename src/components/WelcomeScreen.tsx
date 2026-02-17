@@ -30,8 +30,8 @@ export default function WelcomeScreen({
   modelSupportsThinking,
 }: Props) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4">
-      <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-8 sm:mb-10 tracking-tight text-center">
+    <div className="flex-1 flex flex-col items-center justify-center px-4 animate-fade-in">
+      <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-8 sm:mb-10 tracking-tight text-center animate-slide-up">
         What can I help with?
       </h1>
 
@@ -50,7 +50,7 @@ export default function WelcomeScreen({
           <button
             key={s.text}
             onClick={() => onSend(s.text)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full border border-border hover:bg-accent active:bg-accent text-sm text-foreground/70 hover:text-foreground transition-colors duration-150 touch-manipulation"
+            className="flex items-center gap-2 px-4 py-2 rounded-full glass-card text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] touch-manipulation"
           >
             <span>{s.icon}</span>
             <span>{s.text}</span>

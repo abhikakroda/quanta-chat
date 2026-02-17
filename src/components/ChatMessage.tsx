@@ -51,8 +51,8 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <div className="relative group/code rounded-lg border border-border bg-muted overflow-hidden my-2">
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border bg-muted/80">
+    <div className="relative group/code rounded-xl glass-card overflow-hidden my-2">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/30 bg-muted/40">
         <span className="text-[11px] text-muted-foreground font-mono">{lang || "code"}</span>
         <button
           onClick={handleCopy}

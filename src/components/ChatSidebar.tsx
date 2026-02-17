@@ -48,7 +48,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
 
       <aside
         className={cn(
-          "fixed md:relative z-50 md:z-auto flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-200 ease-out will-change-transform",
+          "fixed md:relative z-50 md:z-auto flex flex-col h-full glass-subtle border-r border-sidebar-border/50 transition-all duration-300 ease-out will-change-transform",
           open ? "translate-x-0" : "-translate-x-full",
           collapsed
             ? "md:w-[52px] md:translate-x-0"
@@ -94,7 +94,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     if (item.action === "new") { onNew(); return; }
                     navigator.clipboard.writeText(item.label);
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors touch-manipulation text-left group"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground/70 hover:bg-sidebar-accent/70 hover:text-sidebar-foreground transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left group"
                 >
                   <item.icon className="w-[18px] h-[18px] shrink-0" />
                   <span className="flex-1 truncate">{item.label}</span>
@@ -158,9 +158,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     <div
                       key={c.id}
                       className={cn(
-                        "group flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-colors duration-100 text-[13px]",
+                        "group flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 text-[13px] hover:translate-x-0.5",
                         activeId === c.id
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-elegant"
                           : "text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                       onClick={() => onSelect(c.id)}
@@ -214,7 +214,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                   {userMenuOpen ? <ChevronUp className="w-3.5 h-3.5 text-sidebar-foreground/30" /> : <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/30" />}
                 </button>
                 {userMenuOpen && (
-                  <div className="absolute bottom-full left-2 right-2 mb-1 bg-card border border-border rounded-xl shadow-float z-50 py-1 animate-message-in">
+                  <div className="absolute bottom-full left-2 right-2 mb-1 glass-strong rounded-xl shadow-liquid z-50 py-1 animate-scale-spring">
                     <div className="px-3 py-2 border-b border-border">
                       <p className="text-[12px] text-muted-foreground truncate">{user?.email}</p>
                     </div>
