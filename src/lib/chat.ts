@@ -2,12 +2,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Message = { role: "user" | "assistant"; content: string };
 
-export type ModelId = "qwen" | "mistral" | "minimax";
+export type ModelId = "qwen" | "mistral" | "minimax" | "deepseek";
 
 export const MODELS: { id: ModelId; label: string }[] = [
   { id: "qwen", label: "Qwen 3.5" },
   { id: "mistral", label: "Mistral Small" },
   { id: "minimax", label: "MiniMax M2.1" },
+  { id: "deepseek", label: "DeepSeek V3.2" },
 ];
 
 export async function streamChat({
