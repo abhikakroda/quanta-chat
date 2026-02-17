@@ -38,7 +38,7 @@ export const TOOLS = [
   { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
   { id: "news", icon: Newspaper, label: "News", badge: "Live", prompt: "You are a news assistant." },
   { id: "image-describer", icon: Image, label: "Image Describer", prompt: "You are an image analysis assistant." },
-  { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: "Sarvam", prompt: "You are a voice assistant." },
+  { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: null, prompt: "You are a voice assistant." },
   { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents." },
   { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks." },
 ] as const;
