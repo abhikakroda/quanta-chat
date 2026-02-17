@@ -86,18 +86,18 @@ export default function CalculatorTool() {
                 key={btn}
                 onClick={() => handleInput(btn)}
                 className={cn(
-                  "transition-all duration-150 active:scale-95 touch-manipulation font-medium text-lg",
+                  "transition-all duration-150 active:scale-95 active:shadow-inner touch-manipulation font-medium text-lg shadow-sm hover:shadow-md",
                   btn === "="
-                    ? "w-full h-14 rounded-2xl bg-primary text-primary-foreground hover:opacity-90"
+                    ? "w-full h-14 rounded-2xl bg-primary text-primary-foreground hover:opacity-90 active:shadow-[inset_0_2px_6px_rgba(0,0,0,0.3)]"
                     : "w-14 h-14 rounded-[1.25rem]",
                   btn !== "=" && (
                     btn === "C"
-                      ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
+                      ? "bg-destructive/10 text-destructive hover:bg-destructive/20 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.15)]"
                       : btn === "⌫"
-                      ? "bg-muted text-muted-foreground hover:bg-accent"
+                      ? "bg-muted text-muted-foreground hover:bg-accent active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.12)]"
                       : /[+\-*/%()]/.test(btn)
-                      ? "bg-accent text-foreground/70 hover:bg-accent/80"
-                      : "bg-muted/40 text-foreground hover:bg-muted border border-border/50"
+                      ? "bg-accent text-foreground/70 hover:bg-accent/80 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.12)]"
+                      : "bg-muted/40 text-foreground hover:bg-muted border border-border/50 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]"
                   )
                 )}
               >
