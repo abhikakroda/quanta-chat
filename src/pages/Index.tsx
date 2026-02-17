@@ -150,6 +150,19 @@ export default function Index() {
     if (activeId === id) setActiveId(null);
   };
 
+  const handleEditMessage = async (messageIndex: number, newContent: string) => {
+    if (!activeId || streaming) return;
+    // Remove this message and all after it from DB
+    const toDelete = messages.slice(messageIndex);
+    for (const m of toDelete) {
+      await supabase.from("messages").delete().eq("id", m.id);
+    }
+    // Update local state
+    setMessages(messages.slice(0, messageIndex));
+    // Resend with edited content
+    handleSend(newContent);
+  };
+
   const hasMessages = messages.length > 0 || streaming;
   const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label;
   const modelSupportsThinking = MODELS.find((m) => m.id === selectedModel)?.supportsThinking ?? false;
@@ -228,7 +241,7 @@ export default function Index() {
         {/* Messages */}
         {hasMessages ? (
           <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            {messages.map((m) => {
+            {messages.map((m, i) => {
               let thinking: string | undefined;
               let displayContent = m.content;
 
@@ -246,7 +259,15 @@ export default function Index() {
                 displayContent = rawThinkMatch[2].trim();
               }
 
-              return <ChatMessage key={m.id} role={m.role} content={displayContent} thinking={thinking} />;
+              return (
+                <ChatMessage
+                  key={m.id}
+                  role={m.role}
+                  content={displayContent}
+                  thinking={thinking}
+                  onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
+                />
+              );
             })}
             {streaming && (streamThinking || streamContent) && (
               <ChatMessage
