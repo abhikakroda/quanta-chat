@@ -27,7 +27,7 @@ hljs.registerLanguage("sh", bash);
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("markdown", markdown);
 hljs.registerLanguage("md", markdown);
-import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck } from "lucide-react";
+import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck, Volume2, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
@@ -96,6 +96,43 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
     }
     setEditing(false);
   };
+  const [speaking, setSpeaking] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handleSpeak = useCallback(async (text: string) => {
+    if (speaking) {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      setSpeaking(false);
+      return;
+    }
+    setSpeaking(true);
+    try {
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-tts`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ text: text.slice(0, 1000) }),
+        }
+      );
+      if (!resp.ok) throw new Error("TTS failed");
+      const data = await resp.json();
+      if (data.audio) {
+        const audio = new Audio(`data:audio/mp3;base64,${data.audio}`);
+        audioRef.current = audio;
+        audio.onended = () => { setSpeaking(false); audioRef.current = null; };
+        await audio.play();
+      }
+    } catch (err) {
+      console.error("TTS error:", err);
+      setSpeaking(false);
+    }
+  }, [speaking]);
 
   return (
     <div className="group animate-message-in">
@@ -222,6 +259,14 @@ function ChatMessage({ role, content, thinking, isThinking, onEdit, onRegenerate
                     >
                       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copied ? "Copied" : "Copy"}</span>
+                    </button>
+                    <button
+                      onClick={() => handleSpeak(content)}
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground/50 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors touch-manipulation"
+                      title={speaking ? "Stop speaking" : "Read aloud"}
+                    >
+                      {speaking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Volume2 className="w-3.5 h-3.5" />}
+                      <span>{speaking ? "Speaking" : "Listen"}</span>
                     </button>
                     {onRegenerate && (
                       <button
