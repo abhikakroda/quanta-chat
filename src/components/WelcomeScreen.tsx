@@ -40,9 +40,10 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
 }, ref) {
   return (
     <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 pb-[10vh] animate-fade-in">
-      <h1 className="text-2xl sm:text-3xl font-normal text-foreground mb-6 sm:mb-8 tracking-tight text-center animate-slide-up">
-        What can I help with?
-      </h1>
+      <div className="mb-8 sm:mb-10 animate-slide-up">
+        <span className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground lowercase">quanta</span>
+        <span className="text-3xl sm:text-4xl font-light tracking-tight text-muted-foreground ml-1.5">AI</span>
+      </div>
 
       <div className="w-full max-w-[640px] mb-5">
         <ChatInput
