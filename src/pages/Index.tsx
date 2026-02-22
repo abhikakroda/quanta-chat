@@ -395,7 +395,7 @@ export default function Index() {
             <Menu className="w-4.5 h-4.5 text-muted-foreground" />
           </button>
 
-          <span className="text-lg font-bold text-foreground tracking-tight lowercase hidden md:block">quanta</span>
+          
 
           <div className="flex-1 flex items-center justify-center min-w-0">
             {agentStep !== null ? (
