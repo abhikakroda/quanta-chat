@@ -395,6 +395,13 @@ export default function Index() {
             <Menu className="w-4.5 h-4.5 text-muted-foreground" />
           </button>
         </div>
+        {activeId && (
+          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-10 max-w-[200px]">
+            <span className="text-[11px] text-muted-foreground/60 truncate block text-center">
+              {conversations.find((c) => c.id === activeId)?.title || "Chat"}
+            </span>
+          </div>
+        )}
         <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
           {agentMode && !streaming && (
             <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
