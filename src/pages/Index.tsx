@@ -396,7 +396,7 @@ export default function Index() {
           </button>
         </div>
         {activeId && (
-          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-10 max-w-[200px]">
+          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-10 max-w-[200px] animate-fade-in">
             <span className="text-[11px] text-muted-foreground/60 truncate block text-center">
               {conversations.find((c) => c.id === activeId)?.title || "Chat"}
             </span>
