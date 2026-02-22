@@ -509,7 +509,7 @@ export default function Index() {
           <div className="p-6 space-y-6">
             <div className="text-center space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                <Bot className="w-7 h-7 text-primary" />
+                <span className="text-2xl font-bold text-primary lowercase">q</span>
               </div>
               <h2 className="text-xl font-bold text-foreground">
                 {authIsSignUp ? "Create Account" : "Welcome Back"}
