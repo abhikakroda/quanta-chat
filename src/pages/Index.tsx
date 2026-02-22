@@ -370,7 +370,7 @@ export default function Index() {
 
   const hasMessages = messages.length > 0 || streaming;
   const resolvedModel = resolveAutoModel(selectedModel, activeSkill);
-  const modelSupportsThinking = MODELS.find((m) => m.id === resolvedModel)?.supportsThinking ?? false;
+  const modelSupportsThinking = true;
 
   return (
     <div className="flex h-[100dvh] bg-background overflow-hidden">
