@@ -388,39 +388,23 @@ export default function Index() {
         onSelectSkill={setActiveSkill}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className="flex items-center gap-2 px-3 sm:px-4 h-12 shrink-0 border-b border-border/30">
-          <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
+      <div className="flex-1 flex flex-col min-w-0 relative">
+        {/* Floating controls (no header bar) */}
+        <div className="absolute top-2 left-2 z-10 md:hidden">
+          <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
             <Menu className="w-4.5 h-4.5 text-muted-foreground" />
           </button>
-
-          
-
-          <div className="flex-1 flex items-center justify-center min-w-0">
-            {agentStep !== null ? (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20 animate-pulse">
-                <Atom className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs font-medium text-primary">Agent Step {agentStep}</span>
-              </div>
-            ) : activeId ? (
-              <span className="text-xs text-muted-foreground truncate max-w-[240px]">
-                {conversations.find((c) => c.id === activeId)?.title || "Chat"}
-              </span>
-            ) : null}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {agentMode && !streaming && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
-                Agent ON
-              </span>
-            )}
-            <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
-              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-          </div>
-        </header>
+        </div>
+        <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+          {agentMode && !streaming && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
+              Agent ON
+            </span>
+          )}
+          <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
+            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+        </div>
 
         {/* Content */}
         {ToolUIComponent ? (
