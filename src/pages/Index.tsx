@@ -50,6 +50,7 @@ const FutureProjectionTool = lazy(() => import("@/components/tools/FutureProject
 const ScenarioSimTool = lazy(() => import("@/components/tools/ScenarioSimTool"));
 const CareerBattleTool = lazy(() => import("@/components/tools/CareerBattleTool"));
 const CouncilTool = lazy(() => import("@/components/tools/CouncilTool"));
+const FileProcessorTool = lazy(() => import("@/components/tools/FileProcessorTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -83,6 +84,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "scenario-sim": ScenarioSimTool,
   "career-battle": CareerBattleTool,
   "ai-council": CouncilTool,
+  "file-processor": FileProcessorTool,
 };
 
 export default function Index() {
