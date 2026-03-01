@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from "react";
-import { Mic, Play, RotateCcw, ChevronDown, Loader2, CheckCircle2, XCircle, ArrowRight, Trophy } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { Mic, MicOff, Play, RotateCcw, ChevronDown, Loader2, CheckCircle2, XCircle, ArrowRight, Trophy, Timer, Maximize2, Minimize2, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,38 +23,189 @@ const LEVELS = [
   { id: "senior", label: "Senior" },
 ];
 
+const TIME_LIMITS = [
+  { id: 60, label: "1 min" },
+  { id: 120, label: "2 min" },
+  { id: 180, label: "3 min" },
+  { id: 300, label: "5 min" },
+  { id: 0, label: "No limit" },
+];
+
 type Round = {
   question: string;
   answer: string;
   score: number | null;
   feedback: string;
   status: "asking" | "answering" | "evaluating" | "evaluated";
+  timeUsed: number;
 };
+
+// ── Countdown Timer Hook ──
+function useCountdown(seconds: number, active: boolean, onExpire: () => void) {
+  const [remaining, setRemaining] = useState(seconds);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const startTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    setRemaining(seconds);
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (!active || seconds === 0) return;
+    startTimeRef.current = Date.now();
+    intervalRef.current = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const left = Math.max(0, seconds - elapsed);
+      setRemaining(left);
+      if (left <= 0) {
+        clearInterval(intervalRef.current!);
+        onExpire();
+      }
+    }, 250);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [seconds, active]);
+
+  const elapsed = seconds > 0 ? seconds - remaining : 0;
+  return { remaining, elapsed };
+}
+
+// ── Timer Display ──
+function TimerDisplay({ remaining, total }: { remaining: number; total: number }) {
+  if (total === 0) return null;
+  const pct = (remaining / total) * 100;
+  const urgent = remaining <= 10;
+  const mm = Math.floor(remaining / 60);
+  const ss = remaining % 60;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="relative w-20 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div
+          className={cn("h-full rounded-full transition-all duration-300", urgent ? "bg-destructive" : "bg-primary")}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className={cn("text-xs font-mono font-bold tabular-nums", urgent ? "text-destructive animate-pulse" : "text-muted-foreground")}>
+        {mm}:{ss.toString().padStart(2, "0")}
+      </span>
+    </div>
+  );
+}
+
+// ── Score Badge ──
+function ScoreBadge({ score }: { score: number }) {
+  const color = score >= 8 ? "text-green-500" : score >= 5 ? "text-yellow-500" : "text-destructive";
+  return (
+    <span className={cn("text-sm font-bold", color)}>{score}/10</span>
+  );
+}
 
 export default function InterviewSimulatorTool() {
   const { user } = useAuth();
   const { upsertMemory, getMemoriesByCategory } = useUserMemories(user?.id);
   const [topic, setTopic] = useState("react");
   const [level, setLevel] = useState("mid");
+  const [timeLimit, setTimeLimit] = useState(120);
   const [started, setStarted] = useState(false);
   const [rounds, setRounds] = useState<Round[]>([]);
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [loading, setLoading] = useState(false);
   const [finished, setFinished] = useState(false);
   const [showTopicPicker, setShowTopicPicker] = useState(false);
-  const [showLevelPicker, setShowLevelPicker] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [timerActive, setTimerActive] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const totalQuestions = 5;
 
-  // Get past weak areas for this topic to focus questions
   const pastWeakAreas = getMemoriesByCategory("weak_topics")
     .filter(m => m.key.includes(topic))
     .map(m => m.value);
 
+  // Past interview scores for improvement tracking
+  const pastScores = getMemoriesByCategory("interview_performance")
+    .filter(m => m.key.includes(topic))
+    .map(m => parseFloat(m.value))
+    .filter(v => !isNaN(v));
+
   const scrollToBottom = () => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 100);
+  };
+
+  const handleTimerExpire = useCallback(() => {
+    setTimerActive(false);
+    // Auto-submit if there's content
+    if (currentAnswer.trim()) {
+      submitAnswerRef.current?.();
+    }
+  }, [currentAnswer]);
+
+  const { remaining, elapsed } = useCountdown(timeLimit, timerActive, handleTimerExpire);
+
+  const toggleFullscreen = () => {
+    if (!fullscreen) {
+      containerRef.current?.requestFullscreen?.().catch(() => {});
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+    }
+    setFullscreen(!fullscreen);
+  };
+
+  useEffect(() => {
+    const handler = () => setFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", handler);
+    return () => document.removeEventListener("fullscreenchange", handler);
+  }, []);
+
+  // ── Audio Recording ──
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        await transcribeAudio(blob);
+      };
+      recorder.start();
+      mediaRecorderRef.current = recorder;
+      setRecording(true);
+    } catch (err) {
+      console.error("Mic access denied:", err);
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+  };
+
+  const transcribeAudio = async (blob: Blob) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) return;
+      const formData = new FormData();
+      formData.append("file", blob, "answer.webm");
+      formData.append("language", "en-IN");
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-stt`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        body: formData,
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.transcript) {
+          setCurrentAnswer(prev => prev ? `${prev} ${data.transcript}` : data.transcript);
+        }
+      }
+    } catch (err) {
+      console.error("Transcription failed:", err);
+    }
   };
 
   const callAI = useCallback(async (prompt: string): Promise<string> => {
@@ -134,7 +285,9 @@ Rules:
         score: null,
         feedback: "",
         status: "answering",
+        timeUsed: 0,
       }]);
+      setTimerActive(true);
       scrollToBottom();
       setTimeout(() => textareaRef.current?.focus(), 200);
     } catch (err: any) {
@@ -142,7 +295,7 @@ Rules:
     } finally {
       setLoading(false);
     }
-  }, [topic, level, callAI]);
+  }, [topic, level, callAI, pastWeakAreas]);
 
   const startInterview = async () => {
     setStarted(true);
@@ -155,8 +308,12 @@ Rules:
     if (!currentAnswer.trim()) return;
     const roundIdx = rounds.length - 1;
     const round = rounds[roundIdx];
+    const timeUsed = elapsed;
 
-    setRounds(prev => prev.map((r, i) => i === roundIdx ? { ...r, answer: currentAnswer, status: "evaluating" } : r));
+    setTimerActive(false);
+    if (recording) stopRecording();
+
+    setRounds(prev => prev.map((r, i) => i === roundIdx ? { ...r, answer: currentAnswer, status: "evaluating", timeUsed } : r));
     setLoading(true);
 
     try {
@@ -165,6 +322,8 @@ Rules:
 Question: ${round.question}
 
 Candidate's Answer: ${currentAnswer}
+
+Time taken: ${timeUsed} seconds${timeLimit > 0 ? ` (limit: ${timeLimit}s)` : ""}
 
 Respond in EXACTLY this format (no deviations):
 SCORE: [number 1-10]
@@ -180,16 +339,14 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
       if (feedbackMatch) feedback = feedbackMatch[1].trim();
 
       setRounds(prev => prev.map((r, i) =>
-        i === roundIdx ? { ...r, answer: currentAnswer, score, feedback, status: "evaluated" } : r
+        i === roundIdx ? { ...r, answer: currentAnswer, score, feedback, status: "evaluated", timeUsed } : r
       ));
       setCurrentAnswer("");
       scrollToBottom();
 
-      // Check if interview is complete
       if (rounds.length >= totalQuestions) {
         setFinished(true);
-        // Save performance to memory
-        const allRounds = [...rounds.slice(0, -1), { ...round, answer: currentAnswer, score, feedback, status: "evaluated" as const }];
+        const allRounds = [...rounds.slice(0, -1), { ...round, answer: currentAnswer, score, feedback, status: "evaluated" as const, timeUsed }];
         const scores = allRounds.filter(r => r.score !== null);
         const avg = scores.length > 0 ? scores.reduce((s, r) => s + (r.score || 0), 0) / scores.length : 0;
         const weakQs = allRounds.filter(r => (r.score || 0) < 6).map(r => r.question);
@@ -202,12 +359,16 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
     } catch (err: any) {
       console.error("Evaluation failed:", err);
       setRounds(prev => prev.map((r, i) =>
-        i === roundIdx ? { ...r, answer: currentAnswer, score: 0, feedback: "Evaluation failed. Try again.", status: "evaluated" } : r
+        i === roundIdx ? { ...r, answer: currentAnswer, score: 0, feedback: "Evaluation failed. Try again.", status: "evaluated", timeUsed } : r
       ));
     } finally {
       setLoading(false);
     }
   };
+
+  // Ref for timer expiry callback
+  const submitAnswerRef = useRef(submitAnswer);
+  submitAnswerRef.current = submitAnswer;
 
   const nextQuestion = async () => {
     const previousQs = rounds.map(r => r.question);
@@ -219,6 +380,9 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
     setRounds([]);
     setCurrentAnswer("");
     setFinished(false);
+    setTimerActive(false);
+    if (recording) stopRecording();
+    if (fullscreen) document.exitFullscreen?.().catch(() => {});
   };
 
   const avgScore = rounds.filter(r => r.score !== null).length > 0
@@ -231,10 +395,14 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
     return "text-destructive";
   };
 
-  // Setup screen
+  const improvement = avgScore && pastScores.length > 0
+    ? parseFloat(avgScore) - pastScores[pastScores.length - 1]
+    : null;
+
+  // ── Setup Screen ──
   if (!started) {
     return (
-      <div className="max-w-lg mx-auto p-4 space-y-6 animate-fade-in flex flex-col items-center justify-center h-full">
+      <div ref={containerRef} className="max-w-lg mx-auto p-4 space-y-6 animate-fade-in flex flex-col items-center justify-center h-full">
         <div className="text-center space-y-2">
           <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
             <Mic className="w-7 h-7 text-primary" />
@@ -248,7 +416,7 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
           <div className="relative">
             <label className="text-xs font-medium text-muted-foreground mb-1 block">Topic</label>
             <button
-              onClick={() => { setShowTopicPicker(!showTopicPicker); setShowLevelPicker(false); }}
+              onClick={() => setShowTopicPicker(!showTopicPicker)}
               className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-border bg-card text-sm text-foreground hover:bg-accent transition-colors"
             >
               <span>{TOPICS.find(t => t.id === topic)?.label}</span>
@@ -293,6 +461,42 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
             </div>
           </div>
 
+          {/* Timer picker */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+              <Timer className="w-3 h-3 inline mr-1" />
+              Time per question
+            </label>
+            <div className="flex gap-1.5 flex-wrap">
+              {TIME_LIMITS.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTimeLimit(t.id)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors",
+                    timeLimit === t.id
+                      ? "border-primary/30 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Past performance */}
+          {pastScores.length > 0 && (
+            <div className="px-3 py-2.5 rounded-xl bg-muted/50 border border-border/30">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Last score: <strong className={getScoreColor(pastScores[pastScores.length - 1])}>{pastScores[pastScores.length - 1]}/10</strong></span>
+                <span className="text-muted-foreground/50">·</span>
+                <span>{pastScores.length} session{pastScores.length > 1 ? "s" : ""}</span>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={startInterview}
             className="w-full mt-4 px-4 py-3 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
@@ -305,9 +509,9 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
     );
   }
 
-  // Interview in progress
+  // ── Interview in Progress ──
   return (
-    <div className="flex flex-col h-full max-w-2xl mx-auto">
+    <div ref={containerRef} className={cn("flex flex-col h-full max-w-2xl mx-auto", fullscreen && "bg-background fixed inset-0 z-50 max-w-none p-0")}>
       {/* Header */}
       <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b border-border/40">
         <div className="flex items-center gap-2">
@@ -317,6 +521,7 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
           </span>
         </div>
         <div className="flex items-center gap-3">
+          {timerActive && <TimerDisplay remaining={remaining} total={timeLimit} />}
           <span className="text-xs text-muted-foreground">
             {rounds.filter(r => r.status === "evaluated").length}/{totalQuestions}
           </span>
@@ -325,6 +530,9 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
               Avg: {avgScore}/10
             </span>
           )}
+          <button onClick={toggleFullscreen} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title={fullscreen ? "Exit fullscreen" : "Fullscreen"}>
+            {fullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          </button>
           <button onClick={resetInterview} className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" title="Reset">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
@@ -353,11 +561,17 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
                 </div>
                 <div className="flex-1 px-3 py-2.5 rounded-xl bg-muted/50 border border-border/30">
                   <p className="text-sm text-foreground/80 whitespace-pre-wrap">{round.answer}</p>
+                  {round.timeUsed > 0 && (
+                    <p className="text-[10px] text-muted-foreground/50 mt-1 flex items-center gap-1">
+                      <Timer className="w-2.5 h-2.5" />
+                      {Math.floor(round.timeUsed / 60)}:{(round.timeUsed % 60).toString().padStart(2, "0")}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Evaluation */}
+            {/* Evaluating */}
             {round.status === "evaluating" && (
               <div className="flex items-center gap-2 ml-10 text-xs text-muted-foreground">
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -365,6 +579,7 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
               </div>
             )}
 
+            {/* Evaluated */}
             {round.status === "evaluated" && round.score !== null && (
               <div className="ml-10 px-3 py-2.5 rounded-xl border border-border/30 bg-card space-y-1.5">
                 <div className="flex items-center gap-2">
@@ -373,9 +588,7 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
                   ) : (
                     <XCircle className="w-4 h-4 text-destructive shrink-0" />
                   )}
-                  <span className={cn("text-sm font-bold", getScoreColor(round.score))}>
-                    {round.score}/10
-                  </span>
+                  <ScoreBadge score={round.score} />
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{round.feedback}</p>
               </div>
@@ -383,7 +596,7 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
           </div>
         ))}
 
-        {/* Answer input for current question */}
+        {/* Answer input */}
         {rounds.length > 0 && rounds[rounds.length - 1].status === "answering" && (
           <div className="space-y-2 ml-10 animate-fade-in">
             <textarea
@@ -399,18 +612,33 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
               placeholder="Type your answer... (⌘+Enter to submit)"
               className="w-full resize-none bg-muted/30 border border-border rounded-xl outline-none text-sm text-foreground p-3 min-h-[100px] max-h-[200px] focus:border-primary/30 transition-colors placeholder:text-muted-foreground/50"
             />
-            <button
-              onClick={submitAnswer}
-              disabled={!currentAnswer.trim() || loading}
-              className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 flex items-center gap-1.5"
-            >
-              Submit Answer
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={submitAnswer}
+                disabled={!currentAnswer.trim() || loading}
+                className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-30 flex items-center gap-1.5"
+              >
+                Submit
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={recording ? stopRecording : startRecording}
+                className={cn(
+                  "p-2 rounded-xl border transition-colors flex items-center gap-1.5 text-sm",
+                  recording
+                    ? "border-destructive/30 bg-destructive/10 text-destructive"
+                    : "border-border text-muted-foreground hover:bg-muted"
+                )}
+                title={recording ? "Stop recording" : "Record answer"}
+              >
+                {recording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                <span className="text-xs">{recording ? "Stop" : "Voice"}</span>
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Next question / Finish */}
+        {/* Next question */}
         {!loading && rounds.length > 0 && rounds[rounds.length - 1].status === "evaluated" && !finished && (
           <div className="flex justify-center pt-2">
             <button
@@ -443,6 +671,14 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
                   {avgScore}/10
                 </span>
               </p>
+              {improvement !== null && (
+                <p className="text-xs mt-2 flex items-center justify-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span className={cn("font-semibold", improvement > 0 ? "text-green-500" : improvement < 0 ? "text-destructive" : "text-muted-foreground")}>
+                    {improvement > 0 ? "+" : ""}{improvement.toFixed(1)} vs last session
+                  </span>
+                </p>
+              )}
             </div>
             <div className="flex gap-2 justify-center">
               <button
