@@ -41,6 +41,7 @@ const CompareModelsTool = lazy(() => import("@/components/tools/CompareModelsToo
 const InterviewSimulatorTool = lazy(() => import("@/components/tools/InterviewSimulatorTool"));
 const TutorModeTool = lazy(() => import("@/components/tools/TutorModeTool"));
 const StartupConverterTool = lazy(() => import("@/components/tools/StartupConverterTool"));
+const WeaknessHeatmapTool = lazy(() => import("@/components/tools/WeaknessHeatmapTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -65,6 +66,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "interview-simulator": InterviewSimulatorTool,
   "tutor-mode": TutorModeTool,
   "startup-converter": StartupConverterTool,
+  "weakness-heatmap": WeaknessHeatmapTool,
 };
 
 export default function Index() {
