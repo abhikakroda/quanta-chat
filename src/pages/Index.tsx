@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
-import { Moon, Sun, Menu, Atom, Bot, X, BookMarked } from "lucide-react";
+import { Moon, Sun, Menu, Atom, Bot, X, BookMarked, Ghost, ShieldOff } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -104,6 +104,8 @@ export default function Index() {
   const [agentMode, setAgentMode] = useState(false);
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
   const [activeAvatar, setActiveAvatar] = useState<string | null>(null);
+  const [ghostMode, setGhostMode] = useState(false);
+  const [ghostMessages, setGhostMessages] = useState<any[]>([]);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { memories, upsertMemory, getMemoryContext } = useUserMemories(user?.id);
@@ -124,6 +126,7 @@ export default function Index() {
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
   const needsAuth = (action: string) => {
+    if (ghostMode) return false; // Ghost mode bypasses auth
     if (!user) {
       setShowAuthDialog(true);
       return true;
@@ -161,12 +164,18 @@ export default function Index() {
 
   const handleSend = async (input: string, files?: { name: string; content: string; type: string; dataUrl?: string }[]) => {
     if (needsAuth('chat')) return;
+
+    // Ghost mode: skip all DB operations
+    const isGhost = ghostMode;
+
     let convId = activeId;
-    if (!convId) {
-      const conv = await createConversation(input.slice(0, 50));
-      if (!conv) return;
-      convId = conv.id;
-      setActiveId(conv.id);
+    if (!isGhost) {
+      if (!convId) {
+        const conv = await createConversation(input.slice(0, 50));
+        if (!conv) return;
+        convId = conv.id;
+        setActiveId(conv.id);
+      }
     }
 
     // Extract image data if any image files are attached
@@ -175,7 +184,6 @@ export default function Index() {
     if (files && files.length > 0) {
       const imageFile = files.find((f) => f.dataUrl && f.type.startsWith("image/"));
       if (imageFile && imageFile.dataUrl) {
-        // Extract base64 from data URL: "data:image/png;base64,XXXX"
         const base64Match = imageFile.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
         if (base64Match) {
           imageData = { mimeType: base64Match[1], base64: base64Match[2] };
@@ -191,10 +199,15 @@ export default function Index() {
       }
     }
 
-    // Optimistic: add user message immediately, don't await DB
+    // Optimistic: add user message immediately
     const tempId = crypto.randomUUID();
-    const optimisticMsg = { id: tempId, conversation_id: convId!, role: "user" as const, content: userContent, created_at: new Date().toISOString() };
-    setMessages((prev: any) => [...prev, optimisticMsg]);
+    const optimisticMsg = { id: tempId, conversation_id: convId || "ghost", role: "user" as const, content: userContent, created_at: new Date().toISOString() };
+    
+    if (isGhost) {
+      setGhostMessages((prev) => [...prev, optimisticMsg]);
+    } else {
+      setMessages((prev: any) => [...prev, optimisticMsg]);
+    }
 
     // Store image URL for display
     const imageFile = files?.find((f) => f.dataUrl && f.type.startsWith("image/"));
@@ -202,23 +215,25 @@ export default function Index() {
       setMessageImages((prev) => ({ ...prev, [tempId]: imageFile.dataUrl! }));
     }
 
-    // Fire-and-forget DB insert
-    supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single().then(({ data }) => {
-      if (data) {
-        // Replace temp message with real one
-        setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? data : m));
-        if (imageFile?.dataUrl) {
-          setMessageImages((prev) => {
-            const next = { ...prev, [data.id]: prev[tempId] };
-            delete next[tempId];
-            return next;
-          });
+    // Fire-and-forget DB insert (skip in ghost mode)
+    if (!isGhost && convId) {
+      supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single().then(({ data }) => {
+        if (data) {
+          setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? data : m));
+          if (imageFile?.dataUrl) {
+            setMessageImages((prev) => {
+              const next = { ...prev, [data.id]: prev[tempId] };
+              delete next[tempId];
+              return next;
+            });
+          }
         }
-      }
-    });
+      });
+    }
 
+    const currentMessages = isGhost ? ghostMessages : messages;
     const allMessages: Message[] = [
-      ...messages.map((m) => ({ role: m.role, content: m.content })),
+      ...currentMessages.map((m: any) => ({ role: m.role, content: m.content })),
       { role: "user" as const, content: userContent },
     ];
 
@@ -239,17 +254,18 @@ export default function Index() {
       : activeSkill === "web-scraper"
         ? { prompt: WEB_SCRAPER_PROMPT }
         : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
-    // Extract and save any user preferences from the message
-    const extracted = extractMemories(userContent);
-    for (const mem of extracted) {
-      upsertMemory(mem.key, mem.value, mem.category);
+
+    // Skip memory extraction & XP in ghost mode
+    if (!isGhost) {
+      const extracted = extractMemories(userContent);
+      for (const mem of extracted) {
+        upsertMemory(mem.key, mem.value, mem.category);
+      }
+      awardXP(activeSkill ? "tool_use" : "message");
     }
 
-    // Award XP for sending a message
-    awardXP(activeSkill ? "tool_use" : "message");
-
-    // Build combined memory context
-    const memoryContext = [projectMemory, getMemoryContext()].filter(Boolean).join("\n\n");
+    // Build combined memory context (skip in ghost mode)
+    const memoryContext = isGhost ? undefined : [projectMemory, getMemoryContext()].filter(Boolean).join("\n\n") || undefined;
 
     await streamChat({
       messages: allMessages,
@@ -257,7 +273,7 @@ export default function Index() {
       enableThinking: thinkingEnabled,
       thinkingLevel,
       selfVerify,
-      projectMemory: memoryContext || undefined,
+      projectMemory: memoryContext,
       skillPrompt: skillDef?.prompt,
       activeSkill,
       agentMode,
@@ -276,31 +292,43 @@ export default function Index() {
         setStreamContent(fullContent);
       },
       onDone: async () => {
-        // Clean up agent markers from final content
         const cleanContent = fullContent.replace(/\[(CONTINUE|DONE)\]\s*/g, "").trim();
         
-        const savedContent = fullThinking
-          ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${cleanContent}`
-          : cleanContent;
-        const { data } = await supabase
-          .from("messages")
-          .insert({ conversation_id: convId!, role: "assistant" as const, content: savedContent })
-          .select()
-          .single();
-        if (data) {
+        if (isGhost) {
+          // Ghost mode: just add to local state, no DB
+          const ghostAssistant = {
+            id: crypto.randomUUID(),
+            conversation_id: "ghost",
+            role: "assistant" as const,
+            content: cleanContent,
+            created_at: new Date().toISOString(),
+          };
           const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
-          setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
-          setMessages((prev) => [...prev, data as any]);
+          setMessageModels((prev) => ({ ...prev, [ghostAssistant.id]: getModelLabel(effectiveModel) }));
+          setGhostMessages((prev) => [...prev, ghostAssistant]);
+        } else {
+          const savedContent = fullThinking
+            ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${cleanContent}`
+            : cleanContent;
+          const { data } = await supabase
+            .from("messages")
+            .insert({ conversation_id: convId!, role: "assistant" as const, content: savedContent })
+            .select()
+            .single();
+          if (data) {
+            const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+            setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
+            setMessages((prev) => [...prev, data as any]);
+          }
+          if (messages.length === 0) {
+            await updateTitle(convId!, input.slice(0, 50));
+          }
         }
         setStreamContent("");
         setStreamThinking("");
         setIsThinkingPhase(false);
         setStreaming(false);
         setAgentStep(null);
-
-        if (messages.length === 0) {
-          await updateTitle(convId!, input.slice(0, 50));
-        }
       },
       onError: (err) => {
         setStreamContent("");
@@ -326,6 +354,7 @@ export default function Index() {
   const handleNewChat = async () => {
     setActiveId(null);
     setMessageImages({});
+    setGhostMessages([]);
     setSidebarOpen(false);
   };
 
@@ -415,7 +444,8 @@ export default function Index() {
     });
   };
 
-  const hasMessages = messages.length > 0 || streaming;
+  const displayMessages = ghostMode ? ghostMessages : messages;
+  const hasMessages = displayMessages.length > 0 || streaming;
   const resolvedModel = resolveAutoModel(selectedModel, activeSkill);
   const modelSupportsThinking = true;
 
@@ -446,7 +476,13 @@ export default function Index() {
             <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation md:hidden">
               <Menu className="w-4 h-4 text-muted-foreground" />
             </button>
-            {activeId && (
+            {ghostMode && (
+              <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/40">
+                <Ghost className="w-3 h-3" />
+                Ghost
+              </span>
+            )}
+            {activeId && !ghostMode && (
               <span className="text-xs text-muted-foreground truncate max-w-[160px] sm:max-w-[250px]">
                 {conversations.find((c) => c.id === activeId)?.title || "Chat"}
               </span>
@@ -487,6 +523,21 @@ export default function Index() {
             >
               <BookMarked className="w-4 h-4" />
             </button>
+            <button
+              onClick={() => {
+                setGhostMode(g => {
+                  if (!g) { setGhostMessages([]); setActiveId(null); }
+                  return !g;
+                });
+              }}
+              className={cn(
+                "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
+                ghostMode ? "text-foreground bg-muted" : "text-muted-foreground/40 hover:text-muted-foreground"
+              )}
+              title={ghostMode ? "Ghost Mode ON — nothing saved" : "Enable Ghost Mode"}
+            >
+              <Ghost className="w-4 h-4" />
+            </button>
             <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -502,8 +553,14 @@ export default function Index() {
           </Suspense>
         ) : hasMessages ? (
           <>
+            {ghostMode && (
+              <div className="shrink-0 flex items-center justify-center gap-2 px-3 py-1.5 bg-muted/50 border-b border-border/30 text-[11px] text-muted-foreground">
+                <ShieldOff className="w-3 h-3" />
+                <span>Ghost Mode — messages are temporary and won't be saved</span>
+              </div>
+            )}
             <div ref={scrollRef} className="flex-1 overflow-y-auto smooth-scroll">
-              {messages.map((m, i) => {
+              {displayMessages.map((m, i) => {
                 let thinking: string | undefined;
                 let displayContent = m.content;
 
