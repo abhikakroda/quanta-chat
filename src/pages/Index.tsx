@@ -44,6 +44,7 @@ const StartupConverterTool = lazy(() => import("@/components/tools/StartupConver
 const WeaknessHeatmapTool = lazy(() => import("@/components/tools/WeaknessHeatmapTool"));
 const DebateModeTool = lazy(() => import("@/components/tools/DebateModeTool"));
 const FailureSimulatorTool = lazy(() => import("@/components/tools/FailureSimulatorTool"));
+const AILabTool = lazy(() => import("@/components/tools/AILabTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -71,6 +72,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "weakness-heatmap": WeaknessHeatmapTool,
   "debate-mode": DebateModeTool,
   "failure-simulator": FailureSimulatorTool,
+  "ai-lab": AILabTool,
 };
 
 export default function Index() {
