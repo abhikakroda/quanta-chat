@@ -68,7 +68,7 @@ export function resolveAutoModel(model: ModelId, activeSkill?: string | null, la
   return "mistral"; // default fallback for general chat
 }
 
-const AGENT_SYSTEM_PROMPT = `You are an advanced AI agent capable of multi-step reasoning. When given a complex task:
+const AGENT_SYSTEM_PROMPT = `You are an advanced AI agent capable of multi-step reasoning and task chaining. When given a complex task:
 
 1. Break it down into clear numbered steps: **Step 1:**, **Step 2:**, etc.
 2. Execute each step thoroughly before moving to the next.
@@ -76,12 +76,37 @@ const AGENT_SYSTEM_PROMPT = `You are an advanced AI agent capable of multi-step 
 4. If you need to continue working, end your response with exactly: [CONTINUE]
 5. If you are done with all steps, end with: [DONE]
 
+**Task Chaining:** When the user chains multiple tasks (e.g., "summarize X, then extract insights, then draft tweets"), execute them sequentially in numbered steps, building each output on the previous one. Never skip a chained task.
+
 Always think step-by-step. Use the best tool/approach for each sub-task. Be thorough and professional.`;
+
+const VERIFY_PROMPT = `\n\n**IMPORTANT - Self-Verification Mode is ON:**
+Before providing your final answer, you MUST:
+1. Complete your initial response
+2. Add a "---" separator
+3. Add a **✅ Verification** section where you:
+   - Re-check all facts and claims for accuracy
+   - Verify any code compiles/runs logically
+   - Confirm calculations are correct
+   - Flag any uncertainties with ⚠️
+   - Rate your confidence: 🟢 High | 🟡 Medium | 🔴 Low
+Only then present the verified answer.`;
+
+export type ThinkingLevel = "off" | "normal" | "deep";
+
+const THINKING_LEVEL_CONFIG: Record<ThinkingLevel, { enabled: boolean; prompt?: string }> = {
+  off: { enabled: false },
+  normal: { enabled: true },
+  deep: { enabled: true, prompt: "\n\nThink VERY deeply and thoroughly about this. Consider multiple angles, edge cases, potential issues, and alternative approaches before responding. Take your time — quality over speed." },
+};
 
 export async function streamChat({
   messages,
   model = "qwen",
   enableThinking = true,
+  thinkingLevel = "off",
+  selfVerify = false,
+  projectMemory,
   skillPrompt,
   activeSkill,
   agentMode = false,
@@ -96,6 +121,9 @@ export async function streamChat({
   messages: Message[];
   model?: ModelId;
   enableThinking?: boolean;
+  thinkingLevel?: ThinkingLevel;
+  selfVerify?: boolean;
+  projectMemory?: string;
   skillPrompt?: string;
   activeSkill?: string | null;
   agentMode?: boolean;
@@ -111,10 +139,20 @@ export async function streamChat({
   const lastMsg = messages[messages.length - 1]?.content || "";
   const resolvedModel = resolveAutoModel(model || "auto", activeSkill, lastMsg);
   const effectiveModel = agentMode ? "qwen" : resolvedModel;
-  const effectiveThinking = agentMode ? true : enableThinking;
+  
+  // Thinking: use thinkingLevel if set, otherwise fall back to enableThinking boolean
+  const thinkingConfig = thinkingLevel !== "off" ? THINKING_LEVEL_CONFIG[thinkingLevel] : { enabled: enableThinking };
+  const effectiveThinking = agentMode ? true : thinkingConfig.enabled;
+  
+  // Build the effective skill prompt with all enhancements
+  let basePrompt = skillPrompt || "";
+  if (thinkingConfig.prompt) basePrompt += thinkingConfig.prompt;
+  if (selfVerify) basePrompt += VERIFY_PROMPT;
+  if (projectMemory) basePrompt = `**Project Memory (persistent context):**\n${projectMemory}\n\n${basePrompt}`;
+  
   const effectiveSkillPrompt = agentMode
-    ? (skillPrompt ? `${AGENT_SYSTEM_PROMPT}\n\nAdditional context: ${skillPrompt}` : AGENT_SYSTEM_PROMPT)
-    : skillPrompt;
+    ? (basePrompt ? `${AGENT_SYSTEM_PROMPT}\n\nAdditional context: ${basePrompt}` : AGENT_SYSTEM_PROMPT)
+    : (basePrompt || undefined);
 
   // Fallback order: try different models if the primary one fails
   const FALLBACK_MODELS: ModelId[] = ["qwen", "mistral", "deepseek", "minimax"];
