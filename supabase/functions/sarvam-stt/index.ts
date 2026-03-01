@@ -33,10 +33,13 @@ serve(async (req) => {
 
     const contentType = req.headers.get("content-type") || "";
     let audioFile: File | null = null;
+    let languageCode = "en-IN";
 
     if (contentType.includes("multipart/form-data")) {
       const formData = await req.formData();
       audioFile = formData.get("audio") as File;
+      const langParam = formData.get("language") as string;
+      if (langParam) languageCode = langParam;
     } else {
       const blob = await req.blob();
       if (blob.size > 0) {
@@ -45,10 +48,18 @@ serve(async (req) => {
     }
     if (!audioFile) throw new Error("Audio file is required");
 
+    // Determine proper file extension from mime type
+    const mimeType = audioFile.type || "audio/webm";
+    const ext = mimeType.includes("wav") ? "wav" : mimeType.includes("mp4") || mimeType.includes("m4a") ? "m4a" : mimeType.includes("ogg") ? "ogg" : "webm";
+    const fileName = `recording.${ext}`;
+
     const apiFormData = new FormData();
-    apiFormData.append("file", audioFile, "recording.wav");
+    apiFormData.append("file", new File([audioFile], fileName, { type: mimeType }), fileName);
     apiFormData.append("model", "saaras:v3");
     apiFormData.append("mode", "transcribe");
+    apiFormData.append("language_code", languageCode);
+
+    console.log("STT request:", { fileName, mimeType, size: audioFile.size, languageCode });
 
     const response = await fetch("https://api.sarvam.ai/speech-to-text", {
       method: "POST",
@@ -59,8 +70,9 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error("Sarvam STT error:", response.status);
-      throw new Error("Service temporarily unavailable");
+      const errBody = await response.text();
+      console.error("Sarvam STT error:", response.status, errBody);
+      throw new Error(`STT error: ${response.status}`);
     }
 
     const result = await response.json();
