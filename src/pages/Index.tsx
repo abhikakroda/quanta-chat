@@ -29,6 +29,10 @@ const ConversationalAgentTool = lazy(() => import("@/components/tools/Conversati
 
 const WebScraperTool = lazy(() => import("@/components/tools/WebScraperTool"));
 const NewsTool = lazy(() => import("@/components/tools/NewsTool"));
+const WebSearchTool = lazy(() => import("@/components/tools/WebSearchTool"));
+const ImageGeneratorTool = lazy(() => import("@/components/tools/ImageGeneratorTool"));
+const DocAnalyzerTool = lazy(() => import("@/components/tools/DocAnalyzerTool"));
+const CodeRunnerTool = lazy(() => import("@/components/tools/CodeRunnerTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -43,10 +47,12 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "vision": VisionTool,
   "voice-chat": VoiceChatTool,
   "conversational-agent": ConversationalAgentTool,
-  
   "web-scraper": WebScraperTool,
   "news": NewsTool,
-  
+  "web-search": WebSearchTool,
+  "image-generator": ImageGeneratorTool,
+  "doc-analyzer": DocAnalyzerTool,
+  "code-runner": CodeRunnerTool,
 };
 
 export default function Index() {
