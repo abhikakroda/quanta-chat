@@ -39,13 +39,16 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   modelSupportsThinking, onSelectSkill,
 }, ref) {
   return (
-    <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 pb-[10vh] animate-fade-in">
-      <div className="mb-8 sm:mb-10 animate-slide-up">
-        <span className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground lowercase">quanta</span>
-        <span className="text-3xl sm:text-4xl font-light tracking-tight text-muted-foreground ml-1.5">AI</span>
+    <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 pb-[10vh]">
+      <div className="mb-10 sm:mb-12 text-center animate-fade-in" style={{ animationDelay: "0ms" }}>
+        <div className="inline-flex items-baseline gap-1.5">
+          <span className="text-4xl sm:text-5xl font-extrabold tracking-tighter text-foreground lowercase">quanta</span>
+          <span className="text-4xl sm:text-5xl font-extralight tracking-tight text-muted-foreground/60">AI</span>
+        </div>
+        <p className="mt-3 text-sm text-muted-foreground/50 font-light tracking-wide">Think deeper. Create faster.</p>
       </div>
 
-      <div className="w-full max-w-[640px] mb-5">
+      <div className="w-full max-w-[640px] mb-6 animate-fade-in" style={{ animationDelay: "100ms" }}>
         <ChatInput
           onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming}
           agentMode={agentMode} onToggleAgent={onToggleAgent}
@@ -55,7 +58,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 max-w-[640px] w-full">
+      <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2.5 max-w-[640px] w-full animate-fade-in" style={{ animationDelay: "200ms" }}>
         {suggestions.map((s) => (
           <button
             key={s.text}
@@ -66,10 +69,10 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
                 onSend(s.text);
               }
             }}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full glass-card text-[14px] sm:text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
+            className="group flex items-center justify-center gap-2.5 px-5 py-3 rounded-2xl border border-border/50 bg-card/50 text-[13px] text-foreground/60 hover:text-foreground hover:border-border hover:bg-accent/50 transition-all duration-300 touch-manipulation press-scale hover-lift"
           >
-            <span>{s.icon}</span>
-            <span>{s.text}</span>
+            <span className="text-base group-hover:scale-110 transition-transform duration-200">{s.icon}</span>
+            <span className="font-medium">{s.text}</span>
           </button>
         ))}
       </div>

@@ -554,7 +554,7 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40">
+        <div className="h-11 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/30 bg-background/80 backdrop-blur-sm">
           <div className="flex items-center gap-2.5">
             <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation md:hidden">
               <Menu className="w-4 h-4 text-muted-foreground" />
