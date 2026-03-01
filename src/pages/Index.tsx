@@ -49,6 +49,7 @@ const ShadowCloneTool = lazy(() => import("@/components/tools/ShadowCloneTool"))
 const FutureProjectionTool = lazy(() => import("@/components/tools/FutureProjectionTool"));
 const ScenarioSimTool = lazy(() => import("@/components/tools/ScenarioSimTool"));
 const CareerBattleTool = lazy(() => import("@/components/tools/CareerBattleTool"));
+const CouncilTool = lazy(() => import("@/components/tools/CouncilTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -81,6 +82,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "future-projection": FutureProjectionTool,
   "scenario-sim": ScenarioSimTool,
   "career-battle": CareerBattleTool,
+  "ai-council": CouncilTool,
 };
 
 export default function Index() {
