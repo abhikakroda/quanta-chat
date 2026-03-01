@@ -52,6 +52,7 @@ export const TOOLS = [
   { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents." },
   { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks." },
   { id: "interview-simulator", icon: GraduationCap, label: "Interview Sim", badge: "New", prompt: "You are a technical interviewer." },
+  { id: "tutor-mode", icon: BookOpen, label: "Tutor Mode", badge: "New", prompt: "You are a Socratic tutor." },
 ] as const;
 
 
