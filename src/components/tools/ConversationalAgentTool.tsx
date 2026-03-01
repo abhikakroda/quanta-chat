@@ -142,7 +142,7 @@ export default function ConversationalAgentTool() {
         setVolume(0);
         stream.getTracks().forEach(t => t.stop());
         audioContextRef.current?.close().catch(() => {});
-        const blob = new Blob(chunksRef.current, { type: "audio/wav" });
+        const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         if (blob.size > 1000) {
           await processConversationTurn(blob);
         } else if (isActiveRef.current) {
@@ -192,7 +192,8 @@ export default function ConversationalAgentTool() {
       if (!sttToken) throw new Error("Not authenticated");
 
       const formData = new FormData();
-      formData.append("audio", audioBlob, "recording.wav");
+      formData.append("audio", audioBlob, "recording.webm");
+      formData.append("language", language);
 
       const sttResp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-stt`, {
         method: "POST",
@@ -203,10 +204,14 @@ export default function ConversationalAgentTool() {
         body: formData,
       });
 
-      if (!sttResp.ok) throw new Error("Speech recognition failed");
+      if (!sttResp.ok) {
+        const errData = await sttResp.json().catch(() => ({}));
+        console.error("STT failed:", sttResp.status, errData);
+        throw new Error(errData.error || "Speech recognition failed");
+      }
+
       const sttData = await sttResp.json();
       if (sttData.error) throw new Error(sttData.error);
-
       const userText = sttData.transcript;
       if (!userText?.trim()) {
         if (isActiveRef.current) startListening();
