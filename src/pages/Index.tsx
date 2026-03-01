@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel, ThinkingLevel } from "@/lib/chat";
+import { useUserMemories, extractMemories } from "@/hooks/useUserMemories";
 import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import { AVATARS } from "@/lib/avatars";
 import ChatMessage from "@/components/ChatMessage";
@@ -98,6 +99,7 @@ export default function Index() {
   const [activeAvatar, setActiveAvatar] = useState<string | null>(null);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { memories, upsertMemory, getMemoryContext } = useUserMemories(user?.id);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -229,6 +231,14 @@ export default function Index() {
       : activeSkill === "web-scraper"
         ? { prompt: WEB_SCRAPER_PROMPT }
         : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
+    // Extract and save any user preferences from the message
+    const extracted = extractMemories(userContent);
+    for (const mem of extracted) {
+      upsertMemory(mem.key, mem.value);
+    }
+
+    // Build combined memory context
+    const memoryContext = [projectMemory, getMemoryContext()].filter(Boolean).join("\n\n");
 
     await streamChat({
       messages: allMessages,
@@ -236,7 +246,7 @@ export default function Index() {
       enableThinking: thinkingEnabled,
       thinkingLevel,
       selfVerify,
-      projectMemory: projectMemory || undefined,
+      projectMemory: memoryContext || undefined,
       skillPrompt: skillDef?.prompt,
       activeSkill,
       agentMode,
@@ -362,7 +372,7 @@ export default function Index() {
       enableThinking: thinkingEnabled,
       thinkingLevel,
       selfVerify,
-      projectMemory: projectMemory || undefined,
+      projectMemory: [projectMemory, getMemoryContext()].filter(Boolean).join("\n\n") || undefined,
       skillPrompt: skillDef2?.prompt,
       activeSkill,
       agentMode,

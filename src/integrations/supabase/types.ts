@@ -76,6 +76,36 @@ export type Database = {
           },
         ]
       }
+      user_memories: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          key: string
+          updated_at: string
+          user_id: string
+          value: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          key: string
+          updated_at?: string
+          user_id: string
+          value: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          key?: string
+          updated_at?: string
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
+      }
       website_builder_projects: {
         Row: {
           active_html: string | null
