@@ -36,9 +36,35 @@ const AUTO_MODEL_MAP: Record<string, ModelId> = {
   "web-scraper": "qwen",
 };
 
-export function resolveAutoModel(model: ModelId, activeSkill?: string | null): ModelId {
+export function resolveAutoModel(model: ModelId, activeSkill?: string | null, lastMessage?: string): ModelId {
   if (model !== "auto") return model;
   if (activeSkill && AUTO_MODEL_MAP[activeSkill]) return AUTO_MODEL_MAP[activeSkill];
+  
+  // Smart routing: analyze query content
+  if (lastMessage) {
+    const lower = lastMessage.toLowerCase();
+    // Code-related queries
+    if (/\b(code|function|class|debug|error|bug|api|javascript|python|typescript|react|html|css|sql|algorithm|regex)\b/.test(lower)) {
+      return "qwen-coder";
+    }
+    // Research/analysis queries
+    if (/\b(research|analyze|compare|study|investigate|explain in detail|comprehensive|deep dive)\b/.test(lower)) {
+      return "deepseek";
+    }
+    // Creative/writing queries
+    if (/\b(write|essay|story|poem|article|blog|email|letter|creative|draft)\b/.test(lower)) {
+      return "mistral";
+    }
+    // Math/calculation queries
+    if (/\b(calculate|math|equation|formula|solve|compute|integral|derivative)\b/.test(lower)) {
+      return "qwen";
+    }
+    // Indian languages or translation
+    if (/[\u0900-\u097F\u0A00-\u0A7F\u0B00-\u0B7F\u0C00-\u0C7F\u0D00-\u0D7F]/.test(lower) || /\b(hindi|tamil|telugu|bengali|marathi|gujarati|kannada|malayalam)\b/.test(lower)) {
+      return "sarvam";
+    }
+  }
+  
   return "mistral"; // default fallback for general chat
 }
 
@@ -81,8 +107,9 @@ export async function streamChat({
   onAgentStep?: (step: number, total: number | null) => void;
   signal?: AbortSignal;
 }) {
-  // Resolve auto model based on active skill, then agent mode overrides
-  const resolvedModel = resolveAutoModel(model || "auto", activeSkill);
+  // Resolve auto model based on active skill and message content, then agent mode overrides
+  const lastMsg = messages[messages.length - 1]?.content || "";
+  const resolvedModel = resolveAutoModel(model || "auto", activeSkill, lastMsg);
   const effectiveModel = agentMode ? "qwen" : resolvedModel;
   const effectiveThinking = agentMode ? true : enableThinking;
   const effectiveSkillPrompt = agentMode

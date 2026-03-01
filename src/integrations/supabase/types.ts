@@ -16,22 +16,28 @@ export type Database = {
     Tables: {
       conversations: {
         Row: {
+          avatar_id: string | null
           created_at: string
           id: string
+          system_prompt: string | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          avatar_id?: string | null
           created_at?: string
           id?: string
+          system_prompt?: string | null
           title?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          avatar_id?: string | null
           created_at?: string
           id?: string
+          system_prompt?: string | null
           title?: string
           updated_at?: string
           user_id?: string

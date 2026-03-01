@@ -1,0 +1,2 @@
+ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS system_prompt TEXT DEFAULT NULL;
+ALTER TABLE public.conversations ADD COLUMN IF NOT EXISTS avatar_id TEXT DEFAULT NULL;
