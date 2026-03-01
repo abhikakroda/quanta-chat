@@ -1,4 +1,6 @@
 import { memo, useState, useMemo } from "react";
+import SkillBadge from "@/components/SkillBadge";
+import type { UserSkills } from "@/hooks/useSkillLevel";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
@@ -24,6 +26,8 @@ type Props = {
   onSelectSkill?: (skill: string | null) => void;
   activeAvatar?: string | null;
   onSelectAvatar?: (avatarId: string | null) => void;
+  userSkills?: UserSkills | null;
+  xpGained?: number | null;
 };
 
 export const SKILLS = [
@@ -54,7 +58,7 @@ export const TOOLS = [
 export type SkillId = typeof SKILLS[number]["id"];
 export type ToolId = typeof TOOLS[number]["id"];
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar }: Props) {
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
@@ -341,6 +345,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </div>
             )}
           </div>
+
+          {/* Skill Badge */}
+          <SkillBadge skills={userSkills ?? null} xpGained={xpGained ?? null} collapsed={collapsed} />
 
           {/* User section */}
           <div className="mt-auto border-t border-sidebar-border/50">

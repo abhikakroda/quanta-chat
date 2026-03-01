@@ -106,6 +106,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_skills: {
+        Row: {
+          created_at: string
+          id: string
+          interviews_completed: number
+          level: number
+          messages_sent: number
+          tools_used: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          interviews_completed?: number
+          level?: number
+          messages_sent?: number
+          tools_used?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          interviews_completed?: number
+          level?: number
+          messages_sent?: number
+          tools_used?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
       website_builder_projects: {
         Row: {
           active_html: string | null

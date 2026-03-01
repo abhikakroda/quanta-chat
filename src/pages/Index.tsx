@@ -6,6 +6,7 @@ import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel, ThinkingLevel } from "@/lib/chat";
 import { useUserMemories, extractMemories } from "@/hooks/useUserMemories";
+import { useSkillLevel } from "@/hooks/useSkillLevel";
 import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import { AVATARS } from "@/lib/avatars";
 import ChatMessage from "@/components/ChatMessage";
@@ -102,6 +103,7 @@ export default function Index() {
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
   const { memories, upsertMemory, getMemoryContext } = useUserMemories(user?.id);
+  const { skills, awardXP, xpGained } = useSkillLevel(user?.id);
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -238,6 +240,9 @@ export default function Index() {
     for (const mem of extracted) {
       upsertMemory(mem.key, mem.value, mem.category);
     }
+
+    // Award XP for sending a message
+    awardXP(activeSkill ? "tool_use" : "message");
 
     // Build combined memory context
     const memoryContext = [projectMemory, getMemoryContext()].filter(Boolean).join("\n\n");
@@ -426,6 +431,8 @@ export default function Index() {
         onSelectSkill={(s) => { setActiveSkill(s); setActiveAvatar(null); }}
         activeAvatar={activeAvatar}
         onSelectAvatar={setActiveAvatar}
+        userSkills={skills}
+        xpGained={xpGained}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
