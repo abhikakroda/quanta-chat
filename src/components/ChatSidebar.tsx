@@ -3,7 +3,7 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
-  FilePen, Newspaper, Volume2
+  FilePen, Newspaper, Volume2, Wand2
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -32,8 +32,10 @@ export const SKILLS = [
 
 export const TOOLS = [
   { id: "conversational-agent", icon: Phone, label: "Conversational Agent", badge: null, prompt: "You are a conversational AI agent." },
-  
-  
+  { id: "web-search", icon: Search, label: "Web Search", badge: "New", prompt: "You are a web search assistant." },
+  { id: "image-generator", icon: Wand2, label: "Image Generator", badge: "New", prompt: "You generate images from text." },
+  { id: "doc-analyzer", icon: FilePen, label: "Doc Analyzer", badge: "New", prompt: "You analyze documents." },
+  { id: "code-runner", icon: Bug, label: "Code Runner", badge: "New", prompt: "You execute JavaScript code." },
   { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant." },
   { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
   { id: "news", icon: Newspaper, label: "News", badge: "Live", prompt: "You are a news assistant." },

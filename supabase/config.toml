@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.web-crawl]
 verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.web-search]
+verify_jwt = false
