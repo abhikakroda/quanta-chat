@@ -416,66 +416,58 @@ export default function Index() {
         onSelectAvatar={setActiveAvatar}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 relative">
-        {/* Floating controls (no header bar) */}
-        <div className="absolute top-2 left-2 z-10 md:hidden">
-          <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent active:bg-accent transition-colors touch-manipulation">
-            <Menu className="w-4.5 h-4.5 text-muted-foreground" />
-          </button>
-        </div>
-        {activeId && (
-          <div className="absolute top-2.5 left-1/2 -translate-x-1/2 z-10 max-w-[200px] animate-fade-in">
-            <span className="text-[11px] text-muted-foreground/60 truncate block text-center">
-              {conversations.find((c) => c.id === activeId)?.title || "Chat"}
-            </span>
-          </div>
-        )}
-        <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
-          {activeAvatar && !streaming && (() => {
-            const av = AVATARS.find((a) => a.id === activeAvatar);
-            return av ? (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:flex items-center gap-1">
-                <av.icon className="w-3 h-3" />
-                {av.name}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40">
+          <div className="flex items-center gap-2.5">
+            <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation md:hidden">
+              <Menu className="w-4 h-4 text-muted-foreground" />
+            </button>
+            {activeId && (
+              <span className="text-xs text-muted-foreground truncate max-w-[160px] sm:max-w-[250px]">
+                {conversations.find((c) => c.id === activeId)?.title || "Chat"}
               </span>
-            ) : null;
-          })()}
-          {agentMode && !streaming && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
-              Agent ON
-            </span>
-          )}
-          {selfVerify && (
-            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 hidden sm:block">
-              Verify ✅
-            </span>
-          )}
-          {thinkingLevel !== "off" && (
-            <span className={cn(
-              "text-[10px] font-medium px-2 py-0.5 rounded-full border hidden sm:block",
-              thinkingLevel === "deep" ? "bg-amber-400/10 text-amber-400 border-amber-400/20" : "bg-primary/10 text-primary border-primary/20"
-            )}>
-              {thinkingLevel === "deep" ? "Deep 🧠" : "Think"}
-            </span>
-          )}
-          {/* Project Memory button */}
-          <button
-            onClick={() => {
-              const current = projectMemory;
-              const newMemory = prompt("Project Memory — set persistent context for this conversation:\n\nExamples:\n• 'Remember: I'm building a React e-commerce app'\n• 'Always use TypeScript and follow SOLID principles'\n• 'My company name is Acme Corp, tone should be professional'", current);
-              if (newMemory !== null) setProjectMemory(newMemory);
-            }}
-            className={cn(
-              "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
-              projectMemory ? "text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
             )}
-            title={projectMemory ? `Memory: ${projectMemory.slice(0, 50)}...` : "Set Project Memory"}
-          >
-            <BookMarked className="w-4 h-4" />
-          </button>
-          <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
-            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          </button>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {activeAvatar && !streaming && (() => {
+              const av = AVATARS.find((a) => a.id === activeAvatar);
+              return av ? (
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:flex items-center gap-1">
+                  <av.icon className="w-3 h-3" />
+                  {av.name}
+                </span>
+              ) : null;
+            })()}
+            {agentMode && !streaming && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">Agent</span>
+            )}
+            {selfVerify && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">Verify</span>
+            )}
+            {thinkingLevel !== "off" && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
+                {thinkingLevel === "deep" ? "Deep Think" : "Think"}
+              </span>
+            )}
+            <button
+              onClick={() => {
+                const current = projectMemory;
+                const newMemory = prompt("Project Memory — set persistent context:\n\n• 'I'm building a React e-commerce app'\n• 'Use TypeScript, follow SOLID principles'", current);
+                if (newMemory !== null) setProjectMemory(newMemory);
+              }}
+              className={cn(
+                "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
+                projectMemory ? "text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
+              )}
+              title={projectMemory ? `Memory: ${projectMemory.slice(0, 50)}...` : "Set Project Memory"}
+            >
+              <BookMarked className="w-4 h-4" />
+            </button>
+            <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
+              {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -536,16 +528,17 @@ export default function Index() {
                 />
               )}
               {streaming && !streamContent && !streamThinking && (
-                <div className="py-2 sm:py-3 px-4 sm:px-6 animate-message-in">
-                  <div className="max-w-[640px] mx-auto flex gap-2.5 sm:gap-3">
-                    <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[11px] font-semibold text-muted-foreground">
+                <div className="py-3 sm:py-4 px-4 sm:px-6 bg-muted/20 animate-message-in">
+                  <div className="max-w-[640px] mx-auto flex gap-3">
+                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
                       {agentMode ? <Atom className="w-3.5 h-3.5" /> : "Q"}
                     </div>
-                    <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-muted/60 glass-subtle">
-                      <div className="flex items-center gap-1">
-                       <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
-                       <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
-                       <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
+                    <div className="pt-2">
+                      <span className="text-xs font-medium text-foreground mb-1 block">Quanta</span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
                       </div>
                     </div>
                   </div>
