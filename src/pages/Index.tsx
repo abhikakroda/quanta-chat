@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
-import { Moon, Sun, Menu, Atom, Bot, X } from "lucide-react";
+import { Moon, Sun, Menu, Atom, Bot, X, BookMarked } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
-import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel } from "@/lib/chat";
+import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel, ThinkingLevel } from "@/lib/chat";
 import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
 import { AVATARS } from "@/lib/avatars";
 import ChatMessage from "@/components/ChatMessage";
@@ -12,6 +12,7 @@ import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
@@ -75,6 +76,9 @@ export default function Index() {
     return saved !== null ? saved === "true" : false; // default open
   });
   const [thinkingEnabled, setThinkingEnabled] = useState(false);
+  const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>("off");
+  const [selfVerify, setSelfVerify] = useState(false);
+  const [projectMemory, setProjectMemory] = useState<string>("");
   const [agentStep, setAgentStep] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
@@ -230,6 +234,9 @@ export default function Index() {
       messages: allMessages,
       model: selectedModel,
       enableThinking: thinkingEnabled,
+      thinkingLevel,
+      selfVerify,
+      projectMemory: projectMemory || undefined,
       skillPrompt: skillDef?.prompt,
       activeSkill,
       agentMode,
@@ -353,6 +360,9 @@ export default function Index() {
       messages: history,
       model: selectedModel,
       enableThinking: thinkingEnabled,
+      thinkingLevel,
+      selfVerify,
+      projectMemory: projectMemory || undefined,
       skillPrompt: skillDef2?.prompt,
       activeSkill,
       agentMode,
@@ -435,6 +445,34 @@ export default function Index() {
               Agent ON
             </span>
           )}
+          {selfVerify && (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 hidden sm:block">
+              Verify ✅
+            </span>
+          )}
+          {thinkingLevel !== "off" && (
+            <span className={cn(
+              "text-[10px] font-medium px-2 py-0.5 rounded-full border hidden sm:block",
+              thinkingLevel === "deep" ? "bg-amber-400/10 text-amber-400 border-amber-400/20" : "bg-primary/10 text-primary border-primary/20"
+            )}>
+              {thinkingLevel === "deep" ? "Deep 🧠" : "Think"}
+            </span>
+          )}
+          {/* Project Memory button */}
+          <button
+            onClick={() => {
+              const current = projectMemory;
+              const newMemory = prompt("Project Memory — set persistent context for this conversation:\n\nExamples:\n• 'Remember: I'm building a React e-commerce app'\n• 'Always use TypeScript and follow SOLID principles'\n• 'My company name is Acme Corp, tone should be professional'", current);
+              if (newMemory !== null) setProjectMemory(newMemory);
+            }}
+            className={cn(
+              "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
+              projectMemory ? "text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
+            )}
+            title={projectMemory ? `Memory: ${projectMemory.slice(0, 50)}...` : "Set Project Memory"}
+          >
+            <BookMarked className="w-4 h-4" />
+          </button>
           <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -514,7 +552,7 @@ export default function Index() {
                 </div>
               )}
             </div>
-            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
+            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} thinkingLevel={thinkingLevel} onSetThinkingLevel={setThinkingLevel} selfVerify={selfVerify} onToggleSelfVerify={() => setSelfVerify((v) => !v)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
           </>
         ) : (
           <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} />

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2 } from "lucide-react";
+import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2, ShieldCheck, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MODELS, ModelId } from "@/lib/chat";
+import { MODELS, ModelId, ThinkingLevel } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -22,6 +22,10 @@ type Props = {
   onToggleAgent?: () => void;
   thinkingEnabled?: boolean;
   onToggleThinking?: () => void;
+  thinkingLevel?: ThinkingLevel;
+  onSetThinkingLevel?: (level: ThinkingLevel) => void;
+  selfVerify?: boolean;
+  onToggleSelfVerify?: () => void;
   selectedModel?: ModelId;
   onSelectModel?: (model: ModelId) => void;
   modelSupportsThinking?: boolean;
@@ -31,6 +35,8 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
   thinkingEnabled, onToggleThinking,
+  thinkingLevel = "off", onSetThinkingLevel,
+  selfVerify, onToggleSelfVerify,
   selectedModel = "mistral", onSelectModel,
   modelSupportsThinking,
 }, _ref) {
@@ -366,19 +372,49 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                 </div>
               )}
 
-              {/* Thinking toggle */}
-              {modelSupportsThinking && onToggleThinking && (
+              {/* Thinking intensity */}
+              {modelSupportsThinking && onSetThinkingLevel && (
                 <button
-                  onClick={onToggleThinking}
+                  onClick={() => {
+                    const levels: ThinkingLevel[] = ["off", "normal", "deep"];
+                    const idx = levels.indexOf(thinkingLevel);
+                    onSetThinkingLevel(levels[(idx + 1) % levels.length]);
+                  }}
                   className={cn(
-                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale",
-                    thinkingEnabled
+                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale relative",
+                    thinkingLevel === "deep"
+                      ? "border-amber-400/40 text-amber-400 bg-amber-400/10"
+                      : thinkingLevel === "normal"
                       ? "border-primary/30 text-primary bg-primary/10"
                       : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
                   )}
-                  title={thinkingEnabled ? "Reasoning ON" : "Reasoning OFF"}
+                  title={`Thinking: ${thinkingLevel === "deep" ? "Deep 🧠" : thinkingLevel === "normal" ? "Normal" : "Off"}`}
                 >
-                  <Zap className="w-4 h-4" />
+                  <Brain className="w-4 h-4" />
+                  {thinkingLevel !== "off" && (
+                    <span className={cn(
+                      "absolute -top-1 -right-1 text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center",
+                      thinkingLevel === "deep" ? "bg-amber-400 text-background" : "bg-primary text-primary-foreground"
+                    )}>
+                      {thinkingLevel === "deep" ? "D" : "N"}
+                    </span>
+                  )}
+                </button>
+              )}
+
+              {/* Self-verify toggle */}
+              {onToggleSelfVerify && (
+                <button
+                  onClick={onToggleSelfVerify}
+                  className={cn(
+                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale",
+                    selfVerify
+                      ? "border-emerald-400/30 text-emerald-400 bg-emerald-400/10"
+                      : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
+                  )}
+                  title={selfVerify ? "Verify ON ✅" : "Verify OFF"}
+                >
+                  <ShieldCheck className="w-4 h-4" />
                 </button>
               )}
 
