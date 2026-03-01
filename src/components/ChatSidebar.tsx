@@ -5,7 +5,7 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
-  FilePen, Newspaper, Volume2, Wand2, Columns2, Users, GraduationCap, Rocket, Flame
+  FilePen, Newspaper, Volume2, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -55,6 +55,7 @@ export const TOOLS = [
   { id: "tutor-mode", icon: BookOpen, label: "Tutor Mode", badge: "New", prompt: "You are a Socratic tutor." },
   { id: "startup-converter", icon: Rocket, label: "Startup Plan", badge: "New", prompt: "You convert projects into startup plans." },
   { id: "weakness-heatmap", icon: Flame, label: "Skill Heatmap", badge: "New", prompt: "Weakness analysis dashboard." },
+  { id: "debate-mode", icon: Swords, label: "Debate Mode", badge: "New", prompt: "You are a debate opponent." },
 ] as const;
 
 
