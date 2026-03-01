@@ -40,6 +40,7 @@ const CodeRunnerTool = lazy(() => import("@/components/tools/CodeRunnerTool"));
 const CompareModelsTool = lazy(() => import("@/components/tools/CompareModelsTool"));
 const InterviewSimulatorTool = lazy(() => import("@/components/tools/InterviewSimulatorTool"));
 const TutorModeTool = lazy(() => import("@/components/tools/TutorModeTool"));
+const StartupConverterTool = lazy(() => import("@/components/tools/StartupConverterTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -63,6 +64,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "compare-models": CompareModelsTool,
   "interview-simulator": InterviewSimulatorTool,
   "tutor-mode": TutorModeTool,
+  "startup-converter": StartupConverterTool,
 };
 
 export default function Index() {
