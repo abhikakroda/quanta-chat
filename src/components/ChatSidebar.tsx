@@ -3,11 +3,12 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
-  FilePen, Newspaper, Volume2, Wand2
+  FilePen, Newspaper, Volume2, Wand2, Columns2, Users
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { AVATARS, Avatar } from "@/lib/avatars";
 
 type Props = {
   conversations: Conversation[];
@@ -21,6 +22,8 @@ type Props = {
   onToggleCollapse: () => void;
   activeSkill?: string | null;
   onSelectSkill?: (skill: string | null) => void;
+  activeAvatar?: string | null;
+  onSelectAvatar?: (avatarId: string | null) => void;
 };
 
 export const SKILLS = [
@@ -33,6 +36,7 @@ export const SKILLS = [
 export const TOOLS = [
   { id: "conversational-agent", icon: Phone, label: "Conversational Agent", badge: null, prompt: "You are a conversational AI agent." },
   { id: "web-search", icon: Search, label: "Web Search", badge: "New", prompt: "You are a web search assistant." },
+  { id: "compare-models", icon: Columns2, label: "Compare Models", badge: "New", prompt: "Compare AI models." },
   { id: "image-generator", icon: Wand2, label: "Image Generator", badge: "New", prompt: "You generate images from text." },
   { id: "doc-analyzer", icon: FilePen, label: "Doc Analyzer", badge: "New", prompt: "You analyze documents." },
   { id: "code-runner", icon: Bug, label: "Code Runner", badge: "New", prompt: "You execute JavaScript code." },
@@ -49,11 +53,12 @@ export const TOOLS = [
 export type SkillId = typeof SKILLS[number]["id"];
 export type ToolId = typeof TOOLS[number]["id"];
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill }: Props) {
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
   const [skillsOpen, setSkillsOpen] = useState(true);
+  const [avatarsOpen, setAvatarsOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [openClawOpen, setOpenClawOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -220,7 +225,54 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </div>
             ) : null}
 
-            {/* Removed Open Claw section */}
+            {/* Avatars section */}
+            {!collapsed ? (
+              <div className="px-3 mt-1">
+                <button
+                  onClick={() => setAvatarsOpen((o) => !o)}
+                  className="flex items-center gap-2 px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35 hover:text-sidebar-foreground/50 transition-colors w-full"
+                >
+                  <span className="flex-1 text-left">Avatars</span>
+                  {avatarsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+                {avatarsOpen && (
+                  <div className="space-y-1 pb-2">
+                    {AVATARS.map((avatar) => (
+                      <button
+                        key={avatar.id}
+                        onClick={() => {
+                          onSelectAvatar?.(activeAvatar === avatar.id ? null : avatar.id);
+                          onSelectSkill?.(null);
+                          onNew();
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight",
+                          activeAvatar === avatar.id
+                            ? "bg-sidebar-accent text-sidebar-foreground"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        <avatar.icon className={cn("w-[22px] h-[22px] shrink-0", avatar.color)} />
+                        <div className="flex-1 min-w-0">
+                          <span className="block truncate">{avatar.name}</span>
+                          <span className="block text-[10px] text-muted-foreground/50 truncate">{avatar.description}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="px-1.5">
+                <button
+                  onClick={() => onToggleCollapse()}
+                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                  title="Avatars"
+                >
+                  <Users className="w-[18px] h-[18px]" />
+                </button>
+              </div>
+            )}
 
             <div className="mx-3 my-2 h-px bg-sidebar-border/50" />
 

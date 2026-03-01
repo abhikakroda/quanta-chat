@@ -6,6 +6,7 @@ import { useConversations } from "@/hooks/useConversations";
 import { useMessages } from "@/hooks/useMessages";
 import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel } from "@/lib/chat";
 import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
+import { AVATARS } from "@/lib/avatars";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
@@ -33,6 +34,7 @@ const WebSearchTool = lazy(() => import("@/components/tools/WebSearchTool"));
 const ImageGeneratorTool = lazy(() => import("@/components/tools/ImageGeneratorTool"));
 const DocAnalyzerTool = lazy(() => import("@/components/tools/DocAnalyzerTool"));
 const CodeRunnerTool = lazy(() => import("@/components/tools/CodeRunnerTool"));
+const CompareModelsTool = lazy(() => import("@/components/tools/CompareModelsTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -53,6 +55,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "image-generator": ImageGeneratorTool,
   "doc-analyzer": DocAnalyzerTool,
   "code-runner": CodeRunnerTool,
+  "compare-models": CompareModelsTool,
 };
 
 export default function Index() {
@@ -88,6 +91,7 @@ export default function Index() {
   
   const [agentMode, setAgentMode] = useState(false);
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
+  const [activeAvatar, setActiveAvatar] = useState<string | null>(null);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -215,9 +219,12 @@ export default function Index() {
     let fullThinking = "";
 
     const WEB_SCRAPER_PROMPT = "You are a web search and crawling assistant. Help users find information from the web, summarize web pages, extract data from URLs, and perform web research tasks.";
-    const skillDef = activeSkill === "web-scraper"
-      ? { prompt: WEB_SCRAPER_PROMPT }
-      : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
+    const avatarDef = activeAvatar ? AVATARS.find((a) => a.id === activeAvatar) : null;
+    const skillDef = avatarDef
+      ? { prompt: avatarDef.systemPrompt }
+      : activeSkill === "web-scraper"
+        ? { prompt: WEB_SCRAPER_PROMPT }
+        : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
 
     await streamChat({
       messages: allMessages,
@@ -335,9 +342,12 @@ export default function Index() {
     let fullContent = "";
     let fullThinking = "";
 
-    const skillDef2 = activeSkill === "web-scraper"
-      ? { prompt: "You are a web search and crawling assistant." }
-      : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
+    const avatarDef2 = activeAvatar ? AVATARS.find((a) => a.id === activeAvatar) : null;
+    const skillDef2 = avatarDef2
+      ? { prompt: avatarDef2.systemPrompt }
+      : activeSkill === "web-scraper"
+        ? { prompt: "You are a web search and crawling assistant." }
+        : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
 
     await streamChat({
       messages: history,
@@ -391,7 +401,9 @@ export default function Index() {
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed((c) => !c)}
         activeSkill={activeSkill}
-        onSelectSkill={setActiveSkill}
+        onSelectSkill={(s) => { setActiveSkill(s); setActiveAvatar(null); }}
+        activeAvatar={activeAvatar}
+        onSelectAvatar={setActiveAvatar}
       />
 
       <div className="flex-1 flex flex-col min-w-0 relative">
@@ -409,6 +421,15 @@ export default function Index() {
           </div>
         )}
         <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+          {activeAvatar && !streaming && (() => {
+            const av = AVATARS.find((a) => a.id === activeAvatar);
+            return av ? (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:flex items-center gap-1">
+                <av.icon className="w-3 h-3" />
+                {av.name}
+              </span>
+            ) : null;
+          })()}
           {agentMode && !streaming && (
             <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
               Agent ON
