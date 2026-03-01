@@ -117,50 +117,63 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
 
   return (
     <div className="group animate-message-in">
-        <div className="py-2 sm:py-3 px-4 sm:px-6">
-          <div className={cn(
-            "max-w-[640px] mx-auto flex gap-2.5 sm:gap-3",
-            isUser ? "flex-row-reverse" : "flex-row"
-          )}>
+      <div className={cn(
+        "py-3 sm:py-4 px-4 sm:px-6",
+        isUser ? "" : "bg-muted/20"
+      )}>
+        <div className={cn(
+          "max-w-[640px] mx-auto flex gap-3",
+          isUser ? "flex-row-reverse" : "flex-row"
+        )}>
           {/* Avatar */}
-          <div className="shrink-0 pt-1">
+          <div className="shrink-0 pt-0.5">
             <div className={cn(
-              "w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold",
-              isUser ? "bg-foreground/10 text-foreground/70" : "bg-muted text-muted-foreground"
+              "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold select-none",
+              isUser
+                ? "bg-primary/10 text-primary"
+                : "bg-primary text-primary-foreground"
             )}>
               {isUser ? <User className="w-4 h-4" /> : "Q"}
             </div>
           </div>
 
           {/* Content */}
-          <div className={cn("max-w-[85%] sm:max-w-[75%] min-w-0", isUser ? "flex flex-col items-end" : "")}>
+          <div className={cn("flex-1 min-w-0", isUser ? "flex flex-col items-end" : "")}>
+            {/* Role label */}
+            <span className={cn(
+              "text-xs font-medium mb-1 block",
+              isUser ? "text-muted-foreground/70" : "text-foreground"
+            )}>
+              {isUser ? "You" : "Quanta"}
+            </span>
+
             {isUser ? (
               editing ? (
-                <div className="space-y-2 w-full">
+                <div className="space-y-2 w-full max-w-[85%]">
                   <textarea
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleEditSubmit(); } }}
-                    className="w-full resize-none bg-muted/50 border border-border rounded-2xl outline-none text-[14px] text-foreground p-3 min-h-[60px] focus:border-foreground/20 transition-colors"
+                    className="w-full resize-none bg-muted/50 border border-border rounded-2xl outline-none text-sm text-foreground p-3 min-h-[60px] focus:border-primary/30 transition-colors"
                     autoFocus
                   />
                   <div className="flex gap-2">
-                    <button onClick={handleEditSubmit} className="px-3 py-1.5 text-xs rounded-lg bg-primary text-primary-foreground hover:opacity-80 transition-opacity">Send</button>
+                    <button onClick={handleEditSubmit} className="px-3 py-1.5 text-xs rounded-lg bg-primary text-primary-foreground hover:opacity-80 transition-opacity">Save</button>
                     <button onClick={() => { setEditing(false); setEditValue(content); }} className="px-3 py-1.5 text-xs rounded-lg text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start gap-1">
+                <div className="flex items-start gap-1.5">
                   {onEdit && (
                     <button
                       onClick={() => { setEditValue(content); setEditing(true); }}
-                      className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors mt-1"
+                      className="shrink-0 p-1.5 rounded-md text-muted-foreground/0 group-hover:text-muted-foreground/50 hover:!text-foreground transition-colors mt-0.5"
                       title="Edit message"
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
                   )}
-                  <div className="px-4 py-2.5 rounded-2xl rounded-tr-md bg-chat-user text-chat-user-foreground">
+                  <div className="px-4 py-2.5 rounded-2xl rounded-tr-sm bg-primary text-primary-foreground max-w-[85%]">
                     {imageUrl && (
                       <div className="mb-2 -mx-1 -mt-0.5">
                         <img
@@ -170,16 +183,16 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                         />
                       </div>
                     )}
-                    <p className="text-[16px] sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words">{content}</p>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{content}</p>
                   </div>
                 </div>
               )
             ) : (
-              <div className="space-y-2">
-                <div className={cn("px-4 py-3 rounded-2xl rounded-tl-md bg-muted/60 glass-subtle", isStreaming && "streaming-text")}>
+              <div className="space-y-2 max-w-full">
+                <div className={cn("rounded-2xl rounded-tl-sm", isStreaming && "streaming-text")}>
                   {isThinking && !thinking && (
-                    <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
-                      <Brain className="w-3 h-3" />
+                    <div className="flex items-center gap-2 text-muted-foreground text-xs py-2">
+                      <Brain className="w-3.5 h-3.5 animate-pulse" />
                       <span>Thinking…</span>
                     </div>
                   )}
@@ -187,7 +200,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   {thinking && (
                     <button
                       onClick={() => setThinkingOpen((o) => !o)}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-1"
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-2 py-1 px-2 rounded-lg bg-muted/50"
                     >
                       <Brain className="w-3 h-3" />
                       <span>Reasoning</span>
@@ -195,7 +208,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                     </button>
                   )}
                   {thinking && thinkingOpen && (
-                    <div className="pl-3 sm:pl-4 border-l-2 border-border text-xs text-muted-foreground max-h-48 overflow-y-auto mb-2">
+                    <div className="pl-3 border-l-2 border-border/50 text-xs text-muted-foreground max-h-48 overflow-y-auto mb-3">
                       <div className="prose prose-xs max-w-none prose-p:my-0.5 prose-p:text-muted-foreground break-words">
                         <ReactMarkdown>{thinking}</ReactMarkdown>
                       </div>
@@ -203,7 +216,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   )}
 
                   {content && (
-                    <div className="prose prose-sm max-w-none prose-p:my-1 prose-p:leading-relaxed prose-headings:my-2 prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] sm:prose-code:text-[13px] text-[16px] sm:text-[15px] break-words overflow-hidden">
+                    <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-p:leading-relaxed prose-headings:my-3 prose-headings:text-foreground prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-sm break-words overflow-hidden prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5">
                       <ReactMarkdown
                         components={{
                           code({ className, children, ...props }) {
@@ -215,7 +228,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                               return <CodeBlock lang={lang} code={codeStr} />;
                             }
                             return (
-                              <code className="px-1.5 py-0.5 rounded bg-muted text-[14px] sm:text-[13px]" {...props}>
+                              <code className="px-1.5 py-0.5 rounded-md bg-muted text-[13px] font-mono" {...props}>
                                 {children}
                               </code>
                             );
@@ -231,20 +244,20 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   )}
 
                   {!content && !isThinking && thinking && (
-                    <div className="flex gap-1 py-1">
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
-                      <div className="w-1 h-1 rounded-full bg-muted-foreground/40 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
+                    <div className="flex gap-1.5 py-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
+                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
                     </div>
                   )}
                 </div>
 
                 {/* Action buttons */}
                 {content && !isThinking && (
-                  <div className="flex items-center gap-3 ml-1">
+                  <div className="flex items-center gap-1 -ml-1 pt-0.5">
                     <button
                       onClick={handleCopy}
-                      className="flex items-center gap-1 text-[11px] text-muted-foreground/50 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors touch-manipulation"
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50 touch-manipulation"
                       title="Copy response"
                     >
                       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -252,24 +265,24 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                     </button>
                     <button
                       onClick={() => handleSpeak(content)}
-                      className="flex items-center gap-1 text-[11px] text-muted-foreground/50 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors touch-manipulation"
+                      className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50 touch-manipulation"
                       title={speaking ? "Stop speaking" : "Read aloud"}
                     >
                       {speaking ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Volume2 className="w-3.5 h-3.5" />}
-                      <span>{speaking ? "Speaking" : "Listen"}</span>
+                      <span>{speaking ? "Stop" : "Listen"}</span>
                     </button>
                     {onRegenerate && (
                       <button
                         onClick={onRegenerate}
-                        className="flex items-center gap-1 text-[11px] text-muted-foreground/50 sm:text-muted-foreground/0 sm:group-hover:text-muted-foreground/60 hover:!text-foreground active:text-foreground transition-colors touch-manipulation"
+                        className="flex items-center gap-1 text-[11px] text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50 touch-manipulation"
                         title="Regenerate response"
                       >
                         <RefreshCw className="w-3.5 h-3.5" />
-                        <span>Regenerate</span>
+                        <span>Retry</span>
                       </button>
                     )}
                     {modelLabel && (
-                      <span className="text-[10px] text-muted-foreground/40 ml-auto">
+                      <span className="text-[10px] text-muted-foreground/40 ml-auto font-mono">
                         {modelLabel}
                       </span>
                     )}
