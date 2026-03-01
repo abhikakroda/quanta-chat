@@ -132,7 +132,6 @@ export type Database = {
           avatar_id: string | null
           created_at: string
           id: string
-          starred: boolean
           system_prompt: string | null
           title: string
           updated_at: string
@@ -142,7 +141,6 @@ export type Database = {
           avatar_id?: string | null
           created_at?: string
           id?: string
-          starred?: boolean
           system_prompt?: string | null
           title?: string
           updated_at?: string
@@ -152,7 +150,6 @@ export type Database = {
           avatar_id?: string | null
           created_at?: string
           id?: string
-          starred?: boolean
           system_prompt?: string | null
           title?: string
           updated_at?: string
@@ -165,7 +162,6 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
-          feedback: string | null
           id: string
           role: string
         }
@@ -173,7 +169,6 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
-          feedback?: string | null
           id?: string
           role: string
         }
@@ -181,7 +176,6 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
-          feedback?: string | null
           id?: string
           role?: string
         }

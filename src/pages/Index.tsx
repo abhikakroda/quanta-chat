@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, lazy, Suspense, useCallback } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Moon, Sun, Menu, Atom, Bot, X, BookMarked, Ghost, ShieldOff, Sparkles } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,8 +12,6 @@ import { AVATARS } from "@/lib/avatars";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
-import KeyboardShortcuts from "@/components/KeyboardShortcuts";
-import FollowUpSuggestions from "@/components/FollowUpSuggestions";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -93,12 +91,11 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
 
 export default function Index() {
   const { user, loading: authLoading, signIn, signUp } = useAuth();
-  const { conversations, createConversation, deleteConversation, updateTitle, toggleStar, refetch } = useConversations();
+  const { conversations, createConversation, deleteConversation, updateTitle, refetch } = useConversations();
   const [activeId, setActiveId] = useState<string | null>(null);
   const { messages, addMessage, setMessages } = useMessages(activeId);
   const [messageImages, setMessageImages] = useState<Record<string, string>>({});
   const [messageModels, setMessageModels] = useState<Record<string, string>>({});
-  const [messageFeedback, setMessageFeedback] = useState<Record<string, string | null>>({});
   const [streaming, setStreaming] = useState(false);
   const [streamContent, setStreamContent] = useState("");
   const [streamThinking, setStreamThinking] = useState("");
@@ -427,29 +424,6 @@ export default function Index() {
     if (activeId === id) setActiveId(null);
   };
 
-  const handleFeedback = useCallback(async (messageId: string, feedback: "up" | "down" | null) => {
-    setMessageFeedback(prev => ({ ...prev, [messageId]: feedback }));
-    await supabase.from("messages").update({ feedback }).eq("id", messageId);
-  }, []);
-
-  const handleExport = useCallback(() => {
-    if (!activeId || messages.length === 0) return;
-    const conv = conversations.find(c => c.id === activeId);
-    const title = conv?.title || "conversation";
-    const md = messages.map(m => {
-      const prefix = m.role === "user" ? "## You" : "## Quanta";
-      const content = m.content.replace(/^<!--thinking:.+?-->/, "");
-      return `${prefix}\n\n${content}`;
-    }).join("\n\n---\n\n");
-    const blob = new Blob([`# ${title}\n\n${md}`], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${title.replace(/[^a-z0-9]/gi, "-").slice(0, 40)}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [activeId, messages, conversations]);
-
   const handleEditMessage = async (messageIndex: number, newContent: string) => {
     if (!activeId || streaming) return;
     const toDelete = messages.slice(messageIndex);
@@ -538,8 +512,6 @@ export default function Index() {
         onSelect={handleSelectConv}
         onNew={handleNewChat}
         onDelete={handleDelete}
-        onToggleStar={toggleStar}
-        onExport={handleExport}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         collapsed={sidebarCollapsed}
@@ -554,7 +526,7 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <div className="h-11 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/30 bg-background/80 backdrop-blur-sm">
+        <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40">
           <div className="flex items-center gap-2.5">
             <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation md:hidden">
               <Menu className="w-4 h-4 text-muted-foreground" />
@@ -682,11 +654,8 @@ export default function Index() {
                     thinking={thinking}
                     imageUrl={messageImages[m.id]}
                     modelLabel={m.role === "assistant" ? messageModels[m.id] : undefined}
-                    messageId={m.id}
-                    feedback={messageFeedback[m.id] ?? null}
                     onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
                     onRegenerate={m.role === "assistant" && !streaming ? () => handleRegenerate(i) : undefined}
-                    onFeedback={m.role === "assistant" && !streaming ? handleFeedback : undefined}
                   />
                 );
               })}
@@ -717,15 +686,6 @@ export default function Index() {
                 </div>
               )}
             </div>
-            {/* Follow-up suggestions */}
-            {!streaming && displayMessages.length >= 2 && (
-              <FollowUpSuggestions
-                lastUserMessage={displayMessages.filter(m => m.role === "user").slice(-1)[0]?.content || ""}
-                lastAssistantMessage={displayMessages.filter(m => m.role === "assistant").slice(-1)[0]?.content || ""}
-                onSelect={(suggestion) => handleSend(suggestion)}
-                visible={!streaming && displayMessages.length >= 2}
-              />
-            )}
             <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming || optimizing} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} thinkingLevel={thinkingLevel} onSetThinkingLevel={setThinkingLevel} selfVerify={selfVerify} onToggleSelfVerify={() => setSelfVerify((v) => !v)} smartPrompt={smartPrompt} onToggleSmartPrompt={() => setSmartPrompt((s) => !s)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
           </>
         ) : (
@@ -789,7 +749,6 @@ export default function Index() {
           </div>
         </DialogContent>
       </Dialog>
-      <KeyboardShortcuts />
     </div>
   );
 }

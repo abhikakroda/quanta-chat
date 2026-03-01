@@ -27,7 +27,7 @@ hljs.registerLanguage("sh", bash);
 hljs.registerLanguage("sql", sql);
 hljs.registerLanguage("markdown", markdown);
 hljs.registerLanguage("md", markdown);
-import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck, Volume2, Loader2, User, ThumbsUp, ThumbsDown } from "lucide-react";
+import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck, Volume2, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
@@ -75,14 +75,11 @@ type Props = {
   isStreaming?: boolean;
   imageUrl?: string;
   modelLabel?: string;
-  messageId?: string;
-  feedback?: string | null;
   onEdit?: (newContent: string) => void;
   onRegenerate?: () => void;
-  onFeedback?: (messageId: string, feedback: "up" | "down" | null) => void;
 };
 
-function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUrl, modelLabel, messageId, feedback, onEdit, onRegenerate, onFeedback }: Props) {
+function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUrl, modelLabel, onEdit, onRegenerate }: Props) {
   const isUser = role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -283,30 +280,6 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                         <RefreshCw className="w-3.5 h-3.5" />
                         <span>Retry</span>
                       </button>
-                    )}
-                    {onFeedback && messageId && (
-                      <>
-                        <button
-                          onClick={() => onFeedback(messageId, feedback === "up" ? null : "up")}
-                          className={cn(
-                            "flex items-center gap-1 text-[11px] transition-colors px-2 py-1 rounded-md hover:bg-muted/50 touch-manipulation",
-                            feedback === "up" ? "text-green-500" : "text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground"
-                          )}
-                          title="Good response"
-                        >
-                          <ThumbsUp className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => onFeedback(messageId, feedback === "down" ? null : "down")}
-                          className={cn(
-                            "flex items-center gap-1 text-[11px] transition-colors px-2 py-1 rounded-md hover:bg-muted/50 touch-manipulation",
-                            feedback === "down" ? "text-destructive" : "text-muted-foreground/0 group-hover:text-muted-foreground/60 hover:!text-foreground"
-                          )}
-                          title="Poor response"
-                        >
-                          <ThumbsDown className="w-3.5 h-3.5" />
-                        </button>
-                      </>
                     )}
                     {modelLabel && (
                       <span className="text-[10px] text-muted-foreground/40 ml-auto font-mono">

@@ -64,9 +64,9 @@ function SkillBadge({ skills, xpGained, collapsed }: Props) {
         </div>
 
         {/* XP popup */}
-        {xpGained !== null && xpGained > 0 && (
-          <div className="fixed bottom-20 right-4 animate-slide-up text-sm font-bold text-primary pointer-events-none z-50 bg-primary/10 px-3 py-1.5 rounded-full border border-primary/20">
-            +{xpGained} XP ✨
+        {xpGained && (
+          <div className="absolute right-4 -top-1 animate-slide-up text-[11px] font-bold text-primary pointer-events-none">
+            +{xpGained} XP
           </div>
         )}
       </button>

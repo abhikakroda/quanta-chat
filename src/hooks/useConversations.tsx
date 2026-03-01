@@ -7,7 +7,6 @@ export type Conversation = {
   title: string;
   created_at: string;
   updated_at: string;
-  starred: boolean;
 };
 
 const CACHE_KEY = "quanta-conversations-cache";
@@ -38,8 +37,8 @@ export function useConversations() {
       .select("*")
       .order("updated_at", { ascending: false });
     if (data) {
-      setConversations(data as Conversation[]);
-      setCachedConversations(data as Conversation[]);
+      setConversations(data);
+      setCachedConversations(data);
     }
     setLoading(false);
   }, [user]);
@@ -54,31 +53,18 @@ export function useConversations() {
       .select()
       .single();
     if (error || !data) return null;
-    const conv = data as Conversation;
     setConversations((prev) => {
-      const next = [conv, ...prev];
+      const next = [data, ...prev];
       setCachedConversations(next);
       return next;
     });
-    return conv;
+    return data;
   };
 
   const updateTitle = async (id: string, title: string) => {
     await supabase.from("conversations").update({ title }).eq("id", id);
     setConversations((prev) => {
       const next = prev.map((c) => (c.id === id ? { ...c, title } : c));
-      setCachedConversations(next);
-      return next;
-    });
-  };
-
-  const toggleStar = async (id: string) => {
-    const conv = conversations.find(c => c.id === id);
-    if (!conv) return;
-    const newStarred = !conv.starred;
-    await supabase.from("conversations").update({ starred: newStarred }).eq("id", id);
-    setConversations((prev) => {
-      const next = prev.map((c) => (c.id === id ? { ...c, starred: newStarred } : c));
       setCachedConversations(next);
       return next;
     });
@@ -93,5 +79,5 @@ export function useConversations() {
     });
   };
 
-  return { conversations, loading, createConversation, updateTitle, deleteConversation, toggleStar, refetch: fetchConversations };
+  return { conversations, loading, createConversation, updateTitle, deleteConversation, refetch: fetchConversations };
 }
