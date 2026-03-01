@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2, ShieldCheck, Brain } from "lucide-react";
+import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2, ShieldCheck, Brain, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId, ThinkingLevel } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
@@ -26,6 +26,8 @@ type Props = {
   onSetThinkingLevel?: (level: ThinkingLevel) => void;
   selfVerify?: boolean;
   onToggleSelfVerify?: () => void;
+  smartPrompt?: boolean;
+  onToggleSmartPrompt?: () => void;
   selectedModel?: ModelId;
   onSelectModel?: (model: ModelId) => void;
   modelSupportsThinking?: boolean;
@@ -37,6 +39,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   thinkingEnabled, onToggleThinking,
   thinkingLevel = "off", onSetThinkingLevel,
   selfVerify, onToggleSelfVerify,
+  smartPrompt, onToggleSmartPrompt,
   selectedModel = "mistral", onSelectModel,
   modelSupportsThinking,
 }, _ref) {
@@ -399,6 +402,22 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                       {thinkingLevel === "deep" ? "D" : "N"}
                     </span>
                   )}
+                </button>
+              )}
+
+              {/* Smart Prompt toggle */}
+              {onToggleSmartPrompt && (
+                <button
+                  onClick={onToggleSmartPrompt}
+                  className={cn(
+                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale",
+                    smartPrompt
+                      ? "border-amber-400/30 text-amber-500 bg-amber-400/10"
+                      : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
+                  )}
+                  title={smartPrompt ? "Smart Prompt ON ✨" : "Smart Prompt OFF"}
+                >
+                  <Sparkles className="w-4 h-4" />
                 </button>
               )}
 
