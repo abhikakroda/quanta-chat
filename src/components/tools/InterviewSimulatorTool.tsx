@@ -2,6 +2,8 @@ import { useState, useRef, useCallback } from "react";
 import { Mic, Play, RotateCcw, ChevronDown, Loader2, CheckCircle2, XCircle, ArrowRight, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserMemories, buildInterviewMemory } from "@/hooks/useUserMemories";
 
 const TOPICS = [
   { id: "react", label: "React" },
@@ -30,6 +32,8 @@ type Round = {
 };
 
 export default function InterviewSimulatorTool() {
+  const { user } = useAuth();
+  const { upsertMemory, getMemoriesByCategory } = useUserMemories(user?.id);
   const [topic, setTopic] = useState("react");
   const [level, setLevel] = useState("mid");
   const [started, setStarted] = useState(false);
@@ -43,6 +47,11 @@ export default function InterviewSimulatorTool() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const totalQuestions = 5;
+
+  // Get past weak areas for this topic to focus questions
+  const pastWeakAreas = getMemoriesByCategory("weak_topics")
+    .filter(m => m.key.includes(topic))
+    .map(m => m.value);
 
   const scrollToBottom = () => {
     setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }), 100);
@@ -105,7 +114,11 @@ export default function InterviewSimulatorTool() {
         ? `\nPreviously asked (do NOT repeat these):\n${previousQs.map((q, i) => `${i + 1}. ${q}`).join("\n")}`
         : "";
 
-      const prompt = `Generate exactly ONE ${level}-level ${TOPICS.find(t => t.id === topic)?.label} interview question. Question ${roundNum} of ${totalQuestions}.${prevContext}
+      const weakContext = pastWeakAreas.length > 0
+        ? `\nThe candidate has previously struggled with: ${pastWeakAreas.join(", ")}. Consider testing these weak areas.`
+        : "";
+
+      const prompt = `Generate exactly ONE ${level}-level ${TOPICS.find(t => t.id === topic)?.label} interview question. Question ${roundNum} of ${totalQuestions}.${prevContext}${weakContext}
 
 Rules:
 - Ask a clear, specific technical question
@@ -175,6 +188,16 @@ FEEDBACK: [2-3 sentences of constructive feedback. What was good, what could imp
       // Check if interview is complete
       if (rounds.length >= totalQuestions) {
         setFinished(true);
+        // Save performance to memory
+        const allRounds = [...rounds.slice(0, -1), { ...round, answer: currentAnswer, score, feedback, status: "evaluated" as const }];
+        const scores = allRounds.filter(r => r.score !== null);
+        const avg = scores.length > 0 ? scores.reduce((s, r) => s + (r.score || 0), 0) / scores.length : 0;
+        const weakQs = allRounds.filter(r => (r.score || 0) < 6).map(r => r.question);
+        const topicLabel = TOPICS.find(t => t.id === topic)?.label || topic;
+        const mems = buildInterviewMemory(topicLabel, level, Math.round(avg * 10) / 10, weakQs);
+        for (const m of mems) {
+          upsertMemory(m.key, m.value, m.category);
+        }
       }
     } catch (err: any) {
       console.error("Evaluation failed:", err);

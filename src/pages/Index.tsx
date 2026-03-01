@@ -236,7 +236,7 @@ export default function Index() {
     // Extract and save any user preferences from the message
     const extracted = extractMemories(userContent);
     for (const mem of extracted) {
-      upsertMemory(mem.key, mem.value);
+      upsertMemory(mem.key, mem.value, mem.category);
     }
 
     // Build combined memory context
