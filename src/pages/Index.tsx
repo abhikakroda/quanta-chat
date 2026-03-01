@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
-import { Moon, Sun, Menu, Atom, Bot, X, BookMarked, Ghost, ShieldOff } from "lucide-react";
+import { Moon, Sun, Menu, Atom, Bot, X, BookMarked, Ghost, ShieldOff, Sparkles } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -90,6 +90,8 @@ export default function Index() {
   const [thinkingEnabled, setThinkingEnabled] = useState(false);
   const [thinkingLevel, setThinkingLevel] = useState<ThinkingLevel>("off");
   const [selfVerify, setSelfVerify] = useState(false);
+  const [smartPrompt, setSmartPrompt] = useState(false);
+  const [optimizing, setOptimizing] = useState(false);
   const [projectMemory, setProjectMemory] = useState<string>("");
   const [agentStep, setAgentStep] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
@@ -169,6 +171,37 @@ export default function Index() {
   const handleSend = async (input: string, files?: { name: string; content: string; type: string; dataUrl?: string }[]) => {
     if (needsAuth('chat')) return;
 
+    // Smart Prompt: optimize the user's prompt before sending
+    let finalInput = input;
+    if (smartPrompt && input.trim().length >= 10 && !ghostMode) {
+      try {
+        setOptimizing(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (token) {
+          const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/optimize-prompt`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            },
+            body: JSON.stringify({ prompt: input }),
+          });
+          if (resp.ok) {
+            const result = await resp.json();
+            if (result.optimized && result.optimized !== input) {
+              finalInput = result.optimized;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Prompt optimization failed, using original:", err);
+      } finally {
+        setOptimizing(false);
+      }
+    }
+
     // Ghost mode: skip all DB operations
     const isGhost = ghostMode;
 
@@ -184,7 +217,7 @@ export default function Index() {
 
     // Extract image data if any image files are attached
     let imageData: { base64: string; mimeType: string } | undefined;
-    let userContent = input;
+    let userContent = finalInput;
     if (files && files.length > 0) {
       const imageFile = files.find((f) => f.dataUrl && f.type.startsWith("image/"));
       if (imageFile && imageFile.dataUrl) {
@@ -508,6 +541,12 @@ export default function Index() {
             {selfVerify && (
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">Verify</span>
             )}
+            {smartPrompt && (
+              <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-500 border border-amber-400/20 hidden sm:flex">
+                <Sparkles className="w-3 h-3" />
+                Smart
+              </span>
+            )}
             {thinkingLevel !== "off" && (
               <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
                 {thinkingLevel === "deep" ? "Deep Think" : "Think"}
@@ -629,7 +668,7 @@ export default function Index() {
                 </div>
               )}
             </div>
-            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} thinkingLevel={thinkingLevel} onSetThinkingLevel={setThinkingLevel} selfVerify={selfVerify} onToggleSelfVerify={() => setSelfVerify((v) => !v)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
+            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming || optimizing} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} thinkingLevel={thinkingLevel} onSetThinkingLevel={setThinkingLevel} selfVerify={selfVerify} onToggleSelfVerify={() => setSelfVerify((v) => !v)} smartPrompt={smartPrompt} onToggleSmartPrompt={() => setSmartPrompt((s) => !s)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} />
           </>
         ) : (
           <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} />
