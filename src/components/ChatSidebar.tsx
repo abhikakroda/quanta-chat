@@ -3,7 +3,7 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
-  FilePen, Newspaper, Volume2, Wand2, Columns2, Users
+  FilePen, Newspaper, Volume2, Wand2, Columns2, Users, GraduationCap
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,6 +47,7 @@ export const TOOLS = [
   { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: null, prompt: "You are a voice assistant." },
   { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents." },
   { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks." },
+  { id: "interview-simulator", icon: GraduationCap, label: "Interview Sim", badge: "New", prompt: "You are a technical interviewer." },
 ] as const;
 
 

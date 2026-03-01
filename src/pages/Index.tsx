@@ -37,6 +37,7 @@ const ImageGeneratorTool = lazy(() => import("@/components/tools/ImageGeneratorT
 const DocAnalyzerTool = lazy(() => import("@/components/tools/DocAnalyzerTool"));
 const CodeRunnerTool = lazy(() => import("@/components/tools/CodeRunnerTool"));
 const CompareModelsTool = lazy(() => import("@/components/tools/CompareModelsTool"));
+const InterviewSimulatorTool = lazy(() => import("@/components/tools/InterviewSimulatorTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -58,6 +59,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "doc-analyzer": DocAnalyzerTool,
   "code-runner": CodeRunnerTool,
   "compare-models": CompareModelsTool,
+  "interview-simulator": InterviewSimulatorTool,
 };
 
 export default function Index() {
