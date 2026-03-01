@@ -1,7 +1,32 @@
 import { useState, useRef, useCallback } from "react";
-import { Mic, MicOff, Volume2, Loader2, Square } from "lucide-react";
+import { Mic, MicOff, Volume2, Loader2, Square, User, Globe, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+
+const VOICES = [
+  { id: "anushka", label: "Anushka", gender: "Female" },
+  { id: "manisha", label: "Manisha", gender: "Female" },
+  { id: "vidya", label: "Vidya", gender: "Female" },
+  { id: "arya", label: "Arya", gender: "Female" },
+  { id: "priya", label: "Priya", gender: "Female" },
+  { id: "abhilash", label: "Abhilash", gender: "Male" },
+  { id: "karun", label: "Karun", gender: "Male" },
+  { id: "hitesh", label: "Hitesh", gender: "Male" },
+  { id: "rahul", label: "Rahul", gender: "Male" },
+];
+
+const LANGUAGES = [
+  { code: "en-IN", label: "English" },
+  { code: "hi-IN", label: "Hindi" },
+  { code: "ta-IN", label: "Tamil" },
+  { code: "te-IN", label: "Telugu" },
+  { code: "kn-IN", label: "Kannada" },
+  { code: "ml-IN", label: "Malayalam" },
+  { code: "mr-IN", label: "Marathi" },
+  { code: "bn-IN", label: "Bengali" },
+  { code: "gu-IN", label: "Gujarati" },
+  { code: "pa-IN", label: "Punjabi" },
+];
 
 export default function VoiceChatTool() {
   const [isRecording, setIsRecording] = useState(false);
@@ -11,6 +36,10 @@ export default function VoiceChatTool() {
   const [playingAudio, setPlayingAudio] = useState(false);
   const [error, setError] = useState("");
   const [history, setHistory] = useState<{ role: string; text: string }[]>([]);
+  const [voice, setVoice] = useState("anushka");
+  const [language, setLanguage] = useState("en-IN");
+  const [showVoicePicker, setShowVoicePicker] = useState(false);
+  const [showLangPicker, setShowLangPicker] = useState(false);
   const mediaRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -132,7 +161,7 @@ export default function VoiceChatTool() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           Authorization: `Bearer ${sttToken}`,
         },
-        body: JSON.stringify({ text: fullResp.slice(0, 2500), language: "en-IN" }),
+        body: JSON.stringify({ text: fullResp.slice(0, 2500), language, speaker: voice }),
       });
 
       if (ttsResp.ok) {
@@ -156,10 +185,63 @@ export default function VoiceChatTool() {
 
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4 animate-fade-in">
-      <div className="flex items-center gap-2 mb-2">
-        <Volume2 className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Voice Chat</h2>
-        <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-primary/15 text-primary">Sarvam AI</span>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <Volume2 className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">Voice Chat</h2>
+          <span className="text-[9px] font-medium px-1.5 py-0.5 rounded bg-primary/15 text-primary">Sarvam AI</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {/* Voice picker */}
+          <div className="relative">
+            <button
+              onClick={() => { setShowVoicePicker(!showVoicePicker); setShowLangPicker(false); }}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs bg-muted/50 border border-border/50 text-foreground/70 hover:bg-muted transition-colors"
+            >
+              <User className="w-3 h-3" />
+              {VOICES.find(v => v.id === voice)?.label}
+              <ChevronDown className="w-3 h-3 opacity-50" />
+            </button>
+            {showVoicePicker && (
+              <div className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-xl shadow-lg p-1 min-w-[150px] max-h-[240px] overflow-y-auto">
+                {VOICES.map(v => (
+                  <button
+                    key={v.id}
+                    onClick={() => { setVoice(v.id); setShowVoicePicker(false); }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center justify-between ${v.id === voice ? "bg-primary/10 text-primary font-medium" : "text-foreground/70 hover:bg-muted"}`}
+                  >
+                    <span>{v.label}</span>
+                    <span className="text-[10px] text-muted-foreground">{v.gender}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Language picker */}
+          <div className="relative">
+            <button
+              onClick={() => { setShowLangPicker(!showLangPicker); setShowVoicePicker(false); }}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs bg-muted/50 border border-border/50 text-foreground/70 hover:bg-muted transition-colors"
+            >
+              <Globe className="w-3 h-3" />
+              {LANGUAGES.find(l => l.code === language)?.label}
+              <ChevronDown className="w-3 h-3 opacity-50" />
+            </button>
+            {showLangPicker && (
+              <div className="absolute right-0 top-full mt-1 z-50 bg-popover border border-border rounded-xl shadow-lg p-1 min-w-[130px] max-h-[240px] overflow-y-auto">
+                {LANGUAGES.map(l => (
+                  <button
+                    key={l.code}
+                    onClick={() => { setLanguage(l.code); setShowLangPicker(false); }}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${l.code === language ? "bg-primary/10 text-primary font-medium" : "text-foreground/70 hover:bg-muted"}`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Voice button */}
