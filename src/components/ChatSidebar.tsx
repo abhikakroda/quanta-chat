@@ -5,7 +5,8 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
-  FilePen, Newspaper, Volume2, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown
+  FilePen, Newspaper, Volume2, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown,
+  Star, Download
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +19,8 @@ type Props = {
   onSelect: (id: string) => void;
   onNew: () => void;
   onDelete: (id: string) => void;
+  onToggleStar?: (id: string) => void;
+  onExport?: () => void;
   open: boolean;
   onClose: () => void;
   collapsed: boolean;
@@ -71,7 +74,7 @@ export const TOOLS = [
 export type SkillId = typeof SKILLS[number]["id"];
 export type ToolId = typeof TOOLS[number]["id"];
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, onToggleStar, onExport, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
@@ -82,9 +85,17 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) return conversations;
-    const q = searchQuery.toLowerCase();
-    return conversations.filter((c) => c.title.toLowerCase().includes(q));
+    let list = conversations;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((c) => c.title.toLowerCase().includes(q));
+    }
+    // Sort: starred first, then by updated_at
+    return [...list].sort((a, b) => {
+      if (a.starred && !b.starred) return -1;
+      if (!a.starred && b.starred) return 1;
+      return 0;
+    });
   }, [conversations, searchQuery]);
 
   return (
@@ -302,6 +313,15 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                   className="flex items-center gap-2 px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35 hover:text-sidebar-foreground/50 transition-colors w-full"
                 >
                   <span className="flex-1 text-left">History</span>
+                  {onExport && activeId && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onExport(); }}
+                      className="p-0.5 rounded hover:text-sidebar-foreground transition-colors"
+                      title="Export conversation"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   {historyOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
 
@@ -334,13 +354,25 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                         )}
                         onClick={() => onSelect(c.id)}
                       >
+                        {c.starred && <Star className="w-3 h-3 text-primary shrink-0 fill-primary" />}
                         <span className="truncate flex-1">{c.title}</span>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
-                          className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive transition-opacity"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {onToggleStar && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); onToggleStar(c.id); }}
+                              className="p-0.5 rounded hover:text-primary transition-colors"
+                              title={c.starred ? "Unstar" : "Star"}
+                            >
+                              <Star className={cn("w-3 h-3", c.starred && "fill-primary text-primary")} />
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
+                            className="p-0.5 rounded hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
