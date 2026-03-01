@@ -289,31 +289,58 @@ Respond as if you're on a real phone call - brief, warm, and to the point.`,
       setProcessingStage("Speaking...");
       setIsSpeaking(true);
 
-      const ttsResp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-tts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${sttToken}`,
-        },
-        body: JSON.stringify({
-          text: fullResp.slice(0, 2500),
-          language,
-          speaker: voice,
-        }),
-      });
+      let spoke = false;
+      try {
+        const ttsResp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-tts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${sttToken}`,
+          },
+          body: JSON.stringify({
+            text: fullResp.slice(0, 2500),
+            language,
+            speaker: voice,
+          }),
+        });
 
-      if (ttsResp.ok) {
-        const ttsData = await ttsResp.json();
-        if (ttsData.audio) {
-          const audio = new Audio(`data:audio/mp3;base64,${ttsData.audio}`);
-          audioRef.current = audio;
+        if (ttsResp.ok) {
+          const ttsData = await ttsResp.json();
+          if (ttsData.audio) {
+            const audio = new Audio(`data:audio/mp3;base64,${ttsData.audio}`);
+            audioRef.current = audio;
+            spoke = true;
 
+            await new Promise<void>((resolve) => {
+              audio.onended = () => { setIsSpeaking(false); resolve(); };
+              audio.onerror = (e) => { console.error("Audio playback error:", e); setIsSpeaking(false); resolve(); };
+              audio.play().catch((e) => { console.error("Audio play() blocked:", e); spoke = false; setIsSpeaking(false); resolve(); });
+            });
+          } else {
+            console.warn("TTS returned no audio data");
+          }
+        } else {
+          const errText = await ttsResp.text();
+          console.error("TTS API error:", ttsResp.status, errText);
+        }
+      } catch (ttsErr) {
+        console.error("TTS fetch failed:", ttsErr);
+      }
+
+      // Fallback: use browser speechSynthesis if TTS didn't play
+      if (!spoke && fullResp && typeof window !== "undefined" && window.speechSynthesis) {
+        try {
+          const utterance = new SpeechSynthesisUtterance(fullResp.slice(0, 500));
+          utterance.lang = language;
+          utterance.rate = 1.05;
           await new Promise<void>((resolve) => {
-            audio.onended = () => { setIsSpeaking(false); resolve(); };
-            audio.onerror = () => { setIsSpeaking(false); resolve(); };
-            audio.play().catch(() => { setIsSpeaking(false); resolve(); });
+            utterance.onend = () => { setIsSpeaking(false); resolve(); };
+            utterance.onerror = () => { setIsSpeaking(false); resolve(); };
+            window.speechSynthesis.speak(utterance);
           });
+        } catch {
+          console.error("Browser TTS fallback also failed");
         }
       }
 
