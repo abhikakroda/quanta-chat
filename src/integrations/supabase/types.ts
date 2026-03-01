@@ -14,6 +14,119 @@ export type Database = {
   }
   public: {
     Tables: {
+      battle_leaderboard: {
+        Row: {
+          draws: number
+          id: string
+          losses: number
+          streak: number
+          total_score: number
+          updated_at: string
+          user_id: string
+          wins: number
+        }
+        Insert: {
+          draws?: number
+          id?: string
+          losses?: number
+          streak?: number
+          total_score?: number
+          updated_at?: string
+          user_id: string
+          wins?: number
+        }
+        Update: {
+          draws?: number
+          id?: string
+          losses?: number
+          streak?: number
+          total_score?: number
+          updated_at?: string
+          user_id?: string
+          wins?: number
+        }
+        Relationships: []
+      }
+      battle_submissions: {
+        Row: {
+          answer: string
+          battle_id: string
+          feedback: string | null
+          id: string
+          score: number | null
+          submitted_at: string
+          user_id: string
+        }
+        Insert: {
+          answer: string
+          battle_id: string
+          feedback?: string | null
+          id?: string
+          score?: number | null
+          submitted_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string
+          battle_id?: string
+          feedback?: string | null
+          id?: string
+          score?: number | null
+          submitted_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "battle_submissions_battle_id_fkey"
+            columns: ["battle_id"]
+            isOneToOne: false
+            referencedRelation: "battles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      battles: {
+        Row: {
+          category: string
+          created_at: string
+          creator_id: string
+          difficulty: string
+          id: string
+          join_code: string
+          opponent_id: string | null
+          question: string
+          status: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          creator_id: string
+          difficulty?: string
+          id?: string
+          join_code?: string
+          opponent_id?: string | null
+          question: string
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          creator_id?: string
+          difficulty?: string
+          id?: string
+          join_code?: string
+          opponent_id?: string | null
+          question?: string
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           avatar_id: string | null

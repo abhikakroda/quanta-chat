@@ -61,6 +61,7 @@ export const TOOLS = [
   { id: "shadow-clone", icon: Dna, label: "Shadow Clone", badge: "🧬", prompt: "Your AI digital twin." },
   { id: "future-projection", icon: TrendingUp, label: "Career Projection", badge: "New", prompt: "AI career path analysis." },
   { id: "scenario-sim", icon: Zap, label: "Scenario Sim", badge: "🔥", prompt: "Real-world crisis simulator." },
+  { id: "career-battle", icon: Swords, label: "Career Battle", badge: "⚔️", prompt: "Competitive career battles." },
 ] as const;
 
 
