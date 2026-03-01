@@ -142,7 +142,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, onTog
 
       <aside
         className={cn(
-          "fixed md:relative z-50 md:z-auto flex flex-col h-full bg-sidebar border-r border-sidebar-border/50 transition-all duration-300 ease-out will-change-transform",
+          "fixed md:relative z-50 md:z-auto flex flex-col h-full bg-sidebar border-r border-sidebar-border/30 transition-all duration-300 ease-out will-change-transform",
           open ? "translate-x-0" : "-translate-x-full",
           collapsed
             ? "md:w-[52px] md:translate-x-0"
@@ -162,8 +162,8 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, onTog
               </>
             ) : (
               <>
-                <div className="flex items-center">
-                  <span className="text-[20px] font-extrabold text-sidebar-foreground tracking-tight lowercase">quanta</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[18px] font-extrabold text-sidebar-foreground tracking-tighter lowercase">quanta</span>
                 </div>
                 <div className="flex items-center gap-0.5">
                   <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
@@ -182,10 +182,10 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, onTog
             <div className="px-3 pt-2">
               <button
                 onClick={() => { onNew(); onSelectSkill?.(null); }}
-                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/10 text-[13px] text-sidebar-foreground/80 hover:bg-primary/10 hover:text-sidebar-foreground transition-all duration-200 touch-manipulation text-left press-scale"
               >
-                <SquarePen className="w-[20px] h-[20px] shrink-0 opacity-70" />
-                <span className="flex-1 truncate">New Chat</span>
+                <SquarePen className="w-[16px] h-[16px] shrink-0 opacity-60" />
+                <span className="flex-1 truncate font-medium">New Chat</span>
               </button>
             </div>
           ) : (
@@ -417,22 +417,24 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, onTog
             {/* Chat History section */}
             {!collapsed ? (
               <div className="px-3">
-                <button
-                  onClick={() => setHistoryOpen((o) => !o)}
-                  className="flex items-center gap-2 px-2 py-1.5 text-[11px] font-normal tracking-wide text-sidebar-foreground/35 hover:text-sidebar-foreground/50 transition-colors w-full"
+                <div
+                  className="flex items-center gap-2 px-2 py-1.5 text-[11px] font-normal tracking-wide text-sidebar-foreground/35 w-full"
                 >
-                  <span className="flex-1 text-left">History</span>
+                  <button onClick={() => setHistoryOpen((o) => !o)} className="flex-1 flex items-center gap-1 hover:text-sidebar-foreground/50 transition-colors text-left">
+                    <span>History</span>
+                    {historyOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
                   {onExport && activeId && (
                     <button
-                      onClick={(e) => { e.stopPropagation(); onExport(); }}
-                      className="p-0.5 rounded hover:text-sidebar-foreground transition-colors"
+                      onClick={onExport}
+                      className="p-1 rounded-md hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
                       title="Export conversation"
                     >
                       <Download className="w-3.5 h-3.5" />
                     </button>
                   )}
                   {historyOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
+                </div>
 
                 {historyOpen && (
                   <div className="space-y-0.5 pb-2">
