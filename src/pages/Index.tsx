@@ -7,7 +7,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel, ThinkingLevel } from "@/lib/chat";
 import { useUserMemories, extractMemories } from "@/hooks/useUserMemories";
 import { useSkillLevel } from "@/hooks/useSkillLevel";
-import ChatSidebar, { SKILLS, TOOLS, SkillId } from "@/components/ChatSidebar";
+import ChatSidebar, { SKILLS, TOOLS, AI_LAB_TOOLS, SkillId } from "@/components/ChatSidebar";
 import { AVATARS } from "@/lib/avatars";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
@@ -308,7 +308,7 @@ export default function Index() {
       ? { prompt: avatarDef.systemPrompt }
       : activeSkill === "web-scraper"
         ? { prompt: WEB_SCRAPER_PROMPT }
-        : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
+        : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill) || AI_LAB_TOOLS.find((t) => t.id === activeSkill)) : null;
 
     // Skip memory extraction & XP in ghost mode
     if (!isGhost) {
@@ -459,7 +459,7 @@ export default function Index() {
       ? { prompt: avatarDef2.systemPrompt }
       : activeSkill === "web-scraper"
         ? { prompt: "You are a web search and crawling assistant." }
-        : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill)) : null;
+        : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || TOOLS.find((t) => t.id === activeSkill) || AI_LAB_TOOLS.find((t) => t.id === activeSkill)) : null;
 
     await streamChat({
       messages: history,
