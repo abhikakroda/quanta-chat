@@ -10,6 +10,7 @@ import {
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 import { AVATARS, Avatar } from "@/lib/avatars";
 
 type Props = {
@@ -37,42 +38,39 @@ export const SKILLS = [
   { id: "writer", icon: FileText, label: "Writer", badge: null, prompt: "You are a professional writer and editor. Help craft compelling content — articles, emails, essays, stories, and more. Focus on clarity, tone, structure, and engagement. Adapt your style to the user's needs." },
 ] as const;
 
-export const TOOLS = [
-  { id: "conversational-agent", icon: Phone, label: "Conversational Agent", badge: null, prompt: "You are a conversational AI agent." },
-  { id: "web-search", icon: Search, label: "Web Search", badge: "New", prompt: "You are a web search assistant." },
-  { id: "compare-models", icon: Columns2, label: "Compare Models", badge: "New", prompt: "Compare AI models." },
-  { id: "image-generator", icon: Wand2, label: "Image Generator", badge: "New", prompt: "You generate images from text." },
-  { id: "doc-analyzer", icon: FilePen, label: "Doc Analyzer", badge: "New", prompt: "You analyze documents." },
-  { id: "code-runner", icon: Bug, label: "Code Runner", badge: "New", prompt: "You execute JavaScript code." },
-  { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant." },
-  { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator." },
-  { id: "news", icon: Newspaper, label: "News", badge: "Live", prompt: "You are a news assistant." },
-  { id: "image-describer", icon: Image, label: "Image Describer", prompt: "You are an image analysis assistant." },
-  { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: null, prompt: "You are a voice assistant." },
-  { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents." },
-  { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks." },
-] as const;
-
-export const AI_LAB_TOOLS = [
-  { id: "interview-simulator", icon: GraduationCap, label: "Interview Sim", badge: "New", prompt: "You are a technical interviewer." },
-  { id: "tutor-mode", icon: BookOpen, label: "Tutor Mode", badge: "New", prompt: "You are a Socratic tutor." },
-  { id: "startup-converter", icon: Rocket, label: "Startup Plan", badge: "New", prompt: "You convert projects into startup plans." },
-  { id: "weakness-heatmap", icon: Flame, label: "Skill Heatmap", badge: "New", prompt: "Weakness analysis dashboard." },
-  { id: "debate-mode", icon: Swords, label: "Debate Mode", badge: "New", prompt: "You are a debate opponent." },
-  { id: "failure-simulator", icon: AlertTriangle, label: "Failure Sim", badge: "New", prompt: "You simulate rejection and stress scenarios." },
-  { id: "ai-lab", icon: FlaskConical, label: "AI Lab", badge: "🧪", prompt: "Experimental AI tools." },
-  { id: "shadow-clone", icon: Dna, label: "Shadow Clone", badge: "🧬", prompt: "Your AI digital twin." },
-  { id: "future-projection", icon: TrendingUp, label: "Career Projection", badge: "New", prompt: "AI career path analysis." },
-  { id: "scenario-sim", icon: Zap, label: "Scenario Sim", badge: "🔥", prompt: "Real-world crisis simulator." },
-  { id: "career-battle", icon: Swords, label: "Career Battle", badge: "⚔️", prompt: "Competitive career battles." },
-  { id: "ai-council", icon: Users, label: "AI Council", badge: "🧠", prompt: "4 AI experts debate your question." },
-  { id: "file-processor", icon: FileText, label: "File Processor", badge: "📄", prompt: "Transform files into summaries, notes, flashcards, quizzes." },
-  { id: "task-executor", icon: FileDown, label: "Task Executor", badge: "⚡", prompt: "Generate documents from tasks." },
+export const ALL_TOOLS = [
+  { id: "conversational-agent", icon: Phone, label: "Conversational Agent", badge: null, prompt: "You are a conversational AI agent.", category: "Chat" },
+  { id: "web-search", icon: Search, label: "Web Search", badge: "New", prompt: "You are a web search assistant.", category: "Search" },
+  { id: "compare-models", icon: Columns2, label: "Compare Models", badge: "New", prompt: "Compare AI models.", category: "AI" },
+  { id: "image-generator", icon: Wand2, label: "Image Generator", badge: "New", prompt: "You generate images from text.", category: "Creative" },
+  { id: "doc-analyzer", icon: FilePen, label: "Doc Analyzer", badge: "New", prompt: "You analyze documents.", category: "Productivity" },
+  { id: "code-runner", icon: Bug, label: "Code Runner", badge: "New", prompt: "You execute JavaScript code.", category: "Code" },
+  { id: "calculator", icon: Calculator, label: "Calculator", prompt: "You are a math and calculation assistant.", category: "Utility" },
+  { id: "translator", icon: Languages, label: "Translator", prompt: "You are a multilingual translator.", category: "Utility" },
+  { id: "news", icon: Newspaper, label: "News", badge: "Live", prompt: "You are a news assistant.", category: "Search" },
+  { id: "image-describer", icon: Image, label: "Image Describer", prompt: "You are an image analysis assistant.", category: "AI" },
+  { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: null, prompt: "You are a voice assistant.", category: "Chat" },
+  { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents.", category: "Productivity" },
+  { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks.", category: "Productivity" },
+  { id: "interview-simulator", icon: GraduationCap, label: "Interview Sim", badge: "New", prompt: "You are a technical interviewer.", category: "Career" },
+  { id: "tutor-mode", icon: BookOpen, label: "Tutor Mode", badge: "New", prompt: "You are a Socratic tutor.", category: "Learning" },
+  { id: "startup-converter", icon: Rocket, label: "Startup Plan", badge: "New", prompt: "You convert projects into startup plans.", category: "Career" },
+  { id: "weakness-heatmap", icon: Flame, label: "Skill Heatmap", badge: "New", prompt: "Weakness analysis dashboard.", category: "Learning" },
+  { id: "debate-mode", icon: Swords, label: "Debate Mode", badge: "New", prompt: "You are a debate opponent.", category: "Learning" },
+  { id: "failure-simulator", icon: AlertTriangle, label: "Failure Sim", badge: "New", prompt: "You simulate rejection and stress scenarios.", category: "Career" },
+  { id: "ai-lab", icon: FlaskConical, label: "AI Lab", badge: "🧪", prompt: "Experimental AI tools.", category: "AI" },
+  { id: "shadow-clone", icon: Dna, label: "Shadow Clone", badge: "🧬", prompt: "Your AI digital twin.", category: "AI" },
+  { id: "future-projection", icon: TrendingUp, label: "Career Projection", badge: "New", prompt: "AI career path analysis.", category: "Career" },
+  { id: "scenario-sim", icon: Zap, label: "Scenario Sim", badge: "🔥", prompt: "Real-world crisis simulator.", category: "Career" },
+  { id: "career-battle", icon: Swords, label: "Career Battle", badge: "⚔️", prompt: "Competitive career battles.", category: "Career" },
+  { id: "ai-council", icon: Users, label: "AI Council", badge: "🧠", prompt: "4 AI experts debate your question.", category: "AI" },
+  { id: "file-processor", icon: FileText, label: "File Processor", badge: "📄", prompt: "Transform files into summaries, notes, flashcards, quizzes.", category: "Productivity" },
+  { id: "task-executor", icon: FileDown, label: "Task Executor", badge: "⚡", prompt: "Generate documents from tasks.", category: "Productivity" },
 ] as const;
 
 
 export type SkillId = typeof SKILLS[number]["id"];
-export type ToolId = typeof TOOLS[number]["id"] | typeof AI_LAB_TOOLS[number]["id"];
+export type ToolId = typeof ALL_TOOLS[number]["id"];
 
 function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
   const { user, signOut } = useAuth();
@@ -215,85 +213,27 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </div>
             )}
 
-            {/* Tools section */}
+            {/* AI Labs link */}
             {!collapsed ? (
               <div className="px-3 mt-1">
-                <p className="px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35">
-                  Tools
-                </p>
-                <div className="space-y-1">
-                    {TOOLS.map((tool) => (
-                      <button
-                        key={tool.id}
-                        onClick={() => {
-                          onSelectSkill?.(activeSkill === tool.id ? null : tool.id);
-                          onNew();
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight",
-                          activeSkill === tool.id
-                            ? "bg-sidebar-accent text-sidebar-foreground"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        <tool.icon className="w-[22px] h-[22px] shrink-0 opacity-70" />
-                        <span className="flex-1 truncate">{tool.label}</span>
-                        {"badge" in tool && (tool as any).badge && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">{(tool as any).badge}</span>
-                        )}
-                      </button>
-                    ))}
-                </div>
-              </div>
-            ) : null}
-
-            {/* AI Lab folder */}
-            {!collapsed ? (
-              <div className="px-3 mt-1">
-                <button
-                  onClick={() => setAiLabOpen((o) => !o)}
-                  className="flex items-center gap-2 px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35 hover:text-sidebar-foreground/50 transition-colors w-full"
+                <Link
+                  to="/ai-labs"
+                  className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 >
-                  <FlaskConical className="w-3.5 h-3.5" />
-                  <span className="flex-1 text-left">AI Lab</span>
-                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{AI_LAB_TOOLS.length}</span>
-                  {aiLabOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-                {aiLabOpen && (
-                  <div className="space-y-1 pb-2">
-                    {AI_LAB_TOOLS.map((tool) => (
-                      <button
-                        key={tool.id}
-                        onClick={() => {
-                          onSelectSkill?.(activeSkill === tool.id ? null : tool.id);
-                          onNew();
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight",
-                          activeSkill === tool.id
-                            ? "bg-sidebar-accent text-sidebar-foreground"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        <tool.icon className="w-[22px] h-[22px] shrink-0 opacity-70" />
-                        <span className="flex-1 truncate">{tool.label}</span>
-                        {"badge" in tool && (tool as any).badge && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">{(tool as any).badge}</span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                  <FlaskConical className="w-[22px] h-[22px] shrink-0 opacity-70" />
+                  <span className="flex-1 truncate">AI Labs</span>
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
+                </Link>
               </div>
             ) : (
               <div className="px-1.5">
-                <button
-                  onClick={() => onToggleCollapse()}
+                <Link
+                  to="/ai-labs"
                   className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-                  title="AI Lab"
+                  title="AI Labs"
                 >
                   <FlaskConical className="w-[18px] h-[18px]" />
-                </button>
+                </Link>
               </div>
             )}
 
