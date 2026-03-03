@@ -51,6 +51,9 @@ export const TOOLS = [
   { id: "voice-chat", icon: Mic, label: "Voice Chat", badge: null, prompt: "You are a voice assistant." },
   { id: "vision", icon: Eye, label: "Vision (Text→PDF)", prompt: "You convert text to documents." },
   { id: "task-scheduler", icon: CalendarDays, label: "Task Scheduler", prompt: "You help schedule tasks." },
+] as const;
+
+export const AI_LAB_TOOLS = [
   { id: "interview-simulator", icon: GraduationCap, label: "Interview Sim", badge: "New", prompt: "You are a technical interviewer." },
   { id: "tutor-mode", icon: BookOpen, label: "Tutor Mode", badge: "New", prompt: "You are a Socratic tutor." },
   { id: "startup-converter", icon: Rocket, label: "Startup Plan", badge: "New", prompt: "You convert projects into startup plans." },
@@ -69,7 +72,7 @@ export const TOOLS = [
 
 
 export type SkillId = typeof SKILLS[number]["id"];
-export type ToolId = typeof TOOLS[number]["id"];
+export type ToolId = typeof TOOLS[number]["id"] | typeof AI_LAB_TOOLS[number]["id"];
 
 function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
   const { user, signOut } = useAuth();
@@ -78,6 +81,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
   const [skillsOpen, setSkillsOpen] = useState(true);
   const [avatarsOpen, setAvatarsOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [aiLabOpen, setAiLabOpen] = useState(false);
   const [openClawOpen, setOpenClawOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
@@ -243,7 +247,56 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </div>
             ) : null}
 
-            {/* Avatars section */}
+            {/* AI Lab folder */}
+            {!collapsed ? (
+              <div className="px-3 mt-1">
+                <button
+                  onClick={() => setAiLabOpen((o) => !o)}
+                  className="flex items-center gap-2 px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35 hover:text-sidebar-foreground/50 transition-colors w-full"
+                >
+                  <FlaskConical className="w-3.5 h-3.5" />
+                  <span className="flex-1 text-left">AI Lab</span>
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{AI_LAB_TOOLS.length}</span>
+                  {aiLabOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                </button>
+                {aiLabOpen && (
+                  <div className="space-y-1 pb-2">
+                    {AI_LAB_TOOLS.map((tool) => (
+                      <button
+                        key={tool.id}
+                        onClick={() => {
+                          onSelectSkill?.(activeSkill === tool.id ? null : tool.id);
+                          onNew();
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight",
+                          activeSkill === tool.id
+                            ? "bg-sidebar-accent text-sidebar-foreground"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )}
+                      >
+                        <tool.icon className="w-[22px] h-[22px] shrink-0 opacity-70" />
+                        <span className="flex-1 truncate">{tool.label}</span>
+                        {"badge" in tool && (tool as any).badge && (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">{(tool as any).badge}</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="px-1.5">
+                <button
+                  onClick={() => onToggleCollapse()}
+                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
+                  title="AI Lab"
+                >
+                  <FlaskConical className="w-[18px] h-[18px]" />
+                </button>
+              </div>
+            )}
+
             {!collapsed ? (
               <div className="px-3 mt-1">
                 <button
