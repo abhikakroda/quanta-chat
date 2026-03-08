@@ -280,6 +280,7 @@ export default function Index() {
         const conv = await createConversation(input.slice(0, 50));
         if (!conv) return;
         convId = conv.id;
+        skipNextFetch();
         setActiveId(conv.id);
       }
     }
