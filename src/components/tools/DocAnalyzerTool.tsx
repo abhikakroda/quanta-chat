@@ -62,6 +62,15 @@ export default function DocAnalyzerTool() {
   const [slideStyle, setSlideStyle] = useState("professional");
   const [editingSlide, setEditingSlide] = useState<number | null>(null);
 
+  // OCR state
+  const [ocrText, setOcrText] = useState("");
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrTotalPages, setOcrTotalPages] = useState(0);
+  const [ocrPageTexts, setOcrPageTexts] = useState<string[]>([]);
+  const [ocrCopied, setOcrCopied] = useState(false);
+  const ocrFileRef = useRef<HTMLInputElement>(null);
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
