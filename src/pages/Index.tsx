@@ -338,7 +338,7 @@ export default function Index() {
       supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single().then(({ data }) => {
         if (data) {
           setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? data : m));
-          if (imageFile?.dataUrl) {
+          if (displayImageFile?.dataUrl) {
             setMessageImages((prev) => {
               const next = { ...prev, [data.id]: prev[tempId] };
               delete next[tempId];
