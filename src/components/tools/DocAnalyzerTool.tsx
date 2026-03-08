@@ -900,6 +900,7 @@ export default function DocAnalyzerTool() {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             </>
           ) : (
