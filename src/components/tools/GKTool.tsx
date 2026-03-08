@@ -212,12 +212,8 @@ export default function GKTool() {
             )}
           </div>
         )}
-            </button>
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown>{content}</ReactMarkdown>
-            </div>
-          </div>
-        )}
+
+
 
         {quizQuestions.length > 0 && (
           <div className="space-y-4">
