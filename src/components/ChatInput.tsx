@@ -322,9 +322,9 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             {streaming ? (
               <button
                 onClick={onStop}
-                className="w-10 h-10 rounded-full bg-foreground text-background hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-foreground text-background hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
               >
-                <Square className="w-3.5 h-3.5" fill="currentColor" />
+                <Square className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" />
               </button>
             ) : input.trim() ? (
               <button
