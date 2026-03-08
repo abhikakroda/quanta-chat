@@ -199,7 +199,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                 )}
 
                 {content && (
-                  <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-p:leading-[1.75] prose-headings:my-3 prose-headings:text-foreground prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[15px] break-words overflow-hidden prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground text-foreground">
+                  <div className="prose prose-sm max-w-none prose-p:my-3 prose-p:leading-[1.8] prose-headings:my-4 prose-headings:text-foreground prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-h3:font-semibold prose-pre:my-3 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[15px] leading-[1.8] break-words overflow-hidden prose-li:my-1 prose-li:leading-[1.8] prose-ul:my-3 prose-ol:my-3 prose-ul:pl-5 prose-ol:pl-5 prose-strong:text-foreground prose-strong:font-semibold [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground text-foreground prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-hr:my-6 prose-hr:border-border/50">
                     <ReactMarkdown
                       remarkPlugins={[remarkMath]}
                       rehypePlugins={[rehypeKatex]}
