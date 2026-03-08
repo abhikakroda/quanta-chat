@@ -188,8 +188,8 @@
   }
 }
 
-/* Smooth global transitions */
-*, *::before, *::after {
+/* Smooth transitions only on interactive elements */
+button, a, input, textarea, select, [role="button"] {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
