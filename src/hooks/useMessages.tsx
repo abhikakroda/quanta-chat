@@ -89,5 +89,5 @@ export function useMessages(conversationId: string | null) {
     return data;
   };
 
-  return { messages, loading, addMessage, setMessages: setMessagesWithCache, refetch: fetchMessages };
+  return { messages, loading, addMessage, setMessages: setMessagesWithCache, refetch: fetchMessages, skipNextFetch };
 }
