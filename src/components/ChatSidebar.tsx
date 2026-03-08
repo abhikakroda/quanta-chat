@@ -106,50 +106,30 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
         <div className={cn("flex flex-col h-full w-[260px]")}>
 
           {/* Header */}
-          <div className={cn("flex items-center px-3 pt-3.5 pb-2", collapsed ? "flex-col gap-1 px-2" : "justify-between")}>
-            {collapsed ? (
-              <button onClick={onToggleCollapse} className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors touch-manipulation" title="Expand">
-                <PanelLeftOpen className="w-[18px] h-[18px]" />
+          <div className="flex items-center px-3 pt-3.5 pb-2 justify-between">
+            <div className="flex items-center">
+              <span className="text-[20px] font-extrabold text-sidebar-foreground tracking-tight lowercase">opentropic</span>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
+                <PanelLeftClose className="w-4 h-4" />
               </button>
-            ) : (
-              <>
-                <div className="flex items-center">
-                  <span className="text-[20px] font-extrabold text-sidebar-foreground tracking-tight lowercase">opentropic</span>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
-                    <PanelLeftClose className="w-4 h-4" />
-                  </button>
-                  <button onClick={onClose} className="md:hidden p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 transition-colors">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </>
-            )}
+              <button onClick={onClose} className="md:hidden p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* New Chat */}
-          {!collapsed ? (
-            <div className="px-3 pt-1">
-              <button
-                onClick={() => { onNew(); onSelectSkill?.(null); }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground hover:bg-sidebar-accent/60 transition-all duration-200 touch-manipulation text-left press-scale"
-              >
-                <SquarePen className="w-[18px] h-[18px] shrink-0 opacity-60" />
-                <span className="flex-1 truncate font-medium">New Chat</span>
-              </button>
-            </div>
-          ) : (
-            <div className="px-1.5 pt-1">
-              <button
-                onClick={() => { onNew(); onSelectSkill?.(null); }}
-                className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors touch-manipulation press-scale"
-                title="New Chat"
-              >
-                <SquarePen className="w-[18px] h-[18px]" />
-              </button>
-            </div>
-          )}
+          <div className="px-3 pt-1">
+            <button
+              onClick={() => { onNew(); onSelectSkill?.(null); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground hover:bg-sidebar-accent/60 transition-all duration-200 touch-manipulation text-left press-scale"
+            >
+              <SquarePen className="w-[18px] h-[18px] shrink-0 opacity-60" />
+              <span className="flex-1 truncate font-medium">New Chat</span>
+            </button>
+          </div>
 
           <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
 
