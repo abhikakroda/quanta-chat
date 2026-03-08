@@ -20,6 +20,7 @@ type Props = {
   
   onSelectSkill?: (skill: string) => void;
   activeSkillLabel?: string | null;
+  modelSelector?: React.ReactNode;
 };
 
 const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
@@ -28,6 +29,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   selectedModel,
   onSelectSkill,
   activeSkillLabel,
+  modelSelector,
 }, ref) {
   return (
     <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 pb-[10vh] animate-fade-in">
@@ -37,6 +39,11 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
       </div>
 
       <div className="w-full max-w-[640px]">
+        {modelSelector && (
+          <div className="flex justify-center py-1">
+            {modelSelector}
+          </div>
+        )}
         <ChatInput
           onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming}
           agentMode={agentMode} onToggleAgent={onToggleAgent}
