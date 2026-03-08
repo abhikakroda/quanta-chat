@@ -28,6 +28,16 @@ export default function AIPlayground() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("pinned_tools") || "[]"); } catch { return []; }
+  });
+
+  useEffect(() => { localStorage.setItem("pinned_tools", JSON.stringify(pinnedIds)); }, [pinnedIds]);
+
+  const togglePin = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPinnedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
 
   const filtered = useMemo(() => ALL_TOOLS.filter((tool) => {
     const matchesSearch = !search.trim() || tool.label.toLowerCase().includes(search.toLowerCase());
