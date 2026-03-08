@@ -301,10 +301,17 @@ export default function ECETool({ onBack }: { onBack?: () => void }) {
                   <ArrowLeft className="w-4 h-4" /> Back to topics
                 </button>
                 <h3 className="text-lg font-bold text-foreground">{selectedTopic}</h3>
+                {/* Instant static reference */}
+                {STATIC_DATA[selectedTopic] && (
+                  <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-xl bg-primary/5 border border-primary/20">
+                    <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">⚡ Quick Reference</div>
+                    <ReactMarkdown>{STATIC_DATA[selectedTopic]}</ReactMarkdown>
+                  </div>
+                )}
                 {aiLoading && !aiContent && (
-                  <div className="flex items-center gap-2 py-8 justify-center">
+                  <div className="flex items-center gap-2 py-4 justify-center">
                     <Loader2 className="w-5 h-5 animate-spin text-primary" />
-                    <span className="text-muted-foreground">Generating content...</span>
+                    <span className="text-muted-foreground text-sm">Loading detailed explanation...</span>
                   </div>
                 )}
                 {aiContent && (
