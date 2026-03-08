@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { Mic, MicOff, Volume2, Loader2, Square, User, Globe, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
+import { getMicErrorMessage } from "@/lib/micErrors";
 
 const VOICES = [
   { id: "anushka", label: "Anushka", gender: "Female" },
