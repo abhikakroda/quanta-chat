@@ -155,13 +155,13 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                 </button>
               ))}
 
-              {/* AI Labs */}
+              {/* AI Playground */}
               <Link
-                to="/ai-labs"
+                to="/ai-playground"
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left press-scale text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               >
                 <FlaskConical className="w-[18px] h-[18px] shrink-0 opacity-70" />
-                <span className="flex-1 truncate">AI Labs</span>
+                <span className="flex-1 truncate">AI Playground</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
               </Link>
             </div>
