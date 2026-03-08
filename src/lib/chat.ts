@@ -198,6 +198,12 @@ export async function streamChat({
 
     let resp: Response;
     try {
+      // Timeout: if fetch takes >30s, auto-fallback
+      const fetchController = new AbortController();
+      const timeoutId = setTimeout(() => fetchController.abort(), 30000);
+      // Link user's signal to our controller
+      signal?.addEventListener("abort", () => fetchController.abort());
+      
       resp = await fetch(url, {
         method: "POST",
         headers: {
@@ -206,8 +212,10 @@ export async function streamChat({
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify(bodyPayload),
-        signal,
+        signal: fetchController.signal,
       });
+      
+      clearTimeout(timeoutId);
     } catch (fetchErr: any) {
       if (signal?.aborted) return;
       // Network error — try fallback
