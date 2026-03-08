@@ -155,7 +155,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                     <Pencil className="w-3 h-3" />
                   </button>
                 )}
-                <div className="px-5 py-3 rounded-3xl bg-muted max-w-[80%]">
+                <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-3xl bg-muted max-w-[92%] sm:max-w-[80%]">
                   {imageUrl && (
                     <div className="mb-2">
                       <img
