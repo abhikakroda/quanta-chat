@@ -66,6 +66,7 @@ const CustomSkillTool = lazy(() => import("@/components/tools/CustomSkillTool"))
 const IESETTool = lazy(() => import("@/components/tools/IESETTool"));
 const GATEECETool = lazy(() => import("@/components/tools/GATEECETool"));
 const PCBDesignTool = lazy(() => import("@/components/tools/PCBDesignTool"));
+const TypingSpeedTool = lazy(() => import("@/components/tools/TypingSpeedTool"));
 
 function ModelSelector({ selectedModel, onSelectModel }: { selectedModel: ModelId; onSelectModel: (m: ModelId) => void }) {
   const [open, setOpen] = useState(false);
@@ -169,6 +170,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "ies-et": IESETTool,
   "gate-ece": GATEECETool,
   "pcb-design": PCBDesignTool,
+  "typing-speed": TypingSpeedTool,
 };
 
 export default function Index() {
