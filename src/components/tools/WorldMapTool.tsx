@@ -67,14 +67,14 @@ function getColor(geo: any, hovered: boolean, highlighted?: string | null): stri
 }
 
 // ─── Map Component ───
-const MapChart = memo(({ onSelect, hoveredGeo, setHoveredGeo, highlighted, tooltipRef, zoom, onZoomChange }: {
+const MapChart = memo(({ onSelect, hoveredGeo, setHoveredGeo, highlighted, zoom, onZoomChange, onHoverName }: {
   onSelect: (name: string) => void;
   hoveredGeo: string | null;
   setHoveredGeo: (g: string | null) => void;
   highlighted?: string | null;
-  tooltipRef?: React.MutableRefObject<string>;
   zoom: number;
   onZoomChange: (z: number) => void;
+  onHoverName: (name: string) => void;
 }) => (
   <ComposableMap projectionConfig={{ rotate: [-10, 0, 0], scale: 147 }} width={800} height={400} style={{ width: "100%", height: "auto" }}>
     <ZoomableGroup center={[0, 20]} zoom={zoom} minZoom={1} maxZoom={12} onMoveEnd={({ zoom: z }) => onZoomChange(z)}>
