@@ -529,8 +529,6 @@ export default function Index() {
         onSelectSkill={(s) => { setActiveSkill(s); setActiveAvatar(null); }}
         activeAvatar={activeAvatar}
         onSelectAvatar={setActiveAvatar}
-        userSkills={skills}
-        xpGained={xpGained}
       />
 
       <div className="flex-1 flex flex-col min-w-0">

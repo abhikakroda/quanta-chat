@@ -76,7 +76,7 @@ const SIDEBAR_ITEMS = [
   { id: "image-generator", icon: Wand2, label: "Create" },
 ] as const;
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
