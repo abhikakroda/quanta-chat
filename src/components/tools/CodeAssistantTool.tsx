@@ -1159,7 +1159,7 @@ export default function CodeAssistantTool() {
         <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
           <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/30 bg-card/50">
             <div className="flex items-center gap-3">
-              <Globe className="w-4 h-4 text-blue-500" />
+              <Globe className="w-4 h-4 text-foreground/70" />
               <span className="text-sm font-semibold text-foreground">Fullscreen Preview</span>
               {pages.length > 1 && (
                 <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
