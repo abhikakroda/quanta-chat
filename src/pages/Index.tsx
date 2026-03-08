@@ -603,7 +603,7 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar — ChatGPT style: model name left, actions right */}
-        <div className="h-12 shrink-0 flex items-center justify-between pl-[76px] pr-3 sm:pr-4 border-b border-border/40">
+        <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40 standalone-safe-left">
           <div className="flex items-center gap-2">
             {sidebarCollapsed && (
               <button onClick={() => setSidebarCollapsed(false)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
