@@ -27,6 +27,54 @@ const LOVABLE_MODEL_MAP: Record<string, string> = {
   "gpt5": "openai/gpt-5",
 };
 
+// Mistral model mapping
+const MISTRAL_MODEL = "mistral-small-latest";
+
+// NVIDIA NIM model mapping for Minimax, GLM, Kimi, Swan
+const NVIDIA_MODEL_MAP: Record<string, string> = {
+  "minimax": "minimax/minimax-m1-80k",
+  "glm": "thudm/chatglm-3-6b",
+  "kimi": "moonshot/moonshot-v1-8k",
+  "swan": "snowflake/arctic",
+};
+
+// Which models route through which provider
+const MISTRAL_MODELS = new Set(["mistral"]);
+const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan"]);
+
+async function callMistralAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
+  return await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: MISTRAL_MODEL,
+      messages,
+      stream,
+      max_tokens: maxTokens,
+    }),
+  });
+}
+
+async function callNvidiaAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
+  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "minimax/minimax-m1-80k";
+  return await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: nvidiaModel,
+      messages,
+      stream,
+      max_tokens: maxTokens,
+    }),
+  });
+}
+
 async function callGoogleAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
   const googleModel = GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash-preview-05-20";
   
