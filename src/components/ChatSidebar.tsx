@@ -1,9 +1,9 @@
-import { memo, useState, useMemo } from "react";
+import { memo, useState, useMemo, useEffect } from "react";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose,
   Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, Phone,
-  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown
+  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown, Pin
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -64,6 +64,7 @@ export const ALL_TOOLS = [
   { id: "task-executor", icon: FileDown, label: "Task Executor", badge: "⚡", prompt: "Generate documents from tasks.", category: "Productivity" },
   { id: "student-ai", icon: GraduationCap, label: "Student AI", badge: "🎓", prompt: "AI study companion: explain topics, quiz, summarize notes, solve homework.", category: "Learning" },
   { id: "world-map", icon: Globe, label: "World Map", badge: "Live", prompt: "Interactive world map for UPSC & competitive exam geography preparation.", category: "Learning" },
+  { id: "ssc-english", icon: BookOpen, label: "SSC English", badge: "New", prompt: "SSC CGL/CHSL English vocabulary, grammar, comprehension & quiz practice.", category: "Learning" },
 ] as const;
 
 export type SkillId = typeof SKILLS[number]["id"];
@@ -83,6 +84,13 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [pinnedToolIds, setPinnedToolIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("pinned_tools") || "[]"); } catch { return []; }
+  });
+
+  useEffect(() => { localStorage.setItem("pinned_tools", JSON.stringify(pinnedToolIds)); }, [pinnedToolIds]);
+
+  const pinnedTools = useMemo(() => ALL_TOOLS.filter(t => pinnedToolIds.includes(t.id)), [pinnedToolIds]);
 
   const filteredConversations = useMemo(() => {
     if (!searchQuery.trim()) return conversations;
@@ -167,6 +175,39 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
               </Link>
             </div>
+
+            {/* Pinned Tools */}
+            {pinnedTools.length > 0 && (
+              <>
+                <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
+                <div className="px-3 space-y-0.5">
+                  <span className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-sidebar-foreground/30 font-semibold uppercase tracking-wider">
+                    <Pin className="w-3 h-3" /> Pinned
+                  </span>
+                  {pinnedTools.map((tool) => (
+                    <button
+                      key={tool.id}
+                      onClick={() => { onSelectSkill?.(tool.id); onNew(); }}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 text-left group",
+                        activeSkill === tool.id
+                          ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <tool.icon className="w-4 h-4 shrink-0 opacity-70" />
+                      <span className="flex-1 truncate">{tool.label}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setPinnedToolIds(prev => prev.filter(id => id !== tool.id)); }}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
 
             <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
 

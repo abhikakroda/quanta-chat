@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, Gamepad2, Trophy, Zap, Star, TrendingUp } from "lucide-react";
+import { ArrowLeft, Search, Gamepad2, Trophy, Zap, Star, TrendingUp, Pin, PinOff } from "lucide-react";
 import { ALL_TOOLS } from "@/components/ChatSidebar";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +28,16 @@ export default function AIPlayground() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [pinnedIds, setPinnedIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("pinned_tools") || "[]"); } catch { return []; }
+  });
+
+  useEffect(() => { localStorage.setItem("pinned_tools", JSON.stringify(pinnedIds)); }, [pinnedIds]);
+
+  const togglePin = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setPinnedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
 
   const filtered = useMemo(() => ALL_TOOLS.filter((tool) => {
     const matchesSearch = !search.trim() || tool.label.toLowerCase().includes(search.toLowerCase());
@@ -176,9 +186,23 @@ export default function AIPlayground() {
                 <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{tool.prompt}</p>
 
                 {/* Bottom action hint */}
-                <div className="flex items-center gap-1.5 mt-auto pt-1 text-[11px] text-muted-foreground/40 group-hover:text-primary transition-colors">
-                  <Zap className="w-3 h-3" />
-                  <span>Launch tool</span>
+                <div className="flex items-center gap-1.5 mt-auto pt-1 w-full">
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/40 group-hover:text-primary transition-colors flex-1">
+                    <Zap className="w-3 h-3" />
+                    <span>Launch tool</span>
+                  </div>
+                  <button
+                    onClick={(e) => togglePin(tool.id, e)}
+                    className={cn(
+                      "p-1.5 rounded-lg transition-all z-10",
+                      pinnedIds.includes(tool.id)
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground/30 hover:text-primary hover:bg-primary/10 opacity-0 group-hover:opacity-100"
+                    )}
+                    title={pinnedIds.includes(tool.id) ? "Unpin from sidebar" : "Pin to sidebar"}
+                  >
+                    {pinnedIds.includes(tool.id) ? <PinOff className="w-3.5 h-3.5" /> : <Pin className="w-3.5 h-3.5" />}
+                  </button>
                 </div>
 
                 {/* Hover glow effect */}
