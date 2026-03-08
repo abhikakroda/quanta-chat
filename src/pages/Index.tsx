@@ -469,6 +469,7 @@ export default function Index() {
           setStreamThinking("");
           setIsThinkingPhase(false);
           setAgentStep(null);
+          setStreamingHint(null);
           setMessages((prev) => [...prev, { ...optimisticAssistant, _skipAnimation: true } as any]);
           // Set streaming false AFTER adding message to avoid gap
           setStreaming(false);
