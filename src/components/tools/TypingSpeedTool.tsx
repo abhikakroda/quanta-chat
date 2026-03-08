@@ -267,6 +267,14 @@ export default function TypingSpeedTool() {
           </div>
 
           <button
+            onClick={(e) => { e.stopPropagation(); setSoundEnabled(p => !p); }}
+            className={cn("p-2 rounded-lg transition-colors", soundEnabled ? "text-primary hover:bg-accent" : "text-muted-foreground/40 hover:bg-accent")}
+            title={soundEnabled ? "Mute sounds" : "Enable sounds"}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
+          <button
             onClick={(e) => { e.stopPropagation(); restart(); }}
             className="p-2 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title="Restart (Tab+Enter)"
