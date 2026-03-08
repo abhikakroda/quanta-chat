@@ -465,7 +465,12 @@ export default function Index() {
             .single()
             .then(({ data }) => {
               if (data) {
-                setMessages((prev) => prev.map((m: any) => m.id === optimisticAssistantId ? data : m));
+                setMessageModels((prev) => {
+                  const next = { ...prev, [data.id]: prev[optimisticAssistantId] };
+                  delete next[optimisticAssistantId];
+                  return next;
+                });
+                setMessages((prev) => prev.map((m: any) => m.id === optimisticAssistantId ? { ...data, _stableKey: optimisticAssistantId } : m));
               }
             });
           
