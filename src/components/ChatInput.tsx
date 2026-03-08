@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
 import { ArrowUp, Square, Plus, ChevronDown, ChevronUp, Atom, Mic, MicOff, Loader2, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MODELS, ModelId, ThinkingLevel } from "@/lib/chat";
+import { MODELS, ModelId } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -31,6 +31,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   agentMode, onToggleAgent,
   selectedModel = "mistral", onSelectModel,
   activeSkillLabel,
+  noBorder,
 }, _ref) {
   const [input, setInput] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
