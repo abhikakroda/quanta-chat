@@ -84,6 +84,7 @@ export default function SSCMathTool() {
   const [tab, setTab] = useState<TabId>("arithmetic");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTopic, setActiveTopic] = useState<string | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQ[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -91,6 +92,7 @@ export default function SSCMathTool() {
   const [streak, setStreak] = useState(0);
 
   const fetchTopic = useCallback(async (topic: string, category: string) => {
+    setActiveTopic(topic);
     setLoading(true);
     setContent("");
     const sys = `You are an SSC CGL/CHSL Quantitative Aptitude expert. Explain the topic "${topic}" under "${category}" clearly with formulas, shortcuts, tricks, and 3-5 solved examples with step-by-step solutions. Format with markdown. Add exam tips and common mistakes to avoid.`;
