@@ -269,7 +269,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 
         <div
           className={cn(
-            "relative flex items-end rounded-[28px] border border-border/60 bg-card transition-all duration-300 shadow-sm",
+            "relative flex items-end rounded-[24px] liquid-pill transition-all duration-300",
             dragging && "ring-2 ring-primary/30"
           )}
         >
