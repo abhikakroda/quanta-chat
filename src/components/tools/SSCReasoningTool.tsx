@@ -37,6 +37,17 @@ const QUIZ_TYPES = [
   "Mixed SSC Reasoning", "Coding-Decoding Special", "Previous Year Questions",
 ];
 
+const STATIC_REASON: Record<string, string> = {
+  "Coding-Decoding": "**Types:**\n- Letter coding: A=1,B=2...Z=26 or shift pattern\n- Number coding: Replace letters with numbers\n- Mixed coding: Conditions-based\n\n**Shortcuts:**\n- Check position shift: +1,+2,−1,−2\n- Reverse alphabet: A↔Z, B↔Y, C↔X\n- Opposite letters sum = 27 (A+Z=1+26)",
+  "Blood Relations": "**Key Rules:**\n- Father's/Mother's son = Brother\n- Father's/Mother's daughter = Sister\n- Father's father = Grandfather\n- Mother's brother = Maternal Uncle\n- Father's sister = Paternal Aunt\n\n**Tip:** Draw family tree, use + for male, − for female",
+  "Direction Sense": "**Compass:**\n- Right of North = East\n- Left of North = West\n- Opposite of NE = SW\n\n**Shadow Rule:**\n- Morning: Shadow falls West (sun in East)\n- Evening: Shadow falls East (sun in West)\n- Noon: No/minimal shadow",
+  "Syllogism": "**Rules:**\n- All A are B + All B are C → All A are C ✓\n- Some A are B + All B are C → Some A are C ✓\n- No A are B → No B are A ✓\n- Some A are B → Some B are A ✓\n\n**Tip:** Use Venn diagrams for every question",
+  "Mirror Image": "**Rules:**\n- Left↔Right reversal (horizontal mirror)\n- Top↔Bottom reversal (vertical mirror)\n- Letters/numbers: Write backwards\n- Clock in mirror: Subtract from 12:00",
+  "Dice & Cubes": "**Rules:**\n- Opposite faces never adjacent\n- In standard dice: 1↔6, 2↔5, 3↔4\n- Two adjacent faces visible → third is opposite of hidden\n- Painted cube cut into n³: Corner=3 faces, Edge=2, Face=1, Inside=0",
+  "Calendar": "**Key Facts:**\n- Odd days: Mon=1, Tue=2...Sun=0\n- Normal year = 1 odd day, Leap = 2\n- 100 years = 5 odd days\n- 400 years = 0 odd days\n- Leap year: divisible by 4, century by 400",
+  "Clock": "**Formulas:**\n- Angle = |30H − 5.5M|\n- Hands overlap: every 65 5/11 min\n- Right angle: 22 times in 12 hours\n- Straight line: 22 times in 12 hours\n- Gain/Loss: Minute hand gains 5.5°/min over hour hand",
+};
+
 async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
   const res = await supabase.functions.invoke("chat", {
     body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
@@ -62,6 +73,7 @@ export default function SSCReasoningTool() {
   const [tab, setTab] = useState<TabId>("verbal");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTopic, setActiveTopic] = useState<string | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQ[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -69,6 +81,7 @@ export default function SSCReasoningTool() {
   const [streak, setStreak] = useState(0);
 
   const fetchTopic = useCallback(async (topic: string, category: string) => {
+    setActiveTopic(topic);
     setLoading(true);
     setContent("");
     const sys = `You are an SSC CGL/CHSL Reasoning expert. Explain "${topic}" under "${category}" with clear concepts, shortcuts, tricks, and 3-5 solved examples with step-by-step solutions. Format with markdown. Add exam tips.`;
