@@ -340,7 +340,7 @@ export default function Index() {
     if (!isGhost && convId) {
       supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single().then(({ data }) => {
         if (data) {
-          setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? data : m));
+          setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? { ...data, _stableKey: tempId } : m));
           if (displayImageFile?.dataUrl) {
             setMessageImages((prev) => {
               const next = { ...prev, [data.id]: prev[tempId] };
