@@ -27,6 +27,54 @@ const LOVABLE_MODEL_MAP: Record<string, string> = {
   "gpt5": "openai/gpt-5",
 };
 
+// Mistral model mapping
+const MISTRAL_MODEL = "mistral-small-latest";
+
+// NVIDIA NIM model mapping for Minimax, GLM, Kimi, Swan
+const NVIDIA_MODEL_MAP: Record<string, string> = {
+  "minimax": "minimax/minimax-m1-80k",
+  "glm": "thudm/chatglm-3-6b",
+  "kimi": "moonshot/moonshot-v1-8k",
+  "swan": "snowflake/arctic",
+};
+
+// Which models route through which provider
+const MISTRAL_MODELS = new Set(["mistral"]);
+const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan"]);
+
+async function callMistralAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
+  return await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: MISTRAL_MODEL,
+      messages,
+      stream,
+      max_tokens: maxTokens,
+    }),
+  });
+}
+
+async function callNvidiaAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
+  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "minimax/minimax-m1-80k";
+  return await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: nvidiaModel,
+      messages,
+      stream,
+      max_tokens: maxTokens,
+    }),
+  });
+}
+
 async function callGoogleAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
   const googleModel = GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash-preview-05-20";
   
@@ -155,6 +203,8 @@ serve(async (req) => {
 
     const GOOGLE_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
+    const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
 
     const { messages, enableThinking = true, model = "gemini-flash", skillPrompt, imageData } = await req.json();
 
@@ -235,8 +285,42 @@ serve(async (req) => {
       throw new Error("No AI API key configured");
     }
 
-    // Standard text chat — Try Google first, fallback to Lovable AI
-    if (GOOGLE_API_KEY) {
+    // ── Route by model provider ──
+
+    // Mistral models → Mistral API
+    if (MISTRAL_MODELS.has(model) && MISTRAL_API_KEY) {
+      try {
+        const resp = await callMistralAI(MISTRAL_API_KEY, allMessages, true, 4096);
+        if (resp.ok && resp.body) {
+          console.log("✅ Chat: Using Mistral API");
+          return new Response(resp.body, {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+        console.warn("⚠️ Mistral failed:", resp.status, await resp.text());
+      } catch (e) {
+        console.warn("⚠️ Mistral error:", e);
+      }
+    }
+
+    // NVIDIA models (Minimax, GLM, Kimi, Swan) → NVIDIA NIM API
+    if (NVIDIA_MODELS.has(model) && NVIDIA_API_KEY) {
+      try {
+        const resp = await callNvidiaAI(NVIDIA_API_KEY, model, allMessages, true, 4096);
+        if (resp.ok && resp.body) {
+          console.log("✅ Chat: Using NVIDIA NIM -", NVIDIA_MODEL_MAP[model] || model);
+          return new Response(resp.body, {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+        console.warn("⚠️ NVIDIA failed:", resp.status, await resp.text());
+      } catch (e) {
+        console.warn("⚠️ NVIDIA error:", e);
+      }
+    }
+
+    // Google Gemini models → Google AI Studio (primary for gemini-* and gpt5-*)
+    if (GOOGLE_API_KEY && !MISTRAL_MODELS.has(model) && !NVIDIA_MODELS.has(model)) {
       try {
         const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, allMessages, true, 4096);
         if (googleResp.ok && googleResp.body) {
@@ -252,9 +336,9 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to Lovable AI
+    // Fallback to Lovable AI for any model
     if (LOVABLE_API_KEY) {
-      console.log("🔄 Chat: Falling back to Lovable AI");
+      console.log("🔄 Chat: Falling back to Lovable AI for model:", model);
       const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, allMessages, true, 4096);
       if (!lovableResp.ok) {
         if (lovableResp.status === 429) {
