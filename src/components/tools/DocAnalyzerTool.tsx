@@ -670,8 +670,8 @@ export default function DocAnalyzerTool() {
                 <ScanText className="w-6 h-6 text-amber-500/40 group-hover:text-amber-500/60 transition-colors" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-foreground/60">Handwritten PDF → Text</p>
-                <p className="text-xs text-muted-foreground/50 mt-0.5">AI-powered OCR extraction</p>
+                <p className="text-sm font-medium text-foreground/60">Handwriting → Text</p>
+                <p className="text-xs text-muted-foreground/50 mt-0.5">PDF or image • AI OCR</p>
               </div>
             </label>
           </div>
