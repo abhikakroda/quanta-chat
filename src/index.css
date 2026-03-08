@@ -37,13 +37,13 @@
 
     --radius: 0.625rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 220 14% 97%;
     --sidebar-foreground: 0 0% 0%;
     --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 94%;
+    --sidebar-accent: 220 12% 92%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 0 0% 92%;
+    --sidebar-border: 220 10% 90%;
     --sidebar-ring: 0 0% 0%;
 
     --chat-user: 204 94% 94%;
