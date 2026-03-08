@@ -161,7 +161,7 @@ export default function GKTool() {
 
       <div className="flex gap-1 px-4 py-2 border-b border-border/30 overflow-x-auto">
         {TABS.map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setContent(""); setQuizQuestions([]); }}
+          <button key={t.id} onClick={() => { setTab(t.id); setContent(""); setActiveTopic(null); setQuizQuestions([]); }}
             className={cn("px-3 py-1.5 rounded-lg text-[13px] font-medium whitespace-nowrap transition-all",
               tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted/50")}>
             {t.emoji} {t.label}
