@@ -346,9 +346,20 @@ answer is the 0-based index of the correct option. Make questions challenging bu
             {/* Map */}
             {!search && (
               <>
-                <div className="rounded-2xl border border-border/50 bg-card overflow-hidden relative">
+                <div className="rounded-2xl border border-border/50 bg-card overflow-hidden relative"
+                  onMouseMove={(e) => { const rect = e.currentTarget.getBoundingClientRect(); setMousePos({ x: e.clientX - rect.left, y: e.clientY - rect.top }); }}
+                  onMouseLeave={() => setHoveredName("")}>
+                  {/* Country name tooltip */}
+                  {hoveredName && (
+                    <div
+                      className="absolute z-20 pointer-events-none px-2.5 py-1.5 rounded-lg bg-foreground text-background text-xs font-semibold shadow-lg whitespace-nowrap"
+                      style={{ left: mousePos.x + 12, top: mousePos.y - 10, transform: "translateY(-100%)" }}
+                    >
+                      {hoveredName}
+                    </div>
+                  )}
                   <div className="bg-muted/30 p-2">
-                    <MapChart onSelect={handleCountrySelect} hoveredGeo={hoveredGeo} setHoveredGeo={setHoveredGeo} zoom={mapZoom} onZoomChange={setMapZoom} />
+                    <MapChart onSelect={handleCountrySelect} hoveredGeo={hoveredGeo} setHoveredGeo={setHoveredGeo} zoom={mapZoom} onZoomChange={setMapZoom} onHoverName={setHoveredName} />
                   </div>
                   {/* Zoom controls */}
                   <div className="absolute top-3 right-3 flex flex-col gap-1">
