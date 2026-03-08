@@ -344,11 +344,29 @@ answer is the 0-based index of the correct option. Make questions challenging bu
             {/* Map */}
             {!search && (
               <>
-                <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+                <div className="rounded-2xl border border-border/50 bg-card overflow-hidden relative">
                   <div className="bg-muted/30 p-2">
-                    <MapChart onSelect={handleCountrySelect} hoveredGeo={hoveredGeo} setHoveredGeo={setHoveredGeo} />
+                    <MapChart onSelect={handleCountrySelect} hoveredGeo={hoveredGeo} setHoveredGeo={setHoveredGeo} zoom={mapZoom} onZoomChange={setMapZoom} />
                   </div>
-                  <p className="text-center text-xs text-muted-foreground py-2">🗺️ Click country • Scroll zoom • Drag pan</p>
+                  {/* Zoom controls */}
+                  <div className="absolute top-3 right-3 flex flex-col gap-1">
+                    <button onClick={() => setMapZoom(z => Math.min(12, z * 1.5))}
+                      className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur border border-border/50 flex items-center justify-center text-foreground hover:bg-accent transition-colors text-sm font-bold shadow-sm">
+                      +
+                    </button>
+                    <button onClick={() => setMapZoom(z => Math.max(1, z / 1.5))}
+                      className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur border border-border/50 flex items-center justify-center text-foreground hover:bg-accent transition-colors text-sm font-bold shadow-sm">
+                      −
+                    </button>
+                    <button onClick={() => setMapZoom(1)}
+                      className="w-8 h-8 rounded-lg bg-card/90 backdrop-blur border border-border/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors text-[10px] font-semibold shadow-sm">
+                      ⟳
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between px-3 py-2">
+                    <p className="text-xs text-muted-foreground">🗺️ Click country • Scroll zoom • Drag pan</p>
+                    <span className="text-[10px] text-muted-foreground/50">{mapZoom.toFixed(1)}x</span>
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-1.5 px-1">
                   {TOPIC_CATEGORIES.map(cat => (
