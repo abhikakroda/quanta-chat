@@ -1090,10 +1090,10 @@ export default function CodeAssistantTool() {
 
       {/* Projects dropdown */}
       {showProjects && (
-        <div className="border-b border-border/30 bg-card/80 backdrop-blur-sm max-h-[220px] overflow-y-auto animate-fade-in">
+        <div className="border-b border-border/30 bg-card backdrop-blur-sm max-h-[220px] overflow-y-auto animate-slide-up">
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/20">
             <span className="text-xs font-semibold text-foreground">Your Projects</span>
-            <button onClick={handleReset} className="flex items-center gap-1 text-xs text-blue-500 hover:text-blue-400 transition-colors font-medium">
+            <button onClick={handleReset} className="flex items-center gap-1 text-xs text-foreground/70 hover:text-foreground transition-colors font-medium">
               <Plus className="w-3 h-3" /> New Project
             </button>
           </div>
