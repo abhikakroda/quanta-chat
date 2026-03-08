@@ -167,6 +167,7 @@ export default function TypingSpeedTool() {
     if (key === " ") {
       e.preventDefault();
       if (input.length === 0) return;
+      playKeySound("space");
       const currentWord = words[wordIndex];
       if (input === currentWord) {
         setCorrectWords(p => p + 1);
@@ -179,6 +180,7 @@ export default function TypingSpeedTool() {
 
     if (key === "Backspace") {
       if (input.length > 0) {
+        playKeySound("back");
         const newKey = `${wordIndex}-${input.length - 1}`;
         setCharStatuses(prev => {
           const next = new Map(prev);
@@ -196,6 +198,7 @@ export default function TypingSpeedTool() {
       const ci = input.length;
       const isCorrect = ci < currentWord.length && key === currentWord[ci];
       
+      playKeySound(isCorrect ? "click" : "error");
       setTotalChars(p => p + 1);
       if (isCorrect) setCorrectChars(p => p + 1);
       
