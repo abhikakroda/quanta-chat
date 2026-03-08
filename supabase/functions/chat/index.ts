@@ -131,18 +131,24 @@ async function callGoogleAI(apiKey: string, model: string, messages: any[], stre
 
 async function callLovableAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
   const lovableModel = LOVABLE_MODEL_MAP[model] || "google/gemini-3-flash-preview";
+  const isOpenAI = lovableModel.startsWith("openai/");
+  const body: any = {
+    model: lovableModel,
+    messages,
+    stream,
+  };
+  if (isOpenAI) {
+    body.max_completion_tokens = maxTokens;
+  } else {
+    body.max_tokens = maxTokens;
+  }
   return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model: lovableModel,
-      messages,
-      stream,
-      max_tokens: maxTokens,
-    }),
+    body: JSON.stringify(body),
   });
 }
 
