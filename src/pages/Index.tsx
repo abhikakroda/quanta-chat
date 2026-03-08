@@ -921,6 +921,9 @@ export default function Index() {
                 </div>
               )}
             </div>
+            <div className="flex justify-center py-1">
+              <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+            </div>
             <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming || optimizing} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
           </>
         ) : (
