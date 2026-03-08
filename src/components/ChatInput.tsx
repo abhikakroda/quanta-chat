@@ -356,7 +356,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
               {modelMenuOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
             {modelMenuOpen && (
-              <div className="absolute bottom-full mb-2 bg-popover border border-border rounded-xl shadow-lg z-50 min-w-[180px] py-1 animate-scale-spring">
+              <div className="absolute bottom-full mb-2 glass-strong rounded-2xl shadow-float z-50 min-w-[180px] py-1.5 animate-scale-spring">
                 {MODELS.map((m) => (
                   <button
                     key={m.id}

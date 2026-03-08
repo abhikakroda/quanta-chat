@@ -871,7 +871,7 @@ export default function Index() {
 
       {/* Auth Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-        <DialogContent className="sm:max-w-sm p-0 gap-0 border-border bg-background">
+        <DialogContent className="sm:max-w-sm p-0 gap-0 glass-strong border-border/20 rounded-2xl overflow-hidden">
           <div className="p-6 space-y-6">
             <div className="text-center space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
