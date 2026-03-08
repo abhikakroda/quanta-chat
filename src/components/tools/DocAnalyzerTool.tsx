@@ -21,7 +21,7 @@ type Slide = {
   accent: string;
 };
 
-type Mode = "home" | "analyze" | "slides" | "pdf-preview";
+type Mode = "home" | "analyze" | "slides" | "pdf-preview" | "ocr";
 
 const ACCENT_COLORS: Record<string, { bg: string; text: string; gradient: string }> = {
   blue: { bg: "bg-blue-500", text: "text-blue-400", gradient: "from-blue-600 to-blue-400" },
