@@ -74,6 +74,7 @@ export const ALL_TOOLS = [
   { id: "ies-et", icon: GraduationCap, label: "IES/ESE E&T", badge: "🏛️", prompt: "UPSC IES Electronics & Telecommunication full syllabus: Paper I, Paper II, GA, PYQs.", category: "Learning" },
   { id: "gate-ece", icon: GraduationCap, label: "GATE ECE", badge: "🔥", prompt: "GATE Electronics & Communication: Full syllabus, PYQs (2010-2024), Quiz, Formulas, Analysis.", category: "Learning" },
   { id: "custom-skill", icon: BookOpen, label: "My Skills", badge: "✨", prompt: "Create and study your own custom skills and topics.", category: "Learning" },
+  { id: "typing-speed", icon: Keyboard, label: "Typing Speed", badge: "New", prompt: "Practice typing speed with a visual keyboard and WPM tracking.", category: "Utility" },
 ] as const;
 
 export type SkillId = typeof SKILLS[number]["id"];
