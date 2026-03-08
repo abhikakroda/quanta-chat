@@ -1,5 +1,8 @@
-import { useState, memo, useCallback, useEffect, useRef } from "react";
+import { useState, memo, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
@@ -29,6 +32,8 @@ hljs.registerLanguage("markdown", markdown);
 hljs.registerLanguage("md", markdown);
 import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck, Volume2, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const MermaidDiagram = lazy(() => import("@/components/MermaidDiagram"));
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [copied, setCopied] = useState(false);
