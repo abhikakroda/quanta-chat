@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { RotateCcw, Timer, Zap, Target, Trophy } from "lucide-react";
+import { RotateCcw, Timer, Zap, Target, Trophy, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WORD_POOL = [
