@@ -8,6 +8,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel, ThinkingLevel } from "@/lib/chat";
 import { useUserMemories, extractMemories } from "@/hooks/useUserMemories";
 import { useSkillLevel } from "@/hooks/useSkillLevel";
+import { useIsElectron } from "@/hooks/useElectron";
 import ChatSidebar, { SKILLS, ALL_TOOLS, SkillId } from "@/components/ChatSidebar";
 import { AVATARS } from "@/lib/avatars";
 import ChatMessage from "@/components/ChatMessage";
