@@ -293,23 +293,6 @@ serve(async (req) => {
 
     // ── Route by model provider ──
 
-    // Claude (Premium) → Anthropic API
-    if (CLAUDE_MODELS.has(model) && ANTHROPIC_API_KEY) {
-      try {
-        const resp = await callClaudeAI(ANTHROPIC_API_KEY, allMessages, true, 4096);
-        if (resp.ok && resp.body) {
-          console.log("✅ Chat: Using Claude (Premium) -", CLAUDE_MODEL);
-          const transformedStream = transformClaudeStream(resp.body);
-          return new Response(transformedStream, {
-            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-          });
-        }
-        console.warn("⚠️ Claude failed:", resp.status, await resp.text());
-      } catch (e) {
-        console.warn("⚠️ Claude error:", e);
-      }
-    }
-
     // Mistral models → Mistral API
     if (MISTRAL_MODELS.has(model) && MISTRAL_API_KEY) {
       try {
