@@ -683,57 +683,120 @@ export default function DocAnalyzerTool() {
         <div className="flex-1 flex flex-col min-h-0 gap-3">
           {ocrLoading ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-5">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full border-4 border-muted/30 flex items-center justify-center">
-                  <ScanText className="w-8 h-8 text-amber-500 animate-pulse" />
+              <div className="relative w-24 h-24">
+                <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" opacity="0.3" />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--primary))" strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={`${ocrTotalPages ? (ocrProgress / ocrTotalPages) * 264 : 0} 264`}
+                    className="transition-all duration-700"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-bold text-foreground">{ocrProgress}</span>
+                  <span className="text-[9px] text-muted-foreground">of {ocrTotalPages}</span>
                 </div>
-                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-500 animate-spin" style={{ animationDuration: "1.5s" }} />
               </div>
-              <div className="text-center space-y-2">
-                <p className="text-sm font-medium text-foreground/80">Extracting handwritten text...</p>
-                <p className="text-xs text-muted-foreground">Processing page {ocrProgress} of {ocrTotalPages}</p>
-                <div className="w-48 h-1.5 rounded-full bg-muted/30 overflow-hidden mx-auto">
-                  <div className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${ocrTotalPages ? (ocrProgress / ocrTotalPages) * 100 : 0}%` }} />
-                </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-semibold text-foreground/90">Scanning handwriting...</p>
+                <p className="text-xs text-muted-foreground">Processing {Math.min(3, ocrTotalPages - ocrProgress + 1)} pages in parallel</p>
               </div>
-              {ocrPageTexts.length > 0 && (
-                <div className="w-full max-w-lg rounded-xl bg-muted/10 border border-border/30 p-4 max-h-40 overflow-y-auto mt-2">
-                  <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wider mb-2">Live Preview</p>
-                  <pre className="text-xs text-foreground/60 whitespace-pre-wrap font-mono leading-relaxed">{ocrPageTexts[ocrPageTexts.length - 1]?.slice(0, 300)}...</pre>
+              {/* Page thumbnails progress */}
+              {ocrPageImages.some(Boolean) && (
+                <div className="flex gap-1.5 flex-wrap justify-center max-w-md">
+                  {ocrPageImages.map((img, i) => (
+                    <div key={i} className={cn(
+                      "w-12 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300",
+                      ocrPageTexts[i] ? "border-primary/40 opacity-100" : img ? "border-border/30 opacity-50 animate-pulse" : "border-border/20 opacity-20"
+                    )}>
+                      {img ? (
+                        <img src={img} alt={`Page ${i + 1}`} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-muted/20" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           ) : ocrText ? (
             <>
+              {/* Toolbar */}
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <ScanText className="w-4 h-4 text-amber-500" />
+                  <ScanText className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">{fileName}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-medium">{ocrPageTexts.length} page{ocrPageTexts.length !== 1 ? "s" : ""} extracted</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                    {ocrPageTexts.length} page{ocrPageTexts.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  {/* View toggle */}
+                  {ocrPageImages.some(Boolean) && (
+                    <div className="flex gap-0.5 bg-muted/30 rounded-lg p-0.5 border border-border/30">
+                      <button onClick={() => setOcrViewMode("text")} className={cn("px-2 py-1 rounded-md text-[10px] font-medium transition-all", ocrViewMode === "text" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}>
+                        Text
+                      </button>
+                      <button onClick={() => setOcrViewMode("sidebyside")} className={cn("px-2 py-1 rounded-md text-[10px] font-medium transition-all", ocrViewMode === "sidebyside" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}>
+                        Side by Side
+                      </button>
+                    </div>
+                  )}
                   <button onClick={copyOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
                     {ocrCopied ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    {ocrCopied ? "Copied!" : "Copy"}
+                    {ocrCopied ? "Copied!" : "Copy All"}
                   </button>
                   <button onClick={downloadOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
-                    <Download className="w-3.5 h-3.5" /> Download .txt
+                    <Download className="w-3.5 h-3.5" /> .txt
                   </button>
-                  <button onClick={() => { setPdfContent(ocrText); setMode("pdf-preview"); setPdfTitle(fileName?.replace(/\.pdf$/i, "") || "OCR Document"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
-                    <FileDown className="w-3.5 h-3.5" /> Export PDF
+                  <button onClick={() => { setPdfContent(ocrPageTexts.join("\n\n---\n\n")); setMode("pdf-preview"); setPdfTitle(fileName?.replace(/\.[^.]+$/i, "") || "OCR Document"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
+                    <FileDown className="w-3.5 h-3.5" /> PDF
                   </button>
                 </div>
               </div>
+
+              {/* Content */}
               <div className="flex-1 overflow-y-auto rounded-xl bg-card border border-border/30 shadow-sm min-h-0">
-                <div className="p-6 space-y-6">
+                <div className="p-5 space-y-5">
                   {ocrPageTexts.map((pageText, i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center text-[10px] font-bold text-amber-600">{i + 1}</div>
-                        <span className="text-[11px] text-muted-foreground font-medium">Page {i + 1}</span>
-                        <div className="flex-1 h-px bg-border/20" />
+                    <div key={i} className={cn(
+                      "rounded-xl border border-border/20 overflow-hidden transition-all",
+                      ocrEditingPage === i && "ring-2 ring-primary/20"
+                    )}>
+                      {/* Page header */}
+                      <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b border-border/20">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">{i + 1}</span>
+                          <span className="text-[11px] text-muted-foreground font-medium">Page {i + 1}</span>
+                        </div>
+                        <button
+                          onClick={() => setOcrEditingPage(ocrEditingPage === i ? null : i)}
+                          className={cn("p-1 rounded-md transition-colors", ocrEditingPage === i ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+                        >
+                          {ocrEditingPage === i ? <Check className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
+                        </button>
                       </div>
-                      <pre className="text-sm text-foreground/85 whitespace-pre-wrap font-sans leading-relaxed pl-8">{pageText}</pre>
+
+                      <div className={cn(ocrViewMode === "sidebyside" && ocrPageImages[i] ? "grid grid-cols-2 divide-x divide-border/20" : "")}>
+                        {/* Image preview (side by side) */}
+                        {ocrViewMode === "sidebyside" && ocrPageImages[i] && (
+                          <div className="p-3 bg-muted/10 flex items-start justify-center">
+                            <img src={ocrPageImages[i]} alt={`Page ${i + 1}`} className="max-h-[400px] rounded-lg border border-border/20 object-contain" />
+                          </div>
+                        )}
+
+                        {/* Text */}
+                        <div className="p-4">
+                          {ocrEditingPage === i ? (
+                            <textarea
+                              value={pageText}
+                              onChange={e => updateOcrPageText(i, e.target.value)}
+                              className="w-full min-h-[200px] bg-transparent text-sm text-foreground outline-none resize-none leading-relaxed font-mono"
+                            />
+                          ) : (
+                            <pre className="text-sm text-foreground/85 whitespace-pre-wrap font-sans leading-relaxed">{pageText}</pre>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
