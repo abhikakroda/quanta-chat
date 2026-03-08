@@ -214,60 +214,36 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           {/* User section at bottom */}
           <div className="mt-auto border-t border-sidebar-border/40">
             {user ? (
-              !collapsed ? (
-                <div className="px-2 py-2">
-                  {userMenuOpen && (
-                    <button
-                      onClick={() => { signOut(); setUserMenuOpen(false); }}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-destructive hover:bg-destructive/10 transition-colors mb-1"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  )}
+              <div className="px-2 py-2">
+                {userMenuOpen && (
                   <button
-                    onClick={() => setUserMenuOpen((o) => !o)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-sidebar-accent/70 transition-colors"
+                    onClick={() => { signOut(); setUserMenuOpen(false); }}
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] text-destructive hover:bg-destructive/10 transition-colors mb-1"
                   >
-                    <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
-                      {user?.email?.[0]?.toUpperCase() || "U"}
-                    </div>
-                    <span className="text-[12px] text-sidebar-foreground/60 truncate flex-1 text-left">{user?.email || "User"}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/30" />
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
                   </button>
-                </div>
-              ) : (
-                <div className="px-1.5 py-2">
-                  <button
-                    onClick={signOut}
-                    className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:text-destructive hover:bg-destructive/10 transition-colors"
-                    title="Sign Out"
-                  >
-                    <LogOut className="w-[18px] h-[18px]" />
-                  </button>
-                </div>
-              )
+                )}
+                <button
+                  onClick={() => setUserMenuOpen((o) => !o)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-sidebar-accent/70 transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-semibold">
+                    {user?.email?.[0]?.toUpperCase() || "U"}
+                  </div>
+                  <span className="text-[12px] text-sidebar-foreground/60 truncate flex-1 text-left">{user?.email || "User"}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/30" />
+                </button>
+              </div>
             ) : (
-              !collapsed ? (
-                <div className="px-2 py-2">
-                  <a
-                    href="/auth"
-                    className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-opacity justify-center"
-                  >
-                    Sign In
-                  </a>
-                </div>
-              ) : (
-                <div className="px-1.5 py-2">
-                  <a
-                    href="/auth"
-                    className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:text-primary hover:bg-primary/10 transition-colors"
-                    title="Sign In"
-                  >
-                    <LogOut className="w-[18px] h-[18px]" />
-                  </a>
-                </div>
-              )
+              <div className="px-2 py-2">
+                <a
+                  href="/auth"
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-opacity justify-center"
+                >
+                  Sign In
+                </a>
+              </div>
             )}
           </div>
         </div>
