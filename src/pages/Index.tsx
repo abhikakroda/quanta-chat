@@ -740,6 +740,47 @@ export default function Index() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Project Memory Dialog */}
+      <Dialog open={memoryDialogOpen} onOpenChange={setMemoryDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-foreground">Project Memory</h3>
+              <p className="text-sm text-muted-foreground mt-1">Set persistent context that will be included in every message.</p>
+            </div>
+            <textarea
+              value={memoryDraft}
+              onChange={(e) => setMemoryDraft(e.target.value)}
+              placeholder="e.g. I'm building a SaaS app using React and Node.js..."
+              className="w-full min-h-[120px] rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              {projectMemory && (
+                <button
+                  onClick={() => { setProjectMemory(""); setMemoryDialogOpen(false); }}
+                  className="px-3 py-1.5 text-sm rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
+              <button
+                onClick={() => setMemoryDialogOpen(false)}
+                className="px-3 py-1.5 text-sm rounded-lg text-muted-foreground hover:bg-muted transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setProjectMemory(memoryDraft); setMemoryDialogOpen(false); }}
+                className="px-4 py-1.5 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity font-medium"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
