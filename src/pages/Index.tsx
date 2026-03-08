@@ -67,6 +67,62 @@ const IESETTool = lazy(() => import("@/components/tools/IESETTool"));
 const GATEECETool = lazy(() => import("@/components/tools/GATEECETool"));
 const PCBDesignTool = lazy(() => import("@/components/tools/PCBDesignTool"));
 
+function ModelSelector({ selectedModel, onSelectModel }: { selectedModel: ModelId; onSelectModel: (m: ModelId) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selectedModelObj = MODELS.find((m) => m.id === selectedModel);
+  const selectedModelLabel = selectedModelObj?.label || "Auto";
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-1 px-2 py-1 rounded-lg text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent transition-colors touch-manipulation"
+      >
+        <span className="flex items-center gap-1.5">
+          {selectedModelLabel}
+          {selectedModelObj?.premium && (
+            <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">Pro</span>
+          )}
+        </span>
+        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="absolute top-full left-0 mt-1 glass-strong rounded-2xl shadow-float z-50 min-w-[200px] py-1.5 animate-scale-spring">
+          {MODELS.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => { onSelectModel(m.id); setOpen(false); }}
+              className={cn(
+                "w-full text-left px-3 py-2 text-sm transition-colors touch-manipulation flex items-center justify-between",
+                selectedModel === m.id ? "text-foreground font-medium bg-accent" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+              )}
+            >
+              <span className="flex items-center gap-1.5">
+                {m.label}
+                {m.premium && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/20 uppercase tracking-wider">
+                    Pro
+                  </span>
+                )}
+              </span>
+              {selectedModel === m.id && <span className="text-foreground">✓</span>}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "calculator": CalculatorTool,
