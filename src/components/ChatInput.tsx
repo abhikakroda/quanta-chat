@@ -222,7 +222,8 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     } catch (err) { console.error("Microphone access denied:", err); }
   }, [recording]);
 
-  const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label || "Auto";
+  const selectedModelObj = MODELS.find((m) => m.id === selectedModel);
+  const selectedModelLabel = selectedModelObj?.label || "Auto";
 
   return (
     <div
