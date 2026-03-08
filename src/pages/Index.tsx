@@ -118,7 +118,7 @@ export default function Index() {
   const { user, loading: authLoading, signIn, signUp } = useAuth();
   const { conversations, createConversation, deleteConversation, updateTitle, refetch } = useConversations();
   const [activeId, setActiveId] = useState<string | null>(null);
-  const { messages, addMessage, setMessages } = useMessages(activeId);
+  const { messages, addMessage, setMessages, skipNextFetch } = useMessages(activeId);
   const [messageImages, setMessageImages] = useState<Record<string, string>>({});
   const [messageModels, setMessageModels] = useState<Record<string, string>>({});
   const [streaming, setStreaming] = useState(false);
@@ -280,6 +280,7 @@ export default function Index() {
         const conv = await createConversation(input.slice(0, 50));
         if (!conv) return;
         convId = conv.id;
+        skipNextFetch();
         setActiveId(conv.id);
       }
     }

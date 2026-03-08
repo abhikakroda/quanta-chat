@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type DBMessage = {
@@ -36,9 +36,18 @@ export function useMessages(conversationId: string | null) {
     conversationId ? getCachedMessages(conversationId) : []
   );
   const [loading, setLoading] = useState(false);
+  const skipNextFetchRef = useRef(false);
+
+  const skipNextFetch = useCallback(() => {
+    skipNextFetchRef.current = true;
+  }, []);
 
   const fetchMessages = useCallback(async () => {
     if (!conversationId) { setMessages([]); return; }
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false;
+      return;
+    }
     // Show cached immediately
     const cached = getCachedMessages(conversationId);
     if (cached.length > 0) setMessages(cached);
@@ -80,5 +89,5 @@ export function useMessages(conversationId: string | null) {
     return data;
   };
 
-  return { messages, loading, addMessage, setMessages: setMessagesWithCache, refetch: fetchMessages };
+  return { messages, loading, addMessage, setMessages: setMessagesWithCache, refetch: fetchMessages, skipNextFetch };
 }
