@@ -391,11 +391,17 @@ export default function Index() {
         if (!imgResp.ok || !imgData.success) {
           assistantContent = `⚠️ Image generation failed: ${imgData.error || "Unknown error"}. Please try again.`;
         } else {
-          const imgUrl = imgData.images?.[0]?.image_url?.url || "";
+          // Handle multiple image response formats
+          const imgUrl = imgData.images?.[0]?.image_url?.url 
+            || imgData.images?.[0]?.url 
+            || imgData.images?.[0]?.b64_json 
+            || "";
           const desc = imgData.text || "";
-          assistantContent = imgUrl
-            ? `![Generated Image](${imgUrl})\n\n${desc}`
-            : `⚠️ No image was returned. ${desc}`;
+          const isBase64 = imgUrl.startsWith("data:") || imgData.images?.[0]?.b64_json;
+          const displayUrl = isBase64 && !imgUrl.startsWith("data:") ? `data:image/png;base64,${imgUrl}` : imgUrl;
+          assistantContent = displayUrl
+            ? `![Generated Image](${displayUrl})\n\n${desc}`
+            : desc ? desc : `⚠️ No image was returned. Try a more descriptive prompt.`;
         }
 
         const assistantMsg = {

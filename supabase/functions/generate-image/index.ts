@@ -19,9 +19,8 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const token = authHeader.replace("Bearer ", "");
-    const { data, error: authError } = await supabase.auth.getClaims(token);
-    if (authError || !data?.claims?.sub) throw new Error("Not authenticated");
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) throw new Error("Not authenticated");
 
     const { prompt } = await req.json();
     if (!prompt) throw new Error("Prompt is required");
@@ -36,11 +35,11 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
+        model: "google/gemini-3-pro-image-preview",
         messages: [
           {
             role: "user",
-            content: prompt,
+            content: `Generate a high-quality image: ${prompt}`,
           },
         ],
         modalities: ["image", "text"],
@@ -60,15 +59,31 @@ serve(async (req) => {
       }
       const errText = await response.text();
       console.error("Image generation error:", response.status, errText);
-      return new Response(JSON.stringify({ error: "Image generation failed" }), {
+      return new Response(JSON.stringify({ error: `Image generation failed: ${errText}` }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const result = await response.json();
+    console.log("Image API response structure:", JSON.stringify(result).slice(0, 500));
+    
     const message = result.choices?.[0]?.message;
-    const images = message?.images || [];
     const text = message?.content || "";
+    
+    // Handle multiple possible image response formats
+    let images: any[] = [];
+    if (message?.images && Array.isArray(message.images)) {
+      images = message.images;
+    } else if (message?.content_parts) {
+      images = message.content_parts.filter((p: any) => p.type === "image").map((p: any) => ({ image_url: { url: p.image_url || p.url } }));
+    } else if (Array.isArray(message?.content)) {
+      // multimodal content array format
+      for (const part of message.content) {
+        if (part.type === "image_url") {
+          images.push({ image_url: { url: part.image_url?.url || part.url } });
+        }
+      }
+    }
 
     return new Response(JSON.stringify({ success: true, text, images }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
