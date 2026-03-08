@@ -165,7 +165,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                       />
                     </div>
                   )}
-                  <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground">{content}</p>
+                  <p className="text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground">{content}</p>
                 </div>
               </div>
             )
