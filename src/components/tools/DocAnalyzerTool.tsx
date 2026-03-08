@@ -72,6 +72,7 @@ export default function DocAnalyzerTool() {
   const [ocrPageImages, setOcrPageImages] = useState<string[]>([]);
   const [ocrEditingPage, setOcrEditingPage] = useState<number | null>(null);
   const [ocrViewMode, setOcrViewMode] = useState<"text" | "sidebyside">("text");
+  const [ocrAiProcessing, setOcrAiProcessing] = useState<"rewrite" | "proofread" | null>(null);
   const ocrFileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
