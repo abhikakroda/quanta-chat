@@ -452,12 +452,14 @@ export default function Index() {
           setMessageModels((prev) => ({ ...prev, [optimisticAssistantId]: getModelLabel(effectiveModel) }));
           
           // Clear streaming and add final message atomically (no flicker)
-          setStreaming(false);
+          // Use ReactDOM.flushSync-like approach: batch all state updates together
           setStreamContent("");
           setStreamThinking("");
           setIsThinkingPhase(false);
           setAgentStep(null);
-          setMessages((prev) => [...prev, optimisticAssistant as any]);
+          setMessages((prev) => [...prev, { ...optimisticAssistant, _skipAnimation: true } as any]);
+          // Set streaming false AFTER adding message to avoid gap
+          setStreaming(false);
           
           // Save to DB in background, swap optimistic ID with real ID
           supabase
