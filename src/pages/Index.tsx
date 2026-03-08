@@ -55,6 +55,7 @@ const FileProcessorTool = lazy(() => import("@/components/tools/FileProcessorToo
 const TaskExecutorTool = lazy(() => import("@/components/tools/TaskExecutorTool"));
 const StudentAITool = lazy(() => import("@/components/tools/StudentAITool"));
 const WorldMapTool = lazy(() => import("@/components/tools/WorldMapTool"));
+const SSCEnglishTool = lazy(() => import("@/components/tools/SSCEnglishTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -92,6 +93,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "task-executor": TaskExecutorTool,
   "student-ai": StudentAITool,
   "world-map": WorldMapTool,
+  "ssc-english": SSCEnglishTool,
 };
 
 export default function Index() {
