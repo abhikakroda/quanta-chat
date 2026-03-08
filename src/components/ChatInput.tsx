@@ -36,12 +36,8 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 }, _ref) {
   const [input, setInput] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
-  const [modelMenuOpen] = useState(false);
-  const [recording, setRecording] = useState(false);
-  const [transcribing, setTranscribing] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
-  const modelRef = useRef<HTMLDivElement>(null); // kept for potential future use
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
 
