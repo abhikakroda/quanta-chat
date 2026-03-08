@@ -812,6 +812,24 @@ export default function DocAnalyzerTool() {
                       </button>
                     </div>
                   )}
+                  {/* AI Actions */}
+                  <button
+                    onClick={() => handleOcrAiAction("rewrite")}
+                    disabled={!!ocrAiProcessing}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-40 transition-colors"
+                  >
+                    {ocrAiProcessing === "rewrite" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                    Rewrite
+                  </button>
+                  <button
+                    onClick={() => handleOcrAiAction("proofread")}
+                    disabled={!!ocrAiProcessing}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-40 transition-colors"
+                  >
+                    {ocrAiProcessing === "proofread" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+                    Proofread
+                  </button>
+                  <div className="w-px h-4 bg-border/30" />
                   <button onClick={copyOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
                     {ocrCopied ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                     {ocrCopied ? "Copied!" : "Copy All"}
