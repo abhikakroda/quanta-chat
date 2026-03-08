@@ -346,47 +346,6 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           </div>
         </div>
 
-        {/* Model selector below input — subtle */}
-        {onSelectModel && (
-          <div ref={modelRef} className="relative flex justify-center mt-1.5">
-            <button
-              onClick={() => setModelMenuOpen((o) => !o)}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation"
-            >
-              <span className="flex items-center gap-1">
-                {selectedModelLabel}
-                {selectedModelObj?.premium && (
-                  <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">Pro</span>
-                )}
-              </span>
-              {modelMenuOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {modelMenuOpen && (
-              <div className="absolute bottom-full mb-2 glass-strong rounded-2xl shadow-float z-50 min-w-[180px] py-1.5 animate-scale-spring">
-                {MODELS.map((m) => (
-                  <button
-                    key={m.id}
-                    onClick={() => { onSelectModel(m.id); setModelMenuOpen(false); }}
-                    className={cn(
-                      "w-full text-left px-3 py-2 text-sm transition-colors touch-manipulation flex items-center justify-between",
-                      selectedModel === m.id ? "text-foreground font-medium bg-accent" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                    )}
-                  >
-                    <span className="flex items-center gap-1.5">
-                      {m.label}
-                      {m.premium && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/20 uppercase tracking-wider">
-                          Pro
-                        </span>
-                      )}
-                    </span>
-                    {selectedModel === m.id && <span className="text-foreground">✓</span>}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
