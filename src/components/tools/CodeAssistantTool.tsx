@@ -708,8 +708,8 @@ export default function CodeAssistantTool() {
           <div className="flex justify-start">
             <div className="flex items-center gap-3 py-3">
               <div className="relative w-8 h-8">
-                <div className="absolute inset-0 rounded-full border-2 border-primary/20" />
-                <div className="absolute inset-0 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                <div className="absolute inset-0 rounded-full border-2 border-foreground/10" />
+                <div className="absolute inset-0 rounded-full border-2 border-foreground border-t-transparent animate-spin" />
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">
@@ -718,7 +718,7 @@ export default function CodeAssistantTool() {
                 <div className="flex items-center gap-2 mt-1">
                   <div className="w-32 h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-300 ease-out"
+                      className="h-full bg-foreground rounded-full transition-all duration-300 ease-out"
                       style={{ width: `${buildProgress}%` }}
                     />
                   </div>
