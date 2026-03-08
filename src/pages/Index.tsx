@@ -444,6 +444,7 @@ export default function Index() {
           setStreamThinking("");
           setIsThinkingPhase(false);
           setAgentStep(null);
+          setStreamingHint(null);
           setGhostMessages((prev) => [...prev, ghostAssistant]);
         } else {
           const savedContent = fullThinking
