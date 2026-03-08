@@ -381,7 +381,7 @@ async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: st
 }
 
 export default function GKTool() {
-  const [tab, setTab] = useState<TabId>("history");
+  const [tab, setTab] = useState<TabId>("static");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTopic, setActiveTopic] = useState<string | null>(null);
