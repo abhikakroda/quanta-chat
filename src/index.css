@@ -19,13 +19,13 @@
     --primary-foreground: 0 0% 100%;
     --primary-glow: 0 0% 30%;
 
-    --secondary: 0 0% 96%;
+    --secondary: 220 12% 93%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 0 0% 96%;
+    --muted: 220 12% 93%;
     --muted-foreground: 0 0% 40%;
 
-    --accent: 0 0% 96%;
+    --accent: 220 12% 93%;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
