@@ -271,6 +271,7 @@ export default function DocAnalyzerTool() {
     setSlides([]); setCurrentSlide(0); setMode("home"); setPdfContent("");
     setPrompt(""); setEditingSlide(null); setEditingPdf(false);
     setOcrText(""); setOcrPageTexts([]); setOcrProgress(0); setOcrTotalPages(0);
+    setOcrPageImages([]); setOcrEditingPage(null); setOcrViewMode("text");
     if (fileRef.current) fileRef.current.value = "";
     if (ocrFileRef.current) ocrFileRef.current.value = "";
   };
