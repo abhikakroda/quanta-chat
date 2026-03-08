@@ -89,6 +89,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "ai-council": CouncilTool,
   "file-processor": FileProcessorTool,
   "task-executor": TaskExecutorTool,
+  "student-ai": StudentAITool,
 };
 
 export default function Index() {
