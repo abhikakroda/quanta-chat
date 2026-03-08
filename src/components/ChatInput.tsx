@@ -20,18 +20,10 @@ type Props = {
   streaming?: boolean;
   agentMode?: boolean;
   onToggleAgent?: () => void;
-  thinkingEnabled?: boolean;
-  onToggleThinking?: () => void;
-  thinkingLevel?: ThinkingLevel;
-  onSetThinkingLevel?: (level: ThinkingLevel) => void;
-  selfVerify?: boolean;
-  onToggleSelfVerify?: () => void;
-  smartPrompt?: boolean;
-  onToggleSmartPrompt?: () => void;
   selectedModel?: ModelId;
   onSelectModel?: (model: ModelId) => void;
-  modelSupportsThinking?: boolean;
   activeSkillLabel?: string | null;
+  noBorder?: boolean;
 };
 
 const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
