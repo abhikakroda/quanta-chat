@@ -231,7 +231,6 @@ button, a, input, textarea, select, [role="button"] {
 }
 
 /* macOS traffic light padding is now handled via useIsElectron hook */
-}
 
 /* GPU-accelerated smooth scroll */
 .smooth-scroll {
