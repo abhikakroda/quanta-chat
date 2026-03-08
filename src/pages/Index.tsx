@@ -53,6 +53,7 @@ const CareerBattleTool = lazy(() => import("@/components/tools/CareerBattleTool"
 const CouncilTool = lazy(() => import("@/components/tools/CouncilTool"));
 const FileProcessorTool = lazy(() => import("@/components/tools/FileProcessorTool"));
 const TaskExecutorTool = lazy(() => import("@/components/tools/TaskExecutorTool"));
+const StudentAITool = lazy(() => import("@/components/tools/StudentAITool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
