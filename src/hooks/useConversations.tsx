@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
@@ -29,6 +29,7 @@ export function useConversations() {
   const { user } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>(() => getCachedConversations());
   const [loading, setLoading] = useState(true);
+  const deletingRef = useRef<Set<string>>(new Set());
 
   const fetchConversations = useCallback(async () => {
     if (!user) return;
@@ -71,12 +72,22 @@ export function useConversations() {
   };
 
   const deleteConversation = async (id: string) => {
-    await supabase.from("conversations").delete().eq("id", id);
+    // Guard against duplicate delete calls
+    if (deletingRef.current.has(id)) return;
+    deletingRef.current.add(id);
+    
+    // Optimistic removal from UI first
     setConversations((prev) => {
       const next = prev.filter((c) => c.id !== id);
       setCachedConversations(next);
       return next;
     });
+    
+    try {
+      await supabase.from("conversations").delete().eq("id", id);
+    } finally {
+      deletingRef.current.delete(id);
+    }
   };
 
   return { conversations, loading, createConversation, updateTitle, deleteConversation, refetch: fetchConversations };
