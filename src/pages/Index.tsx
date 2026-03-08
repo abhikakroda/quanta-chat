@@ -97,6 +97,9 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "student-ai": StudentAITool,
   "world-map": WorldMapTool,
   "ssc-english": SSCEnglishTool,
+  "ssc-math": SSCMathTool,
+  "ssc-reasoning": SSCReasoningTool,
+  "gk-tool": GKTool,
 };
 
 export default function Index() {

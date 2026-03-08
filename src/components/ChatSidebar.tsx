@@ -65,6 +65,9 @@ export const ALL_TOOLS = [
   { id: "student-ai", icon: GraduationCap, label: "Student AI", badge: "🎓", prompt: "AI study companion: explain topics, quiz, summarize notes, solve homework.", category: "Learning" },
   { id: "world-map", icon: Globe, label: "World Map", badge: "Live", prompt: "Interactive world map for UPSC & competitive exam geography preparation.", category: "Learning" },
   { id: "ssc-english", icon: BookOpen, label: "SSC English", badge: "New", prompt: "SSC CGL/CHSL English vocabulary, grammar, comprehension & quiz practice.", category: "Learning" },
+  { id: "ssc-math", icon: Calculator, label: "SSC Math", badge: "New", prompt: "SSC CGL/CHSL Quantitative Aptitude: Arithmetic, Algebra, Geometry & DI.", category: "Learning" },
+  { id: "ssc-reasoning", icon: Code2, label: "SSC Reasoning", badge: "New", prompt: "SSC CGL/CHSL Reasoning: Verbal, Non-Verbal & Analytical.", category: "Learning" },
+  { id: "gk-tool", icon: Globe, label: "General Knowledge", badge: "New", prompt: "GK & General Awareness: History, Polity, Geography, Science & Current Affairs.", category: "Learning" },
 ] as const;
 
 export type SkillId = typeof SKILLS[number]["id"];
