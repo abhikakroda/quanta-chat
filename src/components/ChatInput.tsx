@@ -353,7 +353,12 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
               onClick={() => setModelMenuOpen((o) => !o)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation"
             >
-              <span>{selectedModelLabel}</span>
+              <span className="flex items-center gap-1">
+                {selectedModelLabel}
+                {selectedModelObj?.premium && (
+                  <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">Pro</span>
+                )}
+              </span>
               {modelMenuOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
             {modelMenuOpen && (
