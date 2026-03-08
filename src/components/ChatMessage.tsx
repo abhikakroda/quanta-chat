@@ -52,7 +52,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     setTimeout(() => setCopied(false), 1500);
   };
   return (
-    <div className="relative group/code rounded-xl glass-card overflow-hidden my-2">
+    <div className="relative group/code rounded-2xl glass-card overflow-hidden my-2">
       <div className="flex items-center justify-between px-3 py-1.5 border-b border-border/30 bg-muted/40">
         <span className="text-[11px] text-muted-foreground font-mono">{lang || "code"}</span>
         <button
@@ -156,7 +156,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                     <Pencil className="w-3 h-3" />
                   </button>
                 )}
-                <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-3xl bg-muted max-w-[92%] sm:max-w-[80%]">
+                <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-3xl glass-subtle max-w-[92%] sm:max-w-[80%]">
                   {imageUrl && (
                     <div className="mb-2">
                       <img

@@ -391,11 +391,17 @@ export default function Index() {
         if (!imgResp.ok || !imgData.success) {
           assistantContent = `⚠️ Image generation failed: ${imgData.error || "Unknown error"}. Please try again.`;
         } else {
-          const imgUrl = imgData.images?.[0]?.image_url?.url || "";
+          // Handle multiple image response formats
+          const imgUrl = imgData.images?.[0]?.image_url?.url 
+            || imgData.images?.[0]?.url 
+            || imgData.images?.[0]?.b64_json 
+            || "";
           const desc = imgData.text || "";
-          assistantContent = imgUrl
-            ? `![Generated Image](${imgUrl})\n\n${desc}`
-            : `⚠️ No image was returned. ${desc}`;
+          const isBase64 = imgUrl.startsWith("data:") || imgData.images?.[0]?.b64_json;
+          const displayUrl = isBase64 && !imgUrl.startsWith("data:") ? `data:image/png;base64,${imgUrl}` : imgUrl;
+          assistantContent = displayUrl
+            ? `![Generated Image](${displayUrl})\n\n${desc}`
+            : desc ? desc : `⚠️ No image was returned. Try a more descriptive prompt.`;
         }
 
         const assistantMsg = {
@@ -723,7 +729,7 @@ export default function Index() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar — ChatGPT style: model name left, actions right */}
-        <div className={cn("h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40", isElectron && "pl-[76px]")}>
+        <div className={cn("h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 glass-subtle border-b border-border/20", isElectron && "pl-[76px]")}>
           <div className="flex items-center gap-2">
             {sidebarCollapsed && (
               <button onClick={() => setSidebarCollapsed(false)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
@@ -865,7 +871,7 @@ export default function Index() {
 
       {/* Auth Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-        <DialogContent className="sm:max-w-sm p-0 gap-0 border-border bg-background">
+        <DialogContent className="sm:max-w-sm p-0 gap-0 glass-strong border-border/20 rounded-2xl overflow-hidden">
           <div className="p-6 space-y-6">
             <div className="text-center space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">

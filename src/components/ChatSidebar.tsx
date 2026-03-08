@@ -115,7 +115,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
 
       <aside
         className={cn(
-          "fixed md:relative z-50 md:z-auto flex flex-col h-full bg-sidebar border-r border-sidebar-border/50 transition-all duration-300 ease-out will-change-transform",
+          "fixed md:relative z-50 md:z-auto flex flex-col h-full glass-strong border-r border-border/20 transition-all duration-300 ease-out will-change-transform",
           open ? "translate-x-0 w-[260px]" : "-translate-x-full",
           collapsed
             ? "md:w-0 md:-translate-x-full md:border-0 md:overflow-hidden"
