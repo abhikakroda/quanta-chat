@@ -502,6 +502,7 @@ export default function Index() {
         setIsThinkingPhase(false);
         setStreaming(false);
         setAgentStep(null);
+        setStreamingHint(null);
         console.error(err);
         // Show error to user as a temporary assistant message
         const errorMsg = {
