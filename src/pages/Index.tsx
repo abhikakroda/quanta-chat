@@ -145,6 +145,17 @@ export default function Index() {
   const { skills, awardXP, xpGained } = useSkillLevel(user?.id);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Free chat counter (5 free messages without sign-in)
+  const FREE_CHAT_LIMIT = 5;
+  const [freeChatCount, setFreeChatCount] = useState<number>(() => {
+    const saved = localStorage.getItem("opentropic-free-chats");
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("opentropic-free-chats", String(freeChatCount));
+  }, [freeChatCount]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'auto' });
@@ -158,11 +169,16 @@ export default function Index() {
   const [authError, setAuthError] = useState("");
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
-  const needsAuth = (action: string) => {
-    if (ghostMode) return false; // Ghost mode bypasses auth
+  const needsAuth = (_action: string) => {
+    if (ghostMode) return false;
     if (!user) {
-      setShowAuthDialog(true);
-      return true;
+      if (freeChatCount >= FREE_CHAT_LIMIT) {
+        setShowAuthDialog(true);
+        return true;
+      }
+      // Allow free chat, increment counter
+      setFreeChatCount((c) => c + 1);
+      return false;
     }
     return false;
   };
@@ -535,7 +551,7 @@ export default function Index() {
         {/* Top bar — minimal */}
         <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40">
           <div className="flex items-center gap-2.5">
-            <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation md:hidden">
+            <button onClick={() => { if (sidebarCollapsed) setSidebarCollapsed(false); else setSidebarOpen(true); }} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
               <Menu className="w-4 h-4 text-muted-foreground" />
             </button>
             {ghostMode && (
@@ -686,7 +702,9 @@ export default function Index() {
                 {authIsSignUp ? "Create Account" : "Welcome Back"}
               </h2>
               <p className="text-muted-foreground text-sm">
-                {authIsSignUp ? "Sign up to get started" : "Sign in to continue"}
+                {!user && freeChatCount >= FREE_CHAT_LIMIT
+                  ? "You've used your 5 free messages. Sign in to continue chatting."
+                  : authIsSignUp ? "Sign up to get started" : "Sign in to continue"}
               </p>
             </div>
 
