@@ -665,7 +665,7 @@ export default function DocAnalyzerTool() {
 
             {/* OCR Handwriting Upload */}
             <label className="flex flex-col items-center justify-center border-2 border-dashed border-border/40 rounded-2xl cursor-pointer hover:border-amber-400/30 transition-colors py-10 gap-3 group">
-              <input ref={ocrFileRef} type="file" accept=".pdf" onChange={handleOcrUpload} className="hidden" />
+              <input ref={ocrFileRef} type="file" accept=".pdf,image/*" onChange={handleOcrUpload} className="hidden" />
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 flex items-center justify-center border border-amber-500/15 group-hover:border-amber-500/30 transition-colors">
                 <ScanText className="w-6 h-6 text-amber-500/40 group-hover:text-amber-500/60 transition-colors" />
               </div>
