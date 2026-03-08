@@ -287,19 +287,33 @@ export default function Index() {
     let userContent = finalInput;
     if (files && files.length > 0) {
       const imageFile = files.find((f) => f.dataUrl && f.type.startsWith("image/"));
-      if (imageFile && imageFile.dataUrl) {
-        const base64Match = imageFile.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
+      // Also treat PDFs with dataUrl as images (scanned/photo PDFs)
+      const pdfImageFile = !imageFile ? files.find((f) => f.dataUrl && (f.type === "application/pdf" || f.name.endsWith(".pdf"))) : null;
+      const effectiveImageFile = imageFile || pdfImageFile;
+      
+      if (effectiveImageFile && effectiveImageFile.dataUrl) {
+        const base64Match = effectiveImageFile.dataUrl.match(/^data:([^;]+);base64,(.+)$/);
         if (base64Match) {
           imageData = { mimeType: base64Match[1], base64: base64Match[2] };
         }
       }
-      const textFiles = files.filter((f) => !f.type.startsWith("image/"));
-      if (textFiles.length > 0) {
-        const fileSection = textFiles.map((f) => `--- File: ${f.name} ---\n${f.content}`).join("\n\n");
+      
+      // Only include text content from non-image text files that have real content
+      const textFiles = files.filter((f) => !f.type.startsWith("image/") && !f.dataUrl);
+      const validTextFiles = textFiles.filter((f) => 
+        f.content && 
+        !f.content.startsWith("[PDF contained no extractable text]") &&
+        !f.content.startsWith("[Could not read") &&
+        !f.content.startsWith("[Image:")
+      );
+      if (validTextFiles.length > 0) {
+        const fileSection = validTextFiles.map((f) => `--- File: ${f.name} ---\n${f.content}`).join("\n\n");
         userContent = `${fileSection}\n\n${input}`;
       }
-      if (imageFile) {
-        userContent = userContent || "Describe this image in detail.";
+      if (effectiveImageFile && !input.trim()) {
+        userContent = "Describe this image in detail.";
+      } else if (effectiveImageFile) {
+        userContent = input; // Just use the user's typed message, don't add metadata
       }
     }
 
@@ -314,9 +328,9 @@ export default function Index() {
     }
 
     // Store image URL for display
-    const imageFile = files?.find((f) => f.dataUrl && f.type.startsWith("image/"));
-    if (imageFile?.dataUrl) {
-      setMessageImages((prev) => ({ ...prev, [tempId]: imageFile.dataUrl! }));
+    const displayImageFile = files?.find((f) => f.dataUrl);
+    if (displayImageFile?.dataUrl) {
+      setMessageImages((prev) => ({ ...prev, [tempId]: displayImageFile.dataUrl! }));
     }
 
     // Fire-and-forget DB insert (skip in ghost mode)
@@ -324,7 +338,7 @@ export default function Index() {
       supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single().then(({ data }) => {
         if (data) {
           setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? data : m));
-          if (imageFile?.dataUrl) {
+          if (displayImageFile?.dataUrl) {
             setMessageImages((prev) => {
               const next = { ...prev, [data.id]: prev[tempId] };
               delete next[tempId];
