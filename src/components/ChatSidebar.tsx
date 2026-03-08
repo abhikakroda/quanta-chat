@@ -97,13 +97,13 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
       <aside
         className={cn(
           "fixed md:relative z-50 md:z-auto flex flex-col h-full bg-sidebar border-r border-sidebar-border/50 transition-all duration-300 ease-out will-change-transform",
-          open ? "translate-x-0" : "-translate-x-full",
+          open ? "translate-x-0 w-[260px]" : "-translate-x-full",
           collapsed
-            ? "md:w-[52px] md:translate-x-0"
-            : "md:translate-x-0 w-[260px]"
+            ? "md:w-0 md:-translate-x-full md:border-0 md:overflow-hidden"
+            : "md:translate-x-0 md:w-[260px]"
         )}
       >
-        <div className={cn("flex flex-col h-full", collapsed ? "w-[52px]" : "w-[260px]")}>
+        <div className={cn("flex flex-col h-full w-[260px]")}>
 
           {/* Header */}
           <div className={cn("flex items-center px-3 pt-3.5 pb-2", collapsed ? "flex-col gap-1 px-2" : "justify-between")}>

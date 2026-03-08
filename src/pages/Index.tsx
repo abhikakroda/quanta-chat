@@ -145,6 +145,17 @@ export default function Index() {
   const { skills, awardXP, xpGained } = useSkillLevel(user?.id);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Free chat counter (5 free messages without sign-in)
+  const FREE_CHAT_LIMIT = 5;
+  const [freeChatCount, setFreeChatCount] = useState<number>(() => {
+    const saved = localStorage.getItem("opentropic-free-chats");
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("opentropic-free-chats", String(freeChatCount));
+  }, [freeChatCount]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'auto' });
@@ -158,11 +169,16 @@ export default function Index() {
   const [authError, setAuthError] = useState("");
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
-  const needsAuth = (action: string) => {
-    if (ghostMode) return false; // Ghost mode bypasses auth
+  const needsAuth = (_action: string) => {
+    if (ghostMode) return false;
     if (!user) {
-      setShowAuthDialog(true);
-      return true;
+      if (freeChatCount >= FREE_CHAT_LIMIT) {
+        setShowAuthDialog(true);
+        return true;
+      }
+      // Allow free chat, increment counter
+      setFreeChatCount((c) => c + 1);
+      return false;
     }
     return false;
   };
