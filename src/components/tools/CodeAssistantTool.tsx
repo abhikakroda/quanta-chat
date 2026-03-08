@@ -1107,7 +1107,7 @@ export default function CodeAssistantTool() {
           ) : (
             <div className="p-1.5 space-y-0.5">
               {savedProjects.map(p => (
-                <button key={p.id} onClick={() => loadProject(p)} className={cn("w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs transition-colors group", currentProjectId === p.id ? "bg-blue-500/10 border border-blue-500/20 text-foreground" : "hover:bg-muted/50 text-foreground/70")}>
+                <button key={p.id} onClick={() => loadProject(p)} className={cn("w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs transition-colors group", currentProjectId === p.id ? "bg-accent border border-border text-foreground" : "hover:bg-muted/50 text-foreground/70")}>
                   <div className="flex-1 min-w-0 flex items-center gap-2.5">
                     <Globe className="w-4 h-4 text-muted-foreground shrink-0" />
                     <div>
