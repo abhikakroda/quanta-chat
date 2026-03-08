@@ -176,6 +176,39 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </Link>
             </div>
 
+            {/* Pinned Tools */}
+            {pinnedTools.length > 0 && (
+              <>
+                <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
+                <div className="px-3 space-y-0.5">
+                  <span className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-sidebar-foreground/30 font-semibold uppercase tracking-wider">
+                    <Pin className="w-3 h-3" /> Pinned
+                  </span>
+                  {pinnedTools.map((tool) => (
+                    <button
+                      key={tool.id}
+                      onClick={() => { onSelectSkill?.(tool.id); onNew(); }}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 text-left group",
+                        activeSkill === tool.id
+                          ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <tool.icon className="w-4 h-4 shrink-0 opacity-70" />
+                      <span className="flex-1 truncate">{tool.label}</span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setPinnedToolIds(prev => prev.filter(id => id !== tool.id)); }}
+                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive transition-opacity"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+
             <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
 
             {/* Chat History */}
