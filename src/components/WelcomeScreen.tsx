@@ -25,7 +25,7 @@ type Props = {
 const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
-  selectedModel, onSelectModel,
+  selectedModel,
   onSelectSkill,
   activeSkillLabel,
 }, ref) {
