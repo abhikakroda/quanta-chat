@@ -551,10 +551,14 @@ export default function Index() {
         {/* Top bar — ChatGPT style: model name left, actions right */}
         <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40">
           <div className="flex items-center gap-2">
-            <button onClick={() => { if (sidebarCollapsed) setSidebarCollapsed(false); else setSidebarOpen(true); }} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
+            {sidebarCollapsed && (
+              <button onClick={() => setSidebarCollapsed(false)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
+                <Menu className="w-4 h-4 text-muted-foreground" />
+              </button>
+            )}
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
               <Menu className="w-4 h-4 text-muted-foreground" />
             </button>
-            <span className="text-sm font-semibold text-foreground">OpenTropic</span>
             {ghostMode && (
               <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/40">
                 <Ghost className="w-3 h-3" />
