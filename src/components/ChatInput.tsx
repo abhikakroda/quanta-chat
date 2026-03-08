@@ -330,7 +330,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
               <button
                 onClick={handleSubmit}
                 disabled={!input.trim() || streaming}
-                className="w-10 h-10 rounded-full bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
               >
                 <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
               </button>
