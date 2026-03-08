@@ -188,8 +188,8 @@
   }
 }
 
-/* Smooth global transitions */
-*, *::before, *::after {
+/* Smooth transitions only on interactive elements */
+button, a, input, textarea, select, [role="button"] {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -208,33 +208,22 @@
 }
 
 @keyframes message-in {
-  from { opacity: 0; transform: translate3d(0, 6px, 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .animate-message-in {
-  animation: message-in 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  will-change: transform, opacity;
+  animation: message-in 0.2s ease-out both;
 }
 
-/* Smooth streaming text animation */
-@keyframes word-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.streaming-word {
-  display: inline;
-  animation: word-fade-in 0.15s ease-out forwards;
-}
-.streaming-text .prose {
-  overflow: hidden;
-}
+/* Streaming cursor */
 .streaming-text .prose > *:last-child::after {
   content: '▊';
   display: inline;
   animation: cursor-blink 0.8s steps(2) infinite;
-  color: hsl(var(--foreground) / 0.35);
-  font-size: 0.85em;
-  margin-left: 1px;
+  color: hsl(var(--foreground) / 0.3);
+  font-size: 0.8em;
+  margin-left: 2px;
+  vertical-align: baseline;
 }
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
