@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 
-type TabId = "history" | "polity" | "geography" | "science" | "current" | "quiz";
+type TabId = "history" | "polity" | "geography" | "science" | "current" | "static" | "quiz";
 type QuizQ = { question: string; options: string[]; answer: number; explanation: string };
 
 const TABS: { id: TabId; label: string; emoji: string }[] = [
+  { id: "static", label: "Static GK", emoji: "📋" },
   { id: "history", label: "History", emoji: "🏛️" },
   { id: "polity", label: "Polity", emoji: "⚖️" },
   { id: "geography", label: "Geography", emoji: "🌍" },
@@ -67,6 +68,297 @@ const STATIC_GK: Record<string, string> = {
   "Biology (Human Body)": "**Systems:**\n- Blood groups: A, B, AB (universal recipient), O (universal donor)\n- Bones: 206 (adult), Muscles: 639\n- Largest organ: Skin\n- Largest gland: Liver\n- Smallest bone: Stapes (ear)\n- Chromosomes: 46 (23 pairs)\n- DNA discoverers: Watson & Crick (1953)",
 };
 
+// ═══ STATIC GK REFERENCE TABLES ═══
+const STATIC_TABLES: Record<string, string> = {
+  "Indian States & Capitals":
+`| State | Capital | Formation |
+|-------|---------|-----------|
+| Andhra Pradesh | Amaravati | 1956 |
+| Arunachal Pradesh | Itanagar | 1987 |
+| Assam | Dispur | 1950 |
+| Bihar | Patna | 1950 |
+| Chhattisgarh | Raipur | 2000 |
+| Goa | Panaji | 1987 |
+| Gujarat | Gandhinagar | 1960 |
+| Haryana | Chandigarh | 1966 |
+| Himachal Pradesh | Shimla | 1971 |
+| Jharkhand | Ranchi | 2000 |
+| Karnataka | Bengaluru | 1956 |
+| Kerala | Thiruvananthapuram | 1956 |
+| Madhya Pradesh | Bhopal | 1956 |
+| Maharashtra | Mumbai | 1960 |
+| Manipur | Imphal | 1972 |
+| Meghalaya | Shillong | 1972 |
+| Mizoram | Aizawl | 1987 |
+| Nagaland | Kohima | 1963 |
+| Odisha | Bhubaneswar | 1950 |
+| Punjab | Chandigarh | 1966 |
+| Rajasthan | Jaipur | 1956 |
+| Sikkim | Gangtok | 1975 |
+| Tamil Nadu | Chennai | 1956 |
+| Telangana | Hyderabad | 2014 |
+| Tripura | Agartala | 1972 |
+| Uttar Pradesh | Lucknow | 1950 |
+| Uttarakhand | Dehradun | 2000 |
+| West Bengal | Kolkata | 1950 |`,
+
+  "Union Territories & LG/Admin":
+`| Union Territory | Capital | Administrator |
+|----------------|---------|---------------|
+| Andaman & Nicobar | Port Blair | Lt. Governor |
+| Chandigarh | Chandigarh | Administrator |
+| Dadra & Nagar Haveli and Daman & Diu | Daman | Administrator |
+| Delhi (NCT) | New Delhi | Lt. Governor |
+| Jammu & Kashmir | Srinagar/Jammu | Lt. Governor |
+| Ladakh | Leh | Lt. Governor |
+| Lakshadweep | Kavaratti | Administrator |
+| Puducherry | Puducherry | Lt. Governor |`,
+
+  "National Symbols of India":
+`| Symbol | Name |
+|--------|------|
+| National Flag | Tiranga (Tricolour) |
+| National Emblem | Lion Capital of Ashoka |
+| National Anthem | Jana Gana Mana (Rabindranath Tagore) |
+| National Song | Vande Mataram (Bankim Chandra Chattopadhyay) |
+| National Animal | Royal Bengal Tiger |
+| National Bird | Indian Peacock |
+| National Flower | Lotus |
+| National Tree | Indian Banyan |
+| National Fruit | Mango |
+| National River | Ganga |
+| National Aquatic Animal | Gangetic Dolphin |
+| National Heritage Animal | Indian Elephant |
+| National Reptile | King Cobra |
+| National Currency | Indian Rupee (₹) |
+| National Calendar | Saka Calendar |
+| National Game | Hockey (unofficial) |
+| National Motto | Satyameva Jayate |`,
+
+  "Countries, Capitals & Currencies":
+`| Country | Capital | Currency |
+|---------|---------|----------|
+| Afghanistan | Kabul | Afghani |
+| Australia | Canberra | Australian Dollar |
+| Bangladesh | Dhaka | Taka |
+| Bhutan | Thimphu | Ngultrum |
+| Brazil | Brasília | Real |
+| Canada | Ottawa | Canadian Dollar |
+| China | Beijing | Yuan/Renminbi |
+| Egypt | Cairo | Egyptian Pound |
+| France | Paris | Euro |
+| Germany | Berlin | Euro |
+| Indonesia | Jakarta | Rupiah |
+| Iran | Tehran | Rial |
+| Iraq | Baghdad | Dinar |
+| Israel | Jerusalem | Shekel |
+| Italy | Rome | Euro |
+| Japan | Tokyo | Yen |
+| Malaysia | Kuala Lumpur | Ringgit |
+| Maldives | Malé | Rufiyaa |
+| Myanmar | Naypyidaw | Kyat |
+| Nepal | Kathmandu | Nepali Rupee |
+| North Korea | Pyongyang | Won |
+| Pakistan | Islamabad | Pakistani Rupee |
+| Russia | Moscow | Ruble |
+| Saudi Arabia | Riyadh | Riyal |
+| South Africa | Pretoria | Rand |
+| South Korea | Seoul | Won |
+| Sri Lanka | Sri Jayawardenepura Kotte | Rupee |
+| Thailand | Bangkok | Baht |
+| Turkey | Ankara | Lira |
+| UAE | Abu Dhabi | Dirham |
+| UK | London | Pound Sterling |
+| USA | Washington D.C. | US Dollar |
+| Vietnam | Hanoi | Dong |`,
+
+  "Important Dams & Rivers":
+`| Dam | River | State |
+|-----|-------|-------|
+| Tehri Dam | Bhagirathi | Uttarakhand |
+| Bhakra Nangal | Sutlej | Himachal/Punjab |
+| Sardar Sarovar | Narmada | Gujarat |
+| Hirakud | Mahanadi | Odisha |
+| Nagarjuna Sagar | Krishna | Telangana/AP |
+| Mettur Dam | Cauvery | Tamil Nadu |
+| Tungabhadra | Tungabhadra | Karnataka |
+| Koyna Dam | Koyna | Maharashtra |
+| Idukki Dam | Periyar | Kerala |
+| Farakka Barrage | Ganga | West Bengal |`,
+
+  "First in India & World":
+`**First in India:**
+| Achievement | Person/Detail |
+|------------|---------------|
+| President | Dr. Rajendra Prasad |
+| Prime Minister | Jawaharlal Nehru |
+| Woman President | Pratibha Patil |
+| Woman PM | Indira Gandhi |
+| Chief Justice | H.J. Kania |
+| Woman CJI | None yet |
+| Governor General | Lord William Bentinck |
+| Viceroy | Lord Canning |
+| ICS Officer | Satyendranath Tagore |
+| IPS Officer (Woman) | Kiran Bedi |
+| Nobel Laureate | Rabindranath Tagore (1913) |
+| Olympic Gold (Individual) | Abhinav Bindra (2008) |
+| Satellite | Aryabhata (1975) |
+| Supercomputer | PARAM 8000 (1991) |
+
+**First in World:**
+| Achievement | Person |
+|------------|--------|
+| Man on Moon | Neil Armstrong (1969) |
+| Woman in Space | Valentina Tereshkova (1963) |
+| Everest Summit | Tenzing & Hillary (1953) |
+| President of USA | George Washington |
+| Printed Book | Gutenberg Bible (~1455) |`,
+
+  "Important Constitutional Amendments":
+`| Amendment | Year | Key Change |
+|-----------|------|------------|
+| 1st | 1951 | Restrictions on Fundamental Rights |
+| 7th | 1956 | Reorganization of states |
+| 24th | 1971 | Parliament can amend FRs |
+| 42nd | 1976 | "Mini Constitution" — Secular, Socialist, Integrity added |
+| 44th | 1978 | Right to Property removed as FR |
+| 52nd | 1985 | Anti-Defection Law |
+| 61st | 1989 | Voting age 21→18 |
+| 73rd | 1992 | Panchayati Raj |
+| 74th | 1992 | Municipalities |
+| 86th | 2002 | Right to Education (Art 21A) |
+| 101st | 2016 | GST |
+| 103rd | 2019 | 10% EWS Reservation |`,
+
+  "Important Articles of Constitution":
+`| Article | Subject |
+|---------|---------|
+| 1 | India = Union of States |
+| 12-35 | Fundamental Rights |
+| 14 | Equality before law |
+| 17 | Abolition of Untouchability |
+| 19 | 6 Freedoms |
+| 21 | Right to Life & Liberty |
+| 21A | Right to Education (6-14 yrs) |
+| 32 | Constitutional Remedies (Ambedkar: "Heart & Soul") |
+| 36-51 | Directive Principles (DPSP) |
+| 51A | Fundamental Duties |
+| 72 | President's Pardoning Power |
+| 112 | Union Budget |
+| 123 | Ordinance Power (President) |
+| 143 | Advisory Jurisdiction of SC |
+| 148 | CAG |
+| 280 | Finance Commission |
+| 312 | All India Services |
+| 352 | National Emergency |
+| 356 | President's Rule |
+| 360 | Financial Emergency |
+| 368 | Amendment Procedure |`,
+
+  "Inventions & Discoveries":
+`| Invention/Discovery | Inventor | Year |
+|---------------------|----------|------|
+| Telephone | Alexander Graham Bell | 1876 |
+| Electric Bulb | Thomas Edison | 1879 |
+| Radio | Guglielmo Marconi | 1895 |
+| Airplane | Wright Brothers | 1903 |
+| Penicillin | Alexander Fleming | 1928 |
+| Computer | Charles Babbage | 1837 |
+| World Wide Web | Tim Berners-Lee | 1989 |
+| X-Ray | Wilhelm Röntgen | 1895 |
+| Dynamite | Alfred Nobel | 1867 |
+| Theory of Relativity | Albert Einstein | 1905 |
+| Gravity | Isaac Newton | 1687 |
+| Periodic Table | Dmitri Mendeleev | 1869 |
+| Vaccine (Smallpox) | Edward Jenner | 1796 |
+| DNA Structure | Watson & Crick | 1953 |
+| Telescope | Galileo Galilei | 1609 |
+| Printing Press | Johannes Gutenberg | 1440 |`,
+
+  "Important International Organizations":
+`| Organization | HQ | Founded | Head |
+|-------------|-----|---------|------|
+| United Nations (UN) | New York | 1945 | Secretary General |
+| WHO | Geneva | 1948 | Director General |
+| UNESCO | Paris | 1945 | Director General |
+| UNICEF | New York | 1946 | Executive Director |
+| World Bank | Washington D.C. | 1944 | President |
+| IMF | Washington D.C. | 1944 | Managing Director |
+| WTO | Geneva | 1995 | Director General |
+| NATO | Brussels | 1949 | Secretary General |
+| ASEAN | Jakarta | 1967 | Secretary General |
+| SAARC | Kathmandu | 1985 | Secretary General |
+| BRICS | Rotating | 2006 | Chair (Rotating) |
+| G20 | Rotating | 1999 | Presidency (Rotating) |
+| Interpol | Lyon | 1923 | Secretary General |
+| Red Cross | Geneva | 1863 | President |`,
+
+  "Indian National Parks & Sanctuaries":
+`| National Park | State | Famous For |
+|--------------|-------|------------|
+| Jim Corbett | Uttarakhand | Tiger (1st NP, 1936) |
+| Kaziranga | Assam | One-horned Rhino |
+| Ranthambore | Rajasthan | Tigers |
+| Gir Forest | Gujarat | Asiatic Lions |
+| Sundarbans | West Bengal | Royal Bengal Tiger |
+| Kanha | Madhya Pradesh | Tiger, Barasingha |
+| Periyar | Kerala | Elephants |
+| Bandhavgarh | Madhya Pradesh | White Tigers |
+| Hemis | Ladakh | Snow Leopard |
+| Valley of Flowers | Uttarakhand | Alpine Flowers (UNESCO) |
+| Keibul Lamjao | Manipur | Sangai Deer (floating NP) |
+| Bandipur | Karnataka | Elephants, Tigers |
+
+**Tiger Reserves:** Project Tiger started 1973, 55+ reserves
+**Biosphere Reserves:** 18 in India, 12 in UNESCO network`,
+
+  "Important Lakes of India":
+`| Lake | State | Type |
+|------|-------|------|
+| Wular | J&K | Largest freshwater |
+| Chilika | Odisha | Largest coastal lagoon |
+| Sambhar | Rajasthan | Largest salt water (inland) |
+| Vembanad | Kerala | Longest lake |
+| Loktak | Manipur | Floating lake |
+| Dal | J&K | Tourist attraction |
+| Pulicat | AP/TN | 2nd largest lagoon |
+| Pangong | Ladakh | High altitude |
+| Hussain Sagar | Telangana | Artificial |
+| Gobind Sagar | HP | Bhakra Dam reservoir |`,
+
+  "Important Boundary Lines":
+`| Boundary Line | Between |
+|---------------|---------|
+| Radcliffe Line | India & Pakistan |
+| McMahon Line | India & China |
+| Durand Line | Pakistan & Afghanistan |
+| LOC (Line of Control) | India & Pakistan (J&K) |
+| LAC (Line of Actual Control) | India & China |
+| 17th Parallel | North & South Vietnam |
+| 38th Parallel | North & South Korea |
+| 49th Parallel | USA & Canada |
+| Maginot Line | France & Germany |
+| Hindenburg Line | Germany & Poland |
+| Order-Neisse Line | Germany & Poland (post-WWII) |`,
+
+  "Indian Space Missions":
+`| Mission | Year | Significance |
+|---------|------|-------------|
+| Aryabhata | 1975 | 1st Indian satellite |
+| Rohini | 1980 | 1st by Indian launch vehicle (SLV-3) |
+| INSAT-1B | 1983 | Communication satellite |
+| IRS-1A | 1988 | Remote sensing |
+| Chandrayaan-1 | 2008 | Moon mission (discovered water) |
+| Mars Orbiter (MOM) | 2014 | 1st Asian nation to Mars orbit |
+| Chandrayaan-2 | 2019 | Orbiter still active |
+| Chandrayaan-3 | 2023 | Soft landing on Moon (South Pole) |
+| Aditya-L1 | 2023 | Solar observatory at L1 |
+| Gaganyaan | Upcoming | 1st crewed Indian spaceflight |
+
+**ISRO:** Founded 1969, HQ: Bengaluru
+**Launch vehicles:** PSLV, GSLV Mk-II, GSLV Mk-III (LVM3)`,
+};
+
 async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
   const res = await supabase.functions.invoke("chat", {
     body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
@@ -89,7 +381,7 @@ async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: st
 }
 
 export default function GKTool() {
-  const [tab, setTab] = useState<TabId>("history");
+  const [tab, setTab] = useState<TabId>("static");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeTopic, setActiveTopic] = useState<string | null>(null);
@@ -170,6 +462,33 @@ export default function GKTool() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* ═══ STATIC GK TAB ═══ */}
+        {tab === "static" && !activeTopic && (
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-foreground">📋 Static GK — Quick Reference Tables</h3>
+            <p className="text-xs text-muted-foreground">Instant-load fact tables for SSC, UPSC & competitive exams</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {Object.keys(STATIC_TABLES).map(title => (
+                <button key={title} onClick={() => setActiveTopic(title)}
+                  className="p-3 rounded-xl text-[13px] font-medium bg-muted/50 hover:bg-primary/10 hover:text-primary border border-border/40 hover:border-primary/30 transition-all text-left">
+                  {title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab === "static" && activeTopic && (
+          <div className="space-y-3">
+            <button onClick={() => setActiveTopic(null)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-3 h-3" /> Back
+            </button>
+            <h3 className="text-base font-bold text-foreground">{activeTopic}</h3>
+            <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-xl bg-card border border-border/50 overflow-x-auto">
+              <ReactMarkdown>{STATIC_TABLES[activeTopic]}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
         {tab === "history" && !activeTopic && !loading && renderTopicGrid(HISTORY_TOPICS, "History")}
         {tab === "polity" && !activeTopic && !loading && renderTopicGrid(POLITY_TOPICS, "Indian Polity")}
         {tab === "geography" && !activeTopic && !loading && renderTopicGrid(GEOGRAPHY_TOPICS, "Geography")}
