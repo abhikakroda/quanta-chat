@@ -131,6 +131,7 @@ export default function WorldMapTool({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<TabId>("explore");
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
   const [hoveredGeo, setHoveredGeo] = useState<string | null>(null);
+  const [mapZoom, setMapZoom] = useState(1);
   const [selectedTopic, setSelectedTopic] = useState<{ category: TopicCategory; topic: string } | null>(null);
   const [aiContent, setAiContent] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
