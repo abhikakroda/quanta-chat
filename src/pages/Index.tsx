@@ -109,6 +109,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "ece-tool": ECETool,
   "custom-skill": CustomSkillTool,
   "ies-et": IESETTool,
+  "gate-ece": GATEECETool,
 };
 
 export default function Index() {

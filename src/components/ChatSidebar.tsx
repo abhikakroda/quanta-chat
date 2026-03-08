@@ -71,6 +71,7 @@ export const ALL_TOOLS = [
   { id: "ssc-mock-test", icon: Clock, label: "SSC Mock Test", badge: "🔥", prompt: "Timed mixed-subject mock tests for SSC CGL/CHSL with scoring.", category: "Learning" },
   { id: "ece-tool", icon: Code2, label: "ECE Engineering", badge: "New", prompt: "Digital, Analog, Signals & Communication Systems for ECE students.", category: "Learning" },
   { id: "ies-et", icon: GraduationCap, label: "IES/ESE E&T", badge: "🏛️", prompt: "UPSC IES Electronics & Telecommunication full syllabus: Paper I, Paper II, GA, PYQs.", category: "Learning" },
+  { id: "gate-ece", icon: GraduationCap, label: "GATE ECE", badge: "🔥", prompt: "GATE Electronics & Communication: Full syllabus, PYQs (2010-2024), Quiz, Formulas, Analysis.", category: "Learning" },
   { id: "custom-skill", icon: BookOpen, label: "My Skills", badge: "✨", prompt: "Create and study your own custom skills and topics.", category: "Learning" },
 ] as const;
 
