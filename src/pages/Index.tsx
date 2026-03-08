@@ -56,6 +56,9 @@ const TaskExecutorTool = lazy(() => import("@/components/tools/TaskExecutorTool"
 const StudentAITool = lazy(() => import("@/components/tools/StudentAITool"));
 const WorldMapTool = lazy(() => import("@/components/tools/WorldMapTool"));
 const SSCEnglishTool = lazy(() => import("@/components/tools/SSCEnglishTool"));
+const SSCMathTool = lazy(() => import("@/components/tools/SSCMathTool"));
+const SSCReasoningTool = lazy(() => import("@/components/tools/SSCReasoningTool"));
+const GKTool = lazy(() => import("@/components/tools/GKTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
