@@ -517,7 +517,7 @@ export default function Index() {
             content: cleanContent,
             created_at: new Date().toISOString(),
           };
-          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          const effectiveModel = agentMode ? "gemini-pro" as ModelId : resolveAutoModel(selectedModel, activeSkill);
           setMessageModels((prev) => ({ ...prev, [ghostAssistant.id]: getModelLabel(effectiveModel) }));
           // Clear streaming and add final message in one batch
           setStreaming(false);
