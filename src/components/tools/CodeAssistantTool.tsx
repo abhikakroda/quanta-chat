@@ -765,10 +765,10 @@ export default function CodeAssistantTool() {
 
   // ──────────── VISUAL INSPECTOR PANEL ────────────
   const inspectorPanel = selectedElement && editMode === "visual" ? (
-    <div className="w-[260px] shrink-0 border-l border-border/30 bg-card flex flex-col overflow-y-auto animate-fade-in">
+    <div className="w-[260px] shrink-0 border-l border-border/30 bg-card flex flex-col overflow-y-auto animate-slide-up">
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/30">
         <div className="flex items-center gap-2">
-          <Layers className="w-3.5 h-3.5 text-blue-500" />
+          <Layers className="w-3.5 h-3.5 text-foreground/60" />
           <span className="text-xs font-semibold text-foreground">Inspector</span>
         </div>
         <button onClick={() => setSelectedElement(null)} className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
