@@ -3,9 +3,9 @@ import SkillBadge from "@/components/SkillBadge";
 import type { UserSkills } from "@/hooks/useSkillLevel";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
-  Activity, Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
-  Wrench, Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, BadgeInfo, Phone,
-  FilePen, Newspaper, Volume2, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown
+  Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
+  Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, Phone,
+  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -68,19 +68,22 @@ export const ALL_TOOLS = [
   { id: "task-executor", icon: FileDown, label: "Task Executor", badge: "⚡", prompt: "Generate documents from tasks.", category: "Productivity" },
 ] as const;
 
-
 export type SkillId = typeof SKILLS[number]["id"];
 export type ToolId = typeof ALL_TOOLS[number]["id"];
+
+// Main sidebar items shown as top-level nav (Kimi-style)
+const SIDEBAR_ITEMS = [
+  { id: "deep-research", icon: Globe, label: "Deep Research" },
+  { id: "code-assistant", icon: Code2, label: "Kode" },
+  { id: "writer", icon: FileText, label: "Writer" },
+  { id: "doc-analyzer", icon: FilePen, label: "Docs" },
+  { id: "image-generator", icon: Wand2, label: "Create" },
+] as const;
 
 function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
-  const [skillsOpen, setSkillsOpen] = useState(true);
-  const [avatarsOpen, setAvatarsOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const [aiLabOpen, setAiLabOpen] = useState(false);
-  const [openClawOpen, setOpenClawOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const filteredConversations = useMemo(() => {
@@ -109,12 +112,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           {/* Header */}
           <div className={cn("flex items-center px-3 pt-3.5 pb-2", collapsed ? "flex-col gap-1 px-2" : "justify-between")}>
             {collapsed ? (
-              <>
-                
-                <button onClick={onToggleCollapse} className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors touch-manipulation" title="Expand">
-                  <PanelLeftOpen className="w-[18px] h-[18px]" />
-                </button>
-              </>
+              <button onClick={onToggleCollapse} className="p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/40 hover:text-sidebar-foreground transition-colors touch-manipulation" title="Expand">
+                <PanelLeftOpen className="w-[18px] h-[18px]" />
+              </button>
             ) : (
               <>
                 <div className="flex items-center">
@@ -132,15 +132,15 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             )}
           </div>
 
-          {/* New Chat button */}
+          {/* New Chat */}
           {!collapsed ? (
-            <div className="px-3 pt-2">
+            <div className="px-3 pt-1">
               <button
                 onClick={() => { onNew(); onSelectSkill?.(null); }}
-                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground hover:bg-sidebar-accent/60 transition-all duration-200 touch-manipulation text-left press-scale"
               >
-                <SquarePen className="w-[20px] h-[20px] shrink-0 opacity-70" />
-                <span className="flex-1 truncate">New Chat</span>
+                <SquarePen className="w-[18px] h-[18px] shrink-0 opacity-60" />
+                <span className="flex-1 truncate font-medium">New Chat</span>
               </button>
             </div>
           ) : (
@@ -155,78 +155,61 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             </div>
           )}
 
-          <div className="mx-3 my-1.5 h-px bg-sidebar-border/50" />
+          <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
 
-          {/* Scrollable sections */}
+          {/* Main nav items */}
           <div className="flex-1 overflow-y-auto">
-
-            {/* Skills section */}
             {!collapsed ? (
-              <div className="px-3 mt-2">
-                <p className="px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35">
-                  Skills
-                </p>
-                <div className="space-y-1">
-                    {SKILLS.map((skill) => (
-                      <button
-                        key={skill.id}
-                        onClick={() => {
-                          onSelectSkill?.(activeSkill === skill.id ? null : skill.id);
-                          onNew();
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight",
-                          activeSkill === skill.id
-                            ? "bg-sidebar-accent text-sidebar-foreground"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        <skill.icon className="w-[22px] h-[22px] shrink-0 opacity-70" />
-                        <span className="flex-1 truncate">{skill.label}</span>
-                        {skill.badge && (
-                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">{skill.badge}</span>
-                        )}
-                      </button>
-                    ))}
-                </div>
-              </div>
-            ) : (
-              <div className="px-1.5 space-y-0.5">
-                {SKILLS.map((skill) => (
+              <div className="px-3 space-y-0.5">
+                {SIDEBAR_ITEMS.map((item) => (
                   <button
-                    key={skill.id}
+                    key={item.id}
                     onClick={() => {
-                      onSelectSkill?.(activeSkill === skill.id ? null : skill.id);
+                      onSelectSkill?.(activeSkill === item.id ? null : item.id);
                       onNew();
                     }}
                     className={cn(
-                      "w-full flex items-center justify-center p-2 rounded-lg transition-colors touch-manipulation press-scale",
-                      activeSkill === skill.id
-                        ? "bg-primary/10 text-primary"
-                        : "text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left press-scale",
+                      activeSkill === item.id
+                        ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                     )}
-                    title={skill.label}
                   >
-                    <skill.icon className="w-[18px] h-[18px]" />
+                    <item.icon className="w-[18px] h-[18px] shrink-0 opacity-70" />
+                    <span className="flex-1 truncate">{item.label}</span>
                   </button>
                 ))}
-              </div>
-            )}
 
-            {/* AI Labs link */}
-            {!collapsed ? (
-              <div className="px-3 mt-1">
+                {/* AI Labs */}
                 <Link
                   to="/ai-labs"
-                  className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left press-scale text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                 >
-                  <FlaskConical className="w-[22px] h-[22px] shrink-0 opacity-70" />
+                  <FlaskConical className="w-[18px] h-[18px] shrink-0 opacity-70" />
                   <span className="flex-1 truncate">AI Labs</span>
                   <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
                 </Link>
               </div>
             ) : (
-              <div className="px-1.5">
+              <div className="px-1.5 space-y-0.5">
+                {SIDEBAR_ITEMS.map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      onSelectSkill?.(activeSkill === item.id ? null : item.id);
+                      onNew();
+                    }}
+                    className={cn(
+                      "w-full flex items-center justify-center p-2 rounded-lg transition-colors touch-manipulation press-scale",
+                      activeSkill === item.id
+                        ? "bg-sidebar-accent text-sidebar-foreground"
+                        : "text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                    )}
+                    title={item.label}
+                  >
+                    <item.icon className="w-[18px] h-[18px]" />
+                  </button>
+                ))}
                 <Link
                   to="/ai-labs"
                   className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
@@ -237,92 +220,34 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               </div>
             )}
 
-            {!collapsed ? (
-              <div className="px-3 mt-1">
-                <button
-                  onClick={() => setAvatarsOpen((o) => !o)}
-                  className="flex items-center gap-2 px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35 hover:text-sidebar-foreground/50 transition-colors w-full"
-                >
-                  <span className="flex-1 text-left">Avatars</span>
-                  {avatarsOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                </button>
-                {avatarsOpen && (
-                  <div className="space-y-1 pb-2">
-                    {AVATARS.map((avatar) => (
-                      <button
-                        key={avatar.id}
-                        onClick={() => {
-                          onSelectAvatar?.(activeAvatar === avatar.id ? null : avatar.id);
-                          onSelectSkill?.(null);
-                          onNew();
-                        }}
-                        className={cn(
-                          "w-full flex items-center gap-3.5 px-3 py-2.5 rounded-2xl text-[15px] font-normal transition-all duration-200 hover:translate-x-0.5 touch-manipulation text-left press-scale tracking-tight",
-                          activeAvatar === avatar.id
-                            ? "bg-sidebar-accent text-sidebar-foreground"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )}
-                      >
-                        <avatar.icon className={cn("w-[22px] h-[22px] shrink-0", avatar.color)} />
-                        <div className="flex-1 min-w-0">
-                          <span className="block truncate">{avatar.name}</span>
-                          <span className="block text-[10px] text-muted-foreground/50 truncate">{avatar.description}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="px-1.5">
-                <button
-                  onClick={() => onToggleCollapse()}
-                  className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
-                  title="Avatars"
-                >
-                  <Users className="w-[18px] h-[18px]" />
-                </button>
-              </div>
-            )}
+            <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
 
-            <div className="mx-3 my-2 h-px bg-sidebar-border/50" />
-
-            {/* Chat History section */}
+            {/* Chat History */}
             {!collapsed ? (
               <div className="px-3">
                 <button
                   onClick={() => setHistoryOpen((o) => !o)}
-                  className="flex items-center gap-2 px-2 py-2.5 text-[13px] font-normal tracking-wide text-sidebar-foreground/35 hover:text-sidebar-foreground/50 transition-colors w-full"
+                  className="flex items-center gap-2 px-3 py-2 text-[13px] text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors w-full"
                 >
-                  <span className="flex-1 text-left">History</span>
+                  <Clock className="w-[16px] h-[16px] shrink-0" />
+                  <span className="flex-1 text-left font-medium">Chat History</span>
                   {historyOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                 </button>
 
                 {historyOpen && (
-                  <div className="space-y-0.5 pb-2">
-                    {/* Search */}
-                    <div className="relative px-1 mb-1">
-                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/30" />
-                      <input
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search…"
-                        className="w-full bg-sidebar-accent/40 border-0 rounded-lg pl-8 pr-3 py-1.5 text-[12px] text-sidebar-foreground placeholder:text-muted-foreground/30 outline-none focus:bg-sidebar-accent transition-colors"
-                      />
-                    </div>
-
+                  <div className="space-y-0.5 pb-2 mt-1">
                     {filteredConversations.length === 0 && (
-                      <p className="text-[12px] text-muted-foreground/30 text-center py-4">
-                        {searchQuery ? "No matches" : "No conversations yet"}
+                      <p className="text-[12px] text-muted-foreground/30 text-center py-3">
+                        No conversations yet
                       </p>
                     )}
                     {filteredConversations.map((c) => (
                       <div
                         key={c.id}
                         className={cn(
-                          "group flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 text-[13px] hover:translate-x-0.5",
+                          "group flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 text-[13px]",
                           activeId === c.id
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-elegant"
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
                             : "text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                         )}
                         onClick={() => onSelect(c.id)}
@@ -342,7 +267,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             ) : (
               <div className="px-1.5">
                 <button
-                  onClick={() => { onToggleCollapse(); }}
+                  onClick={() => onToggleCollapse()}
                   className="w-full flex items-center justify-center p-2 rounded-lg text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
                   title="Chat History"
                 >
@@ -352,11 +277,8 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             )}
           </div>
 
-          {/* Skill Badge */}
-          <SkillBadge skills={userSkills ?? null} xpGained={xpGained ?? null} collapsed={collapsed} />
-
-          {/* User section */}
-          <div className="mt-auto border-t border-sidebar-border/50">
+          {/* User section at bottom */}
+          <div className="mt-auto border-t border-sidebar-border/40">
             {user ? (
               !collapsed ? (
                 <div className="px-2 py-2">
@@ -377,6 +299,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                       {user?.email?.[0]?.toUpperCase() || "U"}
                     </div>
                     <span className="text-[12px] text-sidebar-foreground/60 truncate flex-1 text-left">{user?.email || "User"}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-sidebar-foreground/30" />
                   </button>
                 </div>
               ) : (

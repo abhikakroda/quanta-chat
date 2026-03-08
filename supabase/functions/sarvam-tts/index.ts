@@ -62,9 +62,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({ audio: result.audios?.[0] }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (e) {
+  } catch (e: unknown) {
     console.error("TTS error:", e);
-    return new Response(JSON.stringify({ error: e.message || "Request failed" }), {
+    return new Response(JSON.stringify({ error: (e as Error).message || "Request failed" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -22,14 +22,8 @@ type Props = {
   onSelectModel?: (model: ModelId) => void;
   modelSupportsThinking?: boolean;
   onSelectSkill?: (skill: string) => void;
+  activeSkillLabel?: string | null;
 };
-
-const suggestions = [
-  { icon: "🗣️", text: "Text to Speech", skill: null },
-  { icon: "🧮", text: "Calculator", skill: null },
-  { icon: "🌐", text: "Translate text", skill: null },
-  { icon: "🌐", text: "Website Builder", skill: "code-assistant" },
-];
 
 const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   onSend, onStop, disabled, streaming,
@@ -37,41 +31,24 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   thinkingEnabled, onToggleThinking,
   selectedModel, onSelectModel,
   modelSupportsThinking, onSelectSkill,
+  activeSkillLabel,
 }, ref) {
   return (
     <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 pb-[10vh] animate-fade-in">
-      <div className="mb-8 sm:mb-10 animate-slide-up">
-        <span className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground lowercase">quanta</span>
-        <span className="text-3xl sm:text-4xl font-light tracking-tight text-muted-foreground ml-1.5">AI</span>
+      {/* Large centered brand — Kimi style */}
+      <div className="mb-10 animate-slide-up">
+        <span className="text-5xl sm:text-6xl font-bold tracking-tighter text-foreground uppercase">QUANTA</span>
       </div>
 
-      <div className="w-full max-w-[640px] mb-5">
+      <div className="w-full max-w-[640px]">
         <ChatInput
           onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming}
           agentMode={agentMode} onToggleAgent={onToggleAgent}
           thinkingEnabled={thinkingEnabled} onToggleThinking={onToggleThinking}
           selectedModel={selectedModel} onSelectModel={onSelectModel}
           modelSupportsThinking={modelSupportsThinking}
+          activeSkillLabel={activeSkillLabel}
         />
-      </div>
-
-      <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 max-w-[640px] w-full">
-        {suggestions.map((s) => (
-          <button
-            key={s.text}
-            onClick={() => {
-              if (s.skill) {
-                onSelectSkill?.(s.skill);
-              } else {
-                onSend(s.text);
-              }
-            }}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full glass-card text-[14px] sm:text-sm text-foreground/70 hover:text-foreground transition-all duration-200 hover:scale-[1.03] touch-manipulation ripple-container press-scale hover-lift"
-          >
-            <span>{s.icon}</span>
-            <span>{s.text}</span>
-          </button>
-        ))}
       </div>
     </div>
   );

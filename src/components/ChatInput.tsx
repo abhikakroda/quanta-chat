@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Paperclip, Bot, Zap, ChevronDown, ChevronUp, Settings2, Atom, Mic, MicOff, Loader2, ShieldCheck, Brain, Sparkles } from "lucide-react";
+import { ArrowUp, Square, Plus, Bot, ChevronDown, ChevronUp, Atom, Mic, MicOff, Loader2, ShieldCheck, Brain, Sparkles, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId, ThinkingLevel } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
@@ -10,7 +10,7 @@ type AttachedFile = {
   name: string;
   content: string;
   type: string;
-  dataUrl?: string; // base64 data URL for images
+  dataUrl?: string;
 };
 
 type Props = {
@@ -31,6 +31,7 @@ type Props = {
   selectedModel?: ModelId;
   onSelectModel?: (model: ModelId) => void;
   modelSupportsThinking?: boolean;
+  activeSkillLabel?: string | null;
 };
 
 const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
@@ -42,18 +43,16 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   smartPrompt, onToggleSmartPrompt,
   selectedModel = "mistral", onSelectModel,
   modelSupportsThinking,
+  activeSkillLabel,
 }, _ref) {
   const [input, setInput] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [modelMenuOpen, setModelMenuOpen] = useState(false);
-  const [agentPopover, setAgentPopover] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const modelRef = useRef<HTMLDivElement>(null);
-  const agentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -65,30 +64,14 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     }
   }, [input]);
 
-  // Close dropdowns on outside click
   useEffect(() => {
-    if (!modelMenuOpen && !agentPopover) return;
+    if (!modelMenuOpen) return;
     const handler = (e: MouseEvent) => {
-      if (modelMenuOpen && modelRef.current && !modelRef.current.contains(e.target as Node)) setModelMenuOpen(false);
-      if (agentPopover && agentRef.current && !agentRef.current.contains(e.target as Node)) setAgentPopover(false);
+      if (modelRef.current && !modelRef.current.contains(e.target as Node)) setModelMenuOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
-  }, [modelMenuOpen, agentPopover]);
-
-  // Collapse input bar when clicking outside
-  useEffect(() => {
-    if (!expanded) return;
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setExpanded(false);
-        setModelMenuOpen(false);
-        setAgentPopover(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [expanded]);
+  }, [modelMenuOpen]);
 
   const handleSubmit = () => {
     const trimmed = input.trim();
@@ -191,63 +174,46 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
       setRecording(false);
       return;
     }
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
       mediaRecorderRef.current = mediaRecorder;
       chunksRef.current = [];
-
       mediaRecorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
-
       mediaRecorder.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         setTranscribing(true);
-
         try {
           const { supabase } = await import("@/integrations/supabase/client");
           const { data: { session } } = await supabase.auth.getSession();
           const token = session?.access_token;
           if (!token) throw new Error("Not authenticated");
-
           const formData = new FormData();
           formData.append("audio", blob, "recording.webm");
-
           const resp = await fetch(
             `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sarvam-stt`,
-            {
-              method: "POST",
-              headers: {
-                apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-                Authorization: `Bearer ${token}`,
-              },
-              body: formData,
-            }
+            { method: "POST", headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token}` }, body: formData }
           );
-
           if (!resp.ok) throw new Error("STT failed");
           const data = await resp.json();
-          if (data.transcript) {
-            setInput((prev) => (prev ? prev + " " + data.transcript : data.transcript));
-          }
-        } catch (err) {
-          console.error("STT error:", err);
-        } finally {
-          setTranscribing(false);
-        }
+          if (data.transcript) setInput((prev) => (prev ? prev + " " + data.transcript : data.transcript));
+        } catch (err) { console.error("STT error:", err); }
+        finally { setTranscribing(false); }
       };
-
       mediaRecorder.start();
       setRecording(true);
-    } catch (err) {
-      console.error("Microphone access denied:", err);
-    }
+    } catch (err) { console.error("Microphone access denied:", err); }
   }, [recording]);
 
   const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label || "Auto";
+
+  // Build the active mode label for the pill
+  const activeModeLabel = agentMode
+    ? (activeSkillLabel ? `Agent | ${activeSkillLabel}` : "Agent")
+    : activeSkillLabel || null;
 
   return (
     <div
@@ -286,8 +252,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
         <div
           ref={containerRef}
           className={cn(
-            "relative flex flex-col rounded-[26px] glass-strong transition-all duration-300 shadow-liquid overflow-visible",
-            expanded && "border-foreground/15",
+            "relative flex flex-col rounded-2xl border border-border/60 bg-card transition-all duration-300 shadow-sm overflow-visible",
             dragging && "ring-2 ring-primary/30"
           )}
         >
@@ -296,67 +261,78 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             ref={ref}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onFocus={() => setExpanded(true)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
                 if (!streaming) handleSubmit();
               }
             }}
-            placeholder={agentMode ? "Ask agent anything…" : "Ask anything"}
+            placeholder={activeSkillLabel ? `Ask about ${activeSkillLabel}…` : "Ask away. Pics work too."}
             rows={1}
-            className={cn(
-              "w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/50 max-h-[200px] px-5 transition-all duration-200",
-              expanded ? "min-h-[48px] pt-3.5 pb-1" : "min-h-[44px] pt-3 pb-3"
-            )}
+            className="w-full resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/40 max-h-[200px] px-4 pt-3.5 pb-1 min-h-[56px]"
           />
 
-          {/* Bottom action row - only visible when expanded */}
-          <div className={cn(
-            "flex items-center justify-between px-2.5 transition-all duration-200",
-            expanded ? "max-h-[50px] pb-2.5 pt-0.5 opacity-100" : "max-h-0 pb-0 pt-0 opacity-0 overflow-hidden"
-          )}>
-            {/* Left: attach + settings */}
-            <div className="flex items-center gap-0.5">
+          {/* Bottom action row - Kimi style */}
+          <div className="flex items-center justify-between px-2.5 pb-2.5 pt-0.5">
+            {/* Left: + attach, Agent pill */}
+            <div className="flex items-center gap-1.5">
               <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,image/*" multiple className="hidden" onChange={handleFileSelect} />
               <button
                 onClick={() => fileRef.current?.click()}
-                className="p-2 rounded-xl border border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground transition-colors touch-manipulation ripple-container press-scale"
+                className="w-8 h-8 rounded-lg border border-border/60 hover:bg-accent text-muted-foreground/50 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
                 title="Attach file"
               >
-                <Paperclip className="w-4 h-4" />
+                <Plus className="w-4 h-4" />
               </button>
+
+              {/* Agent toggle pill */}
+              {onToggleAgent && (
+                <button
+                  onClick={onToggleAgent}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-all duration-200 touch-manipulation",
+                    agentMode
+                      ? "border-primary/40 text-primary bg-primary/10"
+                      : "border-border/60 text-muted-foreground/60 hover:text-foreground hover:border-border"
+                  )}
+                >
+                  <Atom className="w-3.5 h-3.5" />
+                  <span>{activeModeLabel || "Agent"}</span>
+                </button>
+              )}
+
+              {/* Voice input */}
               <button
                 onClick={toggleRecording}
                 disabled={transcribing}
                 className={cn(
-                  "p-2 rounded-xl border transition-all duration-200 touch-manipulation ripple-container press-scale",
+                  "w-8 h-8 rounded-lg border transition-all duration-200 touch-manipulation flex items-center justify-center",
                   recording
                     ? "border-destructive/50 text-destructive bg-destructive/10"
                     : transcribing
-                    ? "border-border text-muted-foreground/40"
-                    : "border-border hover:bg-accent text-muted-foreground/60 hover:text-foreground"
+                    ? "border-border text-muted-foreground/30"
+                    : "border-border/60 hover:bg-accent text-muted-foreground/50 hover:text-foreground"
                 )}
-                title={recording ? "Stop recording" : transcribing ? "Transcribing..." : "Voice input"}
+                title={recording ? "Stop" : transcribing ? "Transcribing..." : "Voice input"}
               >
-                {transcribing ? <Loader2 className="w-4 h-4 animate-spin" /> : recording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                {transcribing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : recording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
               </button>
             </div>
 
-            {/* Right: model selector + thinking + agent + send */}
+            {/* Right: model selector + send */}
             <div className="flex items-center gap-1.5">
               {/* Model selector */}
               {onSelectModel && (
                 <div ref={modelRef} className="relative">
                   <button
-                    onClick={() => { setModelMenuOpen((o) => !o); setAgentPopover(false); }}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-full border border-border text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors touch-manipulation"
+                    onClick={() => setModelMenuOpen((o) => !o)}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[12px] font-medium text-muted-foreground/60 hover:text-foreground transition-colors touch-manipulation"
                   >
-                    <span className="max-w-[80px] sm:max-w-none truncate">{selectedModelLabel}</span>
+                    <span className="max-w-[90px] truncate">{selectedModelLabel}</span>
                     {modelMenuOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
                   </button>
                   {modelMenuOpen && (
-                    <div className="absolute bottom-full right-0 mb-2 bg-popover border border-border rounded-xl shadow-liquid z-50 min-w-[180px] py-1 animate-scale-spring">
+                    <div className="absolute bottom-full right-0 mb-2 bg-popover border border-border rounded-xl shadow-lg z-50 min-w-[180px] py-1 animate-scale-spring">
                       {MODELS.map((m) => (
                         <button
                           key={m.id}
@@ -375,119 +351,11 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                 </div>
               )}
 
-              {/* Thinking intensity */}
-              {modelSupportsThinking && onSetThinkingLevel && (
-                <button
-                  onClick={() => {
-                    const levels: ThinkingLevel[] = ["off", "normal", "deep"];
-                    const idx = levels.indexOf(thinkingLevel);
-                    onSetThinkingLevel(levels[(idx + 1) % levels.length]);
-                  }}
-                  className={cn(
-                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale relative",
-                    thinkingLevel === "deep"
-                      ? "border-amber-400/40 text-amber-400 bg-amber-400/10"
-                      : thinkingLevel === "normal"
-                      ? "border-primary/30 text-primary bg-primary/10"
-                      : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
-                  )}
-                  title={`Thinking: ${thinkingLevel === "deep" ? "Deep 🧠" : thinkingLevel === "normal" ? "Normal" : "Off"}`}
-                >
-                  <Brain className="w-4 h-4" />
-                  {thinkingLevel !== "off" && (
-                    <span className={cn(
-                      "absolute -top-1 -right-1 text-[8px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center",
-                      thinkingLevel === "deep" ? "bg-amber-400 text-background" : "bg-primary text-primary-foreground"
-                    )}>
-                      {thinkingLevel === "deep" ? "D" : "N"}
-                    </span>
-                  )}
-                </button>
-              )}
-
-              {/* Smart Prompt toggle */}
-              {onToggleSmartPrompt && (
-                <button
-                  onClick={onToggleSmartPrompt}
-                  className={cn(
-                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale",
-                    smartPrompt
-                      ? "border-amber-400/30 text-amber-500 bg-amber-400/10"
-                      : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
-                  )}
-                  title={smartPrompt ? "Smart Prompt ON ✨" : "Smart Prompt OFF"}
-                >
-                  <Sparkles className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Self-verify toggle */}
-              {onToggleSelfVerify && (
-                <button
-                  onClick={onToggleSelfVerify}
-                  className={cn(
-                    "p-2 rounded-xl border transition-all duration-200 touch-manipulation press-scale",
-                    selfVerify
-                      ? "border-emerald-400/30 text-emerald-400 bg-emerald-400/10"
-                      : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
-                  )}
-                  title={selfVerify ? "Verify ON ✅" : "Verify OFF"}
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Agent mode */}
-              {onToggleAgent && (
-                <div ref={agentRef} className="relative">
-                  <button
-                    onClick={() => { setAgentPopover((o) => !o); setModelMenuOpen(false); }}
-                    className={cn(
-                      "p-2 rounded-xl border transition-colors touch-manipulation",
-                      agentMode
-                        ? "border-primary/30 text-primary bg-primary/10"
-                        : "border-border text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent"
-                    )}
-                    title={agentMode ? "Agent ON" : "Agent OFF"}
-                  >
-                    <Atom className="w-4 h-4" />
-                  </button>
-                  {agentPopover && (
-                    <div className="absolute bottom-full right-0 mb-2 bg-popover border border-border rounded-xl shadow-liquid z-50 w-[250px] p-3 animate-scale-spring">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <Atom className="w-4 h-4 text-foreground" />
-                        <span className="text-sm font-medium text-foreground">Agent Mode</span>
-                      </div>
-                      <p className="text-[12px] text-muted-foreground mb-2 leading-relaxed">
-                        Multi-step reasoning for complex tasks. The agent will:
-                      </p>
-                      <ul className="text-[11px] text-muted-foreground mb-3 space-y-1 pl-3">
-                        <li>• Break tasks into numbered steps</li>
-                        <li>• Auto-continue until complete</li>
-                        <li>• Use the best model (Qwen 3.5)</li>
-                        <li>• Enable deep thinking automatically</li>
-                      </ul>
-                      <button
-                        onClick={() => { onToggleAgent(); setAgentPopover(false); }}
-                        className={cn(
-                          "w-full px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                          agentMode
-                            ? "bg-destructive/10 text-destructive hover:bg-destructive/20"
-                            : "bg-primary text-primary-foreground hover:opacity-90"
-                        )}
-                      >
-                        {agentMode ? "Disable Agent" : "Enable Agent"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
               {/* Send / Stop */}
               {streaming ? (
                 <button
                   onClick={onStop}
-                  className="w-9 h-9 rounded-xl bg-foreground text-background hover:opacity-80 transition-opacity flex items-center justify-center touch-manipulation ripple-container press-scale"
+                  className="w-9 h-9 rounded-full bg-foreground/10 text-foreground hover:bg-foreground/20 transition-colors flex items-center justify-center touch-manipulation"
                 >
                   <Square className="w-3.5 h-3.5" fill="currentColor" />
                 </button>
@@ -495,7 +363,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                 <button
                   onClick={handleSubmit}
                   disabled={!input.trim() || streaming}
-                  className="w-9 h-9 rounded-xl bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-opacity flex items-center justify-center touch-manipulation ripple-container press-scale"
+                  className="w-9 h-9 rounded-full bg-foreground/10 text-foreground disabled:opacity-20 hover:bg-foreground/20 transition-colors flex items-center justify-center touch-manipulation"
                 >
                   <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
                 </button>
