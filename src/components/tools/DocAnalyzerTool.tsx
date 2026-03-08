@@ -845,6 +845,17 @@ export default function DocAnalyzerTool() {
 
               {/* Content */}
               <div className="flex-1 overflow-y-auto rounded-xl bg-card border border-border/30 shadow-sm min-h-0">
+                {ocrAiProcessing ? (
+                  <div className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <span className="text-sm font-medium text-foreground">{ocrAiProcessing === "rewrite" ? "Rewriting with AI..." : "Proofreading with AI..."}</span>
+                    </div>
+                    <div className="prose prose-sm max-w-none text-foreground">
+                      <ReactMarkdown>{ocrText}</ReactMarkdown>
+                    </div>
+                  </div>
+                ) : (
                 <div className="p-5 space-y-5">
                   {ocrPageTexts.map((pageText, i) => (
                     <div key={i} className={cn(
