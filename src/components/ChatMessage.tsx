@@ -131,7 +131,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
           {isUser ? (
             /* ── User message: right-aligned bubble, no avatar ── */
             editing ? (
-              <div className="space-y-2 ml-auto max-w-[85%]">
+              <div className="space-y-2 ml-auto max-w-[95%] sm:max-w-[85%]">
                 <textarea
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
