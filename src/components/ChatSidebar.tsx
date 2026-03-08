@@ -3,7 +3,7 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose,
   Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, Phone,
-  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown, Pin
+  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown, Pin, Cpu
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -70,6 +70,7 @@ export const ALL_TOOLS = [
   { id: "gk-tool", icon: Globe, label: "General Knowledge", badge: "New", prompt: "GK & General Awareness: History, Polity, Geography, Science & Current Affairs.", category: "Learning" },
   { id: "ssc-mock-test", icon: Clock, label: "SSC Mock Test", badge: "🔥", prompt: "Timed mixed-subject mock tests for SSC CGL/CHSL with scoring.", category: "Learning" },
   { id: "ece-tool", icon: Code2, label: "ECE Engineering", badge: "New", prompt: "Digital, Analog, Signals & Communication Systems for ECE students.", category: "Learning" },
+  { id: "pcb-design", icon: Cpu, label: "PCB Design", badge: "🔧", prompt: "PCB design simulator with component placement, learning, and AI review.", category: "Learning" },
   { id: "ies-et", icon: GraduationCap, label: "IES/ESE E&T", badge: "🏛️", prompt: "UPSC IES Electronics & Telecommunication full syllabus: Paper I, Paper II, GA, PYQs.", category: "Learning" },
   { id: "gate-ece", icon: GraduationCap, label: "GATE ECE", badge: "🔥", prompt: "GATE Electronics & Communication: Full syllabus, PYQs (2010-2024), Quiz, Formulas, Analysis.", category: "Learning" },
   { id: "custom-skill", icon: BookOpen, label: "My Skills", badge: "✨", prompt: "Create and study your own custom skills and topics.", category: "Learning" },
