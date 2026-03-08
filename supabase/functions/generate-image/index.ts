@@ -25,69 +25,105 @@ serve(async (req) => {
     const { prompt } = await req.json();
     if (!prompt) throw new Error("Prompt is required");
 
+    const GOOGLE_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-pro-image-preview",
-        messages: [
+    // Try Google AI Studio first for image generation
+    if (GOOGLE_API_KEY) {
+      try {
+        console.log("🎨 Image gen: Trying Google AI Studio...");
+        const googleResp = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${GOOGLE_API_KEY}`,
           {
-            role: "user",
-            content: `Generate a high-quality image: ${prompt}`,
-          },
-        ],
-        modalities: ["image", "text"],
-      }),
-    });
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: `Generate a high-quality image: ${prompt}` }] }],
+              generationConfig: {
+                responseModalities: ["TEXT", "IMAGE"],
+              },
+            }),
+          }
+        );
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        if (googleResp.ok) {
+          const result = await googleResp.json();
+          const parts = result.candidates?.[0]?.content?.parts || [];
+          let text = "";
+          const images: any[] = [];
+
+          for (const part of parts) {
+            if (part.text) text += part.text;
+            if (part.inlineData) {
+              images.push({
+                type: "image_url",
+                image_url: { url: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}` },
+              });
+            }
+          }
+
+          if (images.length > 0) {
+            console.log("✅ Image gen: Google AI Studio success");
+            return new Response(JSON.stringify({ success: true, text, images }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+          console.warn("⚠️ Google returned no images, trying fallback...");
+        } else {
+          const errText = await googleResp.text();
+          console.warn("⚠️ Google image gen failed:", googleResp.status, errText);
+        }
+      } catch (e) {
+        console.warn("⚠️ Google image gen error:", e);
+      }
+    }
+
+    // Fallback to Lovable AI
+    if (LOVABLE_API_KEY) {
+      console.log("🔄 Image gen: Falling back to Lovable AI");
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-pro-image-preview",
+          messages: [{ role: "user", content: `Generate a high-quality image: ${prompt}` }],
+          modalities: ["image", "text"],
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "Credits exhausted." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const errText = await response.text();
+        console.error("Lovable AI image error:", response.status, errText);
+        return new Response(JSON.stringify({ error: "Image generation failed" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Credits exhausted. Please add funds." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errText = await response.text();
-      console.error("Image generation error:", response.status, errText);
-      return new Response(JSON.stringify({ error: `Image generation failed: ${errText}` }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+
+      const result = await response.json();
+      const message = result.choices?.[0]?.message;
+      const text = message?.content || "";
+      const images = message?.images || [];
+
+      console.log("✅ Image gen: Lovable AI success");
+      return new Response(JSON.stringify({ success: true, text, images }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const result = await response.json();
-    console.log("Image API response structure:", JSON.stringify(result).slice(0, 500));
-    
-    const message = result.choices?.[0]?.message;
-    const text = message?.content || "";
-    
-    // Handle multiple possible image response formats
-    let images: any[] = [];
-    if (message?.images && Array.isArray(message.images)) {
-      images = message.images;
-    } else if (message?.content_parts) {
-      images = message.content_parts.filter((p: any) => p.type === "image").map((p: any) => ({ image_url: { url: p.image_url || p.url } }));
-    } else if (Array.isArray(message?.content)) {
-      // multimodal content array format
-      for (const part of message.content) {
-        if (part.type === "image_url") {
-          images.push({ image_url: { url: part.image_url?.url || part.url } });
-        }
-      }
-    }
-
-    return new Response(JSON.stringify({ success: true, text, images }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    throw new Error("No AI API key configured for image generation");
   } catch (e) {
     console.error("generate-image error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {

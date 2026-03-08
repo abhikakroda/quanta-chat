@@ -9,21 +9,134 @@ const corsHeaders = {
 
 const SYSTEM_PROMPT = "You are OpenTropic, a powerful and helpful AI assistant created by Abhishek Meena. When anyone asks who made you or who created you, always answer: 'I was created by Abhishek Meena.' You provide clear, accurate, and thoughtful responses. You can help with coding, writing, analysis, math, and general knowledge. Be concise but thorough.";
 
-// Model mapping to Lovable AI gateway models
-const MODEL_MAP: Record<string, string> = {
+// Google AI Studio model mapping
+const GOOGLE_MODEL_MAP: Record<string, string> = {
+  "gemini-flash": "gemini-2.5-flash-preview-05-20",
+  "gemini-pro": "gemini-2.5-pro-preview-05-06",
+  "gemini-flash-lite": "gemini-2.0-flash-lite",
+  "gpt5-mini": "gemini-2.5-flash-preview-05-20",
+  "gpt5": "gemini-2.5-pro-preview-05-06",
+};
+
+// Lovable AI gateway fallback model mapping
+const LOVABLE_MODEL_MAP: Record<string, string> = {
   "gemini-flash": "google/gemini-3-flash-preview",
   "gemini-pro": "google/gemini-2.5-pro",
   "gemini-flash-lite": "google/gemini-2.5-flash-lite",
   "gpt5-mini": "openai/gpt-5-mini",
   "gpt5": "openai/gpt-5",
-  // Legacy model IDs → map to Google equivalents
-  "qwen": "google/gemini-3-flash-preview",
-  "qwen-coder": "google/gemini-2.5-pro",
-  "mistral": "google/gemini-2.5-flash",
-  "minimax": "google/gemini-2.5-flash",
-  "deepseek": "google/gemini-2.5-pro",
-  "sarvam": "google/gemini-2.5-flash",
 };
+
+async function callGoogleAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
+  const googleModel = GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash-preview-05-20";
+  
+  // Convert OpenAI-style messages to Google Generative AI format
+  const systemInstruction = messages.find((m: any) => m.role === "system");
+  const chatMessages = messages.filter((m: any) => m.role !== "system");
+
+  const contents = chatMessages.map((m: any) => {
+    if (Array.isArray(m.content)) {
+      // Multimodal message
+      const parts = m.content.map((c: any) => {
+        if (c.type === "text") return { text: c.text };
+        if (c.type === "image_url") {
+          const url = c.image_url?.url || "";
+          if (url.startsWith("data:")) {
+            const match = url.match(/^data:([^;]+);base64,(.+)$/);
+            if (match) {
+              return { inlineData: { mimeType: match[1], data: match[2] } };
+            }
+          }
+          return { text: `[Image: ${url}]` };
+        }
+        return { text: JSON.stringify(c) };
+      });
+      return { role: m.role === "assistant" ? "model" : "user", parts };
+    }
+    return { role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] };
+  });
+
+  const endpoint = stream
+    ? `https://generativelanguage.googleapis.com/v1beta/models/${googleModel}:streamGenerateContent?alt=sse&key=${apiKey}`
+    : `https://generativelanguage.googleapis.com/v1beta/models/${googleModel}:generateContent?key=${apiKey}`;
+
+  const body: any = {
+    contents,
+    generationConfig: { maxOutputTokens: maxTokens },
+  };
+  if (systemInstruction) {
+    body.systemInstruction = { parts: [{ text: systemInstruction.content }] };
+  }
+
+  return await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+async function callLovableAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
+  const lovableModel = LOVABLE_MODEL_MAP[model] || "google/gemini-3-flash-preview";
+  return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: lovableModel,
+      messages,
+      stream,
+      max_tokens: maxTokens,
+    }),
+  });
+}
+
+// Transform Google SSE stream to OpenAI-compatible SSE stream
+function transformGoogleStream(googleBody: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const reader = googleBody.getReader();
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+  let buffer = "";
+
+  return new ReadableStream({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+          return;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ") || line.trim() === "") continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) continue;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            if (text) {
+              const openaiChunk = {
+                choices: [{ delta: { content: text }, index: 0 }],
+              };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(openaiChunk)}\n\n`));
+            }
+          } catch { /* skip malformed */ }
+        }
+      } catch (err) {
+        controller.error(err);
+      }
+    },
+  });
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -40,8 +153,8 @@ serve(async (req) => {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) throw new Error("Not authenticated");
 
+    const GOOGLE_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const { messages, enableThinking = true, model = "gemini-flash", skillPrompt, imageData } = await req.json();
 
@@ -49,10 +162,13 @@ serve(async (req) => {
       ? `${SYSTEM_PROMPT}\n\nAdditional skill context: ${skillPrompt}`
       : SYSTEM_PROMPT;
 
-    // Resolve model
-    const gatewayModel = MODEL_MAP[model] || "google/gemini-3-flash-preview";
+    // Build messages array
+    const allMessages = [
+      { role: "system", content: systemContent },
+      ...messages,
+    ];
 
-    // If image is attached, use multimodal vision
+    // If image is attached, build multimodal messages
     if (imageData && imageData.base64 && imageData.mimeType) {
       const textHistory = messages.slice(0, -1).map((m: any) => ({
         role: m.role,
@@ -73,84 +189,96 @@ serve(async (req) => {
         },
       ];
 
-      const visionResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
-          messages: visionMessages,
-          stream: true,
-          max_tokens: 4096,
-        }),
-      });
+      // Try Google first for vision
+      if (GOOGLE_API_KEY) {
+        try {
+          const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, visionMessages, true, 4096);
+          if (googleResp.ok && googleResp.body) {
+            console.log("✅ Vision: Using Google AI Studio");
+            const transformedStream = transformGoogleStream(googleResp.body);
+            return new Response(transformedStream, {
+              headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+            });
+          }
+          console.warn("⚠️ Google vision failed:", googleResp.status, await googleResp.text());
+        } catch (e) {
+          console.warn("⚠️ Google vision error:", e);
+        }
+      }
 
-      if (!visionResp.ok) {
-        if (visionResp.status === 429) {
+      // Fallback to Lovable AI for vision
+      if (LOVABLE_API_KEY) {
+        console.log("🔄 Vision: Falling back to Lovable AI");
+        const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, visionMessages, true, 4096);
+        if (!lovableResp.ok) {
+          if (lovableResp.status === 429) {
+            return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+              status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+          if (lovableResp.status === 402) {
+            return new Response(JSON.stringify({ error: "Credits exhausted." }), {
+              status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+          const errText = await lovableResp.text();
+          console.error("Lovable AI vision error:", lovableResp.status, errText);
+          return new Response(JSON.stringify({ error: "Vision service error" }), {
+            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(lovableResp.body, {
+          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+        });
+      }
+
+      throw new Error("No AI API key configured");
+    }
+
+    // Standard text chat — Try Google first, fallback to Lovable AI
+    if (GOOGLE_API_KEY) {
+      try {
+        const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, allMessages, true, 4096);
+        if (googleResp.ok && googleResp.body) {
+          console.log("✅ Chat: Using Google AI Studio -", GOOGLE_MODEL_MAP[model] || model);
+          const transformedStream = transformGoogleStream(googleResp.body);
+          return new Response(transformedStream, {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+        console.warn("⚠️ Google chat failed:", googleResp.status, await googleResp.text());
+      } catch (e) {
+        console.warn("⚠️ Google chat error:", e);
+      }
+    }
+
+    // Fallback to Lovable AI
+    if (LOVABLE_API_KEY) {
+      console.log("🔄 Chat: Falling back to Lovable AI");
+      const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, allMessages, true, 4096);
+      if (!lovableResp.ok) {
+        if (lovableResp.status === 429) {
           return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
             status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        if (visionResp.status === 402) {
-          return new Response(JSON.stringify({ error: "Credits exhausted. Please add funds." }), {
+        if (lovableResp.status === 402) {
+          return new Response(JSON.stringify({ error: "Credits exhausted." }), {
             status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         }
-        const errText = await visionResp.text();
-        console.error("Vision API error:", visionResp.status, errText);
-        return new Response(JSON.stringify({ error: "Vision service error" }), {
+        const errText = await lovableResp.text();
+        console.error("Lovable AI error:", lovableResp.status, errText);
+        return new Response(JSON.stringify({ error: `AI error: ${lovableResp.status}` }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      return new Response(visionResp.body, {
+      return new Response(lovableResp.body, {
         headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
       });
     }
 
-    // Standard text chat via Lovable AI gateway
-    const allMessages = [
-      { role: "system", content: systemContent },
-      ...messages,
-    ];
-
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: gatewayModel,
-        messages: allMessages,
-        stream: true,
-        max_tokens: 4096,
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Credits exhausted. Please add funds." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-      return new Response(JSON.stringify({ error: `AI gateway error: ${response.status}` }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-    });
+    throw new Error("No AI API key configured");
   } catch (e) {
     console.error("chat error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
