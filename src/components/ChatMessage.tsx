@@ -126,12 +126,12 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
 
   return (
     <div className="group animate-message-in">
-      <div className="py-4 sm:py-5 px-4 sm:px-6">
+      <div className="py-3 sm:py-5 px-3 sm:px-6">
         <div className="max-w-[720px] mx-auto">
           {isUser ? (
             /* ── User message: right-aligned bubble, no avatar ── */
             editing ? (
-              <div className="space-y-2 ml-auto max-w-[85%]">
+              <div className="space-y-2 ml-auto max-w-[95%] sm:max-w-[85%]">
                 <textarea
                   value={editValue}
                   onChange={(e) => setEditValue(e.target.value)}
@@ -155,7 +155,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                     <Pencil className="w-3 h-3" />
                   </button>
                 )}
-                <div className="px-5 py-3 rounded-3xl bg-muted max-w-[80%]">
+                <div className="px-3.5 sm:px-5 py-2.5 sm:py-3 rounded-3xl bg-muted max-w-[92%] sm:max-w-[80%]">
                   {imageUrl && (
                     <div className="mb-2">
                       <img
@@ -165,7 +165,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                       />
                     </div>
                   )}
-                  <p className="text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground">{content}</p>
+                  <p className="text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap break-words text-foreground">{content}</p>
                 </div>
               </div>
             )
@@ -199,7 +199,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                 )}
 
                 {content && (
-                  <div className="prose prose-sm max-w-none prose-p:my-3 prose-p:leading-[1.8] prose-headings:my-4 prose-headings:text-foreground prose-h1:text-xl prose-h2:text-lg prose-h3:text-base prose-h3:font-semibold prose-pre:my-3 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-[15px] leading-[1.8] break-words overflow-hidden prose-li:my-1 prose-li:leading-[1.8] prose-ul:my-3 prose-ol:my-3 prose-ul:pl-5 prose-ol:pl-5 prose-strong:text-foreground prose-strong:font-semibold [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground text-foreground prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-hr:my-6 prose-hr:border-border/50">
+                  <div className="prose prose-sm max-w-none prose-p:my-3 prose-p:leading-[1.8] prose-headings:my-4 prose-headings:text-foreground prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-h3:font-semibold prose-pre:my-3 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[12px] sm:prose-code:text-[13px] text-sm sm:text-[15px] leading-[1.8] break-words overflow-hidden prose-li:my-1 prose-li:leading-[1.8] prose-ul:my-3 prose-ol:my-3 prose-ul:pl-4 sm:prose-ul:pl-5 prose-ol:pl-4 sm:prose-ol:pl-5 prose-strong:text-foreground prose-strong:font-semibold [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground text-foreground prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-hr:my-6 prose-hr:border-border/50">
                     <ReactMarkdown
                       remarkPlugins={[remarkMath]}
                       rehypePlugins={[rehypeKatex]}
@@ -248,7 +248,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
 
               {/* Action icons row — ChatGPT style */}
               {content && !isThinking && !isStreaming && (
-                <div className="flex items-center gap-0.5 pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="flex items-center gap-0.5 pt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                   <button
                     onClick={handleCopy}
                     className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors touch-manipulation"

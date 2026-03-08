@@ -226,7 +226,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 
   return (
     <div
-      className={cn("px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2", !noBorder && "border-t border-border/30")}
+      className={cn("px-2 sm:px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2", !noBorder && "border-t border-border/30")}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
@@ -277,10 +277,10 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,.docx,.doc,image/*" multiple className="hidden" onChange={handleFileSelect} />
           <button
             onClick={() => fileRef.current?.click()}
-            className="shrink-0 w-10 h-10 ml-1.5 mb-1 rounded-full hover:bg-accent text-muted-foreground/50 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
+            className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 ml-1 sm:ml-1.5 mb-1 rounded-full hover:bg-accent text-muted-foreground/50 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
             title="Attach file"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* Textarea */}
@@ -296,17 +296,17 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             }}
             placeholder="Ask anything"
             rows={1}
-            className="flex-1 resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/40 max-h-[200px] py-3 min-h-[48px]"
+            className="flex-1 resize-none bg-transparent outline-none text-sm sm:text-[15px] text-foreground placeholder:text-muted-foreground/40 max-h-[200px] py-3 min-h-[44px] sm:min-h-[48px]"
           />
 
           {/* Right buttons */}
-          <div className="flex items-center gap-1 shrink-0 mr-1.5 mb-1">
+          <div className="flex items-center gap-0.5 shrink-0 mr-1 sm:mr-1.5 mb-1">
             {/* Voice input */}
             <button
               onClick={toggleRecording}
               disabled={transcribing}
               className={cn(
-                "w-10 h-10 rounded-full transition-all duration-200 touch-manipulation flex items-center justify-center",
+                "w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all duration-200 touch-manipulation flex items-center justify-center",
                 recording
                   ? "text-destructive bg-destructive/10"
                   : transcribing
@@ -322,21 +322,21 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             {streaming ? (
               <button
                 onClick={onStop}
-                className="w-10 h-10 rounded-full bg-foreground text-background hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-foreground text-background hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
               >
-                <Square className="w-3.5 h-3.5" fill="currentColor" />
+                <Square className="w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" />
               </button>
             ) : input.trim() ? (
               <button
                 onClick={handleSubmit}
                 disabled={!input.trim() || streaming}
-                className="w-10 h-10 rounded-full bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-foreground text-background disabled:opacity-20 hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
               >
                 <ArrowUp className="w-4 h-4" strokeWidth={2.5} />
               </button>
             ) : (
               <button
-                className="w-10 h-10 rounded-full bg-foreground text-background hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-foreground text-background hover:opacity-80 transition-colors flex items-center justify-center touch-manipulation"
                 title="Voice chat"
               >
                 <AudioLines className="w-4 h-4" />

@@ -70,36 +70,38 @@ export default function AIPlayground() {
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
-            <div className="p-3.5 rounded-2xl bg-primary/10 border border-primary/20">
-              <Gamepad2 className="w-8 h-8 text-primary" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight flex items-center gap-3">
-                AI Playground
-                <span className="text-sm font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
-                  {ALL_TOOLS.length} tools
-                </span>
-              </h1>
-              <p className="text-muted-foreground mt-1.5 text-sm sm:text-base">
-                Explore, experiment, and level up with powerful AI tools
-              </p>
-            </div>
-
-            {/* Stats bar */}
-            <div className="flex gap-4 sm:gap-6">
-              {[
-                { icon: Trophy, label: "Categories", value: Object.keys(categoryCounts).length, color: "text-amber-500" },
-                { icon: Zap, label: "Tools", value: ALL_TOOLS.length, color: "text-emerald-500" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <stat.icon className={cn("w-5 h-5 mx-auto mb-1", stat.color)} />
-                  <div className="text-lg font-bold text-foreground">{stat.value}</div>
-                  <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+           <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-primary/10 border border-primary/20">
+                  <Gamepad2 className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                 </div>
-              ))}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight flex items-center gap-2 sm:gap-3 flex-wrap">
+                    AI Playground
+                    <span className="text-xs sm:text-sm font-medium px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      {ALL_TOOLS.length} tools
+                    </span>
+                  </h1>
+                  <p className="text-muted-foreground mt-1 text-xs sm:text-sm md:text-base">
+                    Explore, experiment, and level up with powerful AI tools
+                  </p>
+                </div>
+              </div>
+
+              {/* Stats bar */}
+              <div className="flex gap-4 sm:gap-6">
+                {[
+                  { icon: Trophy, label: "Categories", value: Object.keys(categoryCounts).length, color: "text-amber-500" },
+                  { icon: Zap, label: "Tools", value: ALL_TOOLS.length, color: "text-emerald-500" },
+                ].map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <stat.icon className={cn("w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1", stat.color)} />
+                    <div className="text-base sm:text-lg font-bold text-foreground">{stat.value}</div>
+                    <div className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
 
           {/* Search */}
           <div className="relative mt-6 max-w-xl">
@@ -114,15 +116,15 @@ export default function AIPlayground() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
         {/* Category pills with emoji + count */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex gap-1.5 sm:gap-2 mb-6 sm:mb-8 overflow-x-auto pb-2 scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium whitespace-nowrap transition-all duration-200 press-scale border",
+                "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 press-scale border",
                 activeCategory === cat
                   ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
                   : "bg-card border-border/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border"
@@ -143,7 +145,7 @@ export default function AIPlayground() {
         </div>
 
         {/* Tools grid — gamified cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filtered.map((tool, index) => {
             const colors = CATEGORY_COLORS[tool.category] || CATEGORY_COLORS.Utility;
             return (
@@ -151,7 +153,7 @@ export default function AIPlayground() {
                 key={tool.id}
                 onClick={() => handleSelectTool(tool.id)}
                 className={cn(
-                  "group relative flex flex-col items-start gap-3 p-5 rounded-2xl border bg-card transition-all duration-300 text-left press-scale",
+                  "group relative flex flex-col items-start gap-2.5 sm:gap-3 p-4 sm:p-5 rounded-xl sm:rounded-2xl border bg-card transition-all duration-300 text-left press-scale",
                   "hover:-translate-y-1 hover:shadow-xl",
                   colors.border,
                   `hover:${colors.glow}`

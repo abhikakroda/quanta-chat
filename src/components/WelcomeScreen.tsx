@@ -30,10 +30,10 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   activeSkillLabel,
 }, ref) {
   return (
-    <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 pb-[10vh] animate-fade-in">
+    <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 pb-[10vh] animate-fade-in">
       {/* Large centered brand */}
-      <div className="mb-10 animate-slide-up">
-        <span className="text-5xl sm:text-6xl font-bold tracking-tighter text-foreground uppercase">OPENTROPIC</span>
+      <div className="mb-6 sm:mb-10 animate-slide-up">
+        <span className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tighter text-foreground uppercase">OPENTROPIC</span>
       </div>
 
       <div className="w-full max-w-[640px]">
