@@ -1145,7 +1145,7 @@ export default function CodeAssistantTool() {
           <>
             {chatPanel}
             {hasPreview && (
-              <div onMouseDown={handleMouseDown} className={cn("w-1.5 cursor-col-resize flex items-center justify-center hover:bg-blue-500/10 transition-colors shrink-0", isDragging && "bg-blue-500/10")}>
+              <div onMouseDown={handleMouseDown} className={cn("w-1.5 cursor-col-resize flex items-center justify-center hover:bg-accent transition-colors shrink-0", isDragging && "bg-accent")}>
                 <GripVertical className="w-3 h-3 text-muted-foreground/20" />
               </div>
             )}
