@@ -57,6 +57,16 @@ const QUIZ_TYPES = [
   "Static GK", "Previous Year Questions",
 ];
 
+const STATIC_GK: Record<string, string> = {
+  "Ancient India": "**Key Facts:**\n- Indus Valley (3300-1300 BCE): Harappa, Mohenjo-daro\n- Vedic Period: Rigveda (oldest), 4 Vedas\n- Maurya Dynasty: Chandragupta → Ashoka (Dhamma)\n- Gupta Period: Golden Age of India\n- Important: Arthashastra (Kautilya), Nalanda University",
+  "Indian Constitution": "**Key Articles:**\n| Article | Subject |\n|---------|--------|\n| 14 | Equality before law |\n| 19 | 6 Freedoms |\n| 21 | Right to Life |\n| 32 | Constitutional remedies |\n| 44 | Uniform Civil Code |\n| 370 | J&K (abrogated) |\n\n- Parts: 25, Schedules: 12, Articles: 448+\n- Borrowed from: UK, US, Ireland, Canada, Australia",
+  "Fundamental Rights & Duties": "**6 Fundamental Rights (Part III):**\n1. Right to Equality (Art 14-18)\n2. Right to Freedom (Art 19-22)\n3. Right against Exploitation (Art 23-24)\n4. Right to Freedom of Religion (Art 25-28)\n5. Cultural & Educational Rights (Art 29-30)\n6. Right to Constitutional Remedies (Art 32)\n\n**11 Fundamental Duties (Art 51A)**\n- Added by 42nd Amendment (1976)",
+  "Physical Geography of India": "**Quick Facts:**\n- Area: 3.28 million km², 7th largest\n- Latitudes: 8°4'N to 37°6'N\n- Longitudes: 68°7'E to 97°25'E\n- Highest: K2 (8611m), Kangchenjunga (8586m)\n- Physiographic divisions: 6 (Himalaya, Plains, Peninsula, Coast, Islands, Desert)",
+  "Indian Rivers & Drainage": "**Major Rivers:**\n| River | Origin | Length |\n|-------|--------|--------|\n| Ganga | Gangotri | 2525 km |\n| Brahmaputra | Mansarovar | 2900 km |\n| Godavari | Nasik | 1465 km |\n| Krishna | Mahabaleshwar | 1400 km |\n| Narmada | Amarkantak | 1312 km |\n\n- West flowing: Narmada, Tapi (rift valleys)",
+  "Physics (Mechanics, Light, Sound)": "**Key Laws:**\n- Newton's Laws: F=ma, Action=Reaction\n- Speed of light: 3×10⁸ m/s\n- Speed of sound (air): 343 m/s\n- Snell's law: n₁sinθ₁ = n₂sinθ₂\n- Mirror formula: 1/f = 1/v + 1/u\n- Doppler effect: Pitch changes with relative motion",
+  "Biology (Human Body)": "**Systems:**\n- Blood groups: A, B, AB (universal recipient), O (universal donor)\n- Bones: 206 (adult), Muscles: 639\n- Largest organ: Skin\n- Largest gland: Liver\n- Smallest bone: Stapes (ear)\n- Chromosomes: 46 (23 pairs)\n- DNA discoverers: Watson & Crick (1953)",
+};
+
 async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
   const res = await supabase.functions.invoke("chat", {
     body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
@@ -82,6 +92,7 @@ export default function GKTool() {
   const [tab, setTab] = useState<TabId>("history");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTopic, setActiveTopic] = useState<string | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQ[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -89,6 +100,7 @@ export default function GKTool() {
   const [streak, setStreak] = useState(0);
 
   const fetchTopic = useCallback(async (topic: string, category: string) => {
+    setActiveTopic(topic);
     setLoading(true);
     setContent("");
     const sys = `You are a GK/General Awareness expert for competitive exams (SSC/UPSC/Banking). Explain "${topic}" under "${category}" with key facts, important points, tables, mnemonics, and exam-relevant details. Format with markdown. Add quick revision points at the end.`;
