@@ -9,13 +9,13 @@ const corsHeaders = {
 
 const SYSTEM_PROMPT = "You are OpenTropic, a powerful and helpful AI assistant created by Abhishek Meena. When anyone asks who made you or who created you, always answer: 'I was created by Abhishek Meena.' You provide clear, accurate, and thoughtful responses. You can help with coding, writing, analysis, math, and general knowledge. Be concise but thorough.";
 
-// Google AI Studio model mapping
+// Google AI Studio model mapping — use stable model names
 const GOOGLE_MODEL_MAP: Record<string, string> = {
-  "gemini-flash": "gemini-2.5-flash-preview-05-20",
-  "gemini-pro": "gemini-2.5-pro-preview-05-06",
+  "gemini-flash": "gemini-2.5-flash",
+  "gemini-pro": "gemini-2.5-pro",
   "gemini-flash-lite": "gemini-2.0-flash-lite",
-  "gpt5-mini": "gemini-2.5-flash-preview-05-20",
-  "gpt5": "gemini-2.5-pro-preview-05-06",
+  "gpt5-mini": "gemini-2.5-flash",
+  "gpt5": "gemini-2.5-pro",
 };
 
 // Lovable AI gateway fallback model mapping
@@ -25,97 +25,28 @@ const LOVABLE_MODEL_MAP: Record<string, string> = {
   "gemini-flash-lite": "google/gemini-2.5-flash-lite",
   "gpt5-mini": "openai/gpt-5-mini",
   "gpt5": "openai/gpt-5",
+  "mistral": "google/gemini-3-flash-preview",
+  "minimax": "google/gemini-3-flash-preview",
+  "glm": "google/gemini-3-flash-preview",
+  "kimi": "google/gemini-3-flash-preview",
+  "swan": "google/gemini-3-flash-preview",
 };
 
 // Mistral model mapping
 const MISTRAL_MODEL = "mistral-small-latest";
 
-// NVIDIA NIM model mapping for Minimax, GLM, Kimi, Swan
+// NVIDIA NIM model mapping (build.nvidia.com)
 const NVIDIA_MODEL_MAP: Record<string, string> = {
-  "minimax": "minimax/minimax-m1-80k",
-  "glm": "thudm/chatglm-3-6b",
-  "kimi": "moonshot/moonshot-v1-8k",
+  "minimax": "minimaxi/minimax-m1-80k",
+  "glm": "thudm/glm-4-32b-instruct",
+  "kimi": "moonshotai/kimi-k2-instruct",
   "swan": "snowflake/arctic",
 };
 
 // Which models route through which provider
 const MISTRAL_MODELS = new Set(["mistral"]);
 const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan"]);
-const CLAUDE_MODELS = new Set(["claude"]);
-const CLAUDE_MODEL = "claude-sonnet-4-20250514";
 
-async function callClaudeAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
-  const systemMsg = messages.find((m: any) => m.role === "system");
-  const chatMsgs = messages.filter((m: any) => m.role !== "system");
-
-  const body: any = {
-    model: CLAUDE_MODEL,
-    max_tokens: maxTokens,
-    messages: chatMsgs,
-    stream,
-  };
-  if (systemMsg) body.system = systemMsg.content;
-
-  return await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-}
-
-// Transform Claude SSE stream to OpenAI-compatible SSE stream
-function transformClaudeStream(claudeBody: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
-  const reader = claudeBody.getReader();
-  const decoder = new TextDecoder();
-  const encoder = new TextEncoder();
-  let buffer = "";
-
-  return new ReadableStream({
-    async pull(controller) {
-      try {
-        const { done, value } = await reader.read();
-        if (done) {
-          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-          controller.close();
-          return;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        let idx: number;
-        while ((idx = buffer.indexOf("\n")) !== -1) {
-          let line = buffer.slice(0, idx);
-          buffer = buffer.slice(idx + 1);
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (!line.startsWith("data: ") || line.trim() === "") continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (!jsonStr) continue;
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            if (parsed.type === "content_block_delta" && parsed.delta?.text) {
-              const openaiChunk = {
-                choices: [{ delta: { content: parsed.delta.text }, index: 0 }],
-              };
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify(openaiChunk)}\n\n`));
-            }
-            if (parsed.type === "message_stop") {
-              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-              controller.close();
-              return;
-            }
-          } catch { /* skip malformed */ }
-        }
-      } catch (err) {
-        controller.error(err);
-      }
-    },
-  });
-}
 
 async function callMistralAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
   return await fetch("https://api.mistral.ai/v1/chat/completions", {
@@ -134,7 +65,7 @@ async function callMistralAI(apiKey: string, messages: any[], stream: boolean, m
 }
 
 async function callNvidiaAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
-  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "minimax/minimax-m1-80k";
+  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "minimaxi/minimax-m1-80k";
   return await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -280,7 +211,6 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
     const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 
     const { messages, enableThinking = true, model = "gemini-flash", skillPrompt, imageData } = await req.json();
 
@@ -362,23 +292,6 @@ serve(async (req) => {
     }
 
     // ── Route by model provider ──
-
-    // Claude (Premium) → Anthropic API
-    if (CLAUDE_MODELS.has(model) && ANTHROPIC_API_KEY) {
-      try {
-        const resp = await callClaudeAI(ANTHROPIC_API_KEY, allMessages, true, 4096);
-        if (resp.ok && resp.body) {
-          console.log("✅ Chat: Using Claude (Premium) -", CLAUDE_MODEL);
-          const transformedStream = transformClaudeStream(resp.body);
-          return new Response(transformedStream, {
-            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-          });
-        }
-        console.warn("⚠️ Claude failed:", resp.status, await resp.text());
-      } catch (e) {
-        console.warn("⚠️ Claude error:", e);
-      }
-    }
 
     // Mistral models → Mistral API
     if (MISTRAL_MODELS.has(model) && MISTRAL_API_KEY) {
