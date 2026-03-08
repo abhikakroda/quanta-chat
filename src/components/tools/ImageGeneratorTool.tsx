@@ -103,12 +103,7 @@ export default function ImageGeneratorTool() {
 
       {error && <p className="text-destructive text-xs text-center">{error}</p>}
 
-      {loading && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
-          <p className="text-sm text-muted-foreground">Creating your image...</p>
-        </div>
-      )}
+      {loading && <ImageProgress />}
 
       {imageUrl && !loading && (
         <div className="flex-1 flex flex-col items-center gap-4 min-h-0">
