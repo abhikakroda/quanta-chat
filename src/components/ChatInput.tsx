@@ -232,14 +232,23 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
         {attachedFiles.length > 0 && !dragging && (
           <div className="flex gap-2 mb-2 flex-wrap">
             {attachedFiles.map((f, i) => (
-              <div key={i} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-xs text-muted-foreground">
+              <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/80 border border-border/40 text-xs text-foreground group">
                 {f.dataUrl ? (
                   <img src={f.dataUrl} alt={f.name} className="w-8 h-8 rounded object-cover" />
                 ) : (
-                  <Paperclip className="w-3 h-3" />
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-primary/60" />
+                  </div>
                 )}
-                <span className="truncate max-w-[120px]">{f.name}</span>
-                <button onClick={() => removeFile(i)} className="text-muted-foreground/50 hover:text-foreground ml-0.5">×</button>
+                <div className="min-w-0">
+                  <span className="truncate max-w-[140px] block font-medium text-[12px]">{f.name}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {f.type.startsWith("image/") ? "Image" : f.name.endsWith(".pdf") ? "PDF" : f.name.endsWith(".docx") || f.name.endsWith(".doc") ? "Word Doc" : "Text file"}
+                  </span>
+                </div>
+                <button onClick={() => removeFile(i)} className="p-0.5 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-muted transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             ))}
           </div>
