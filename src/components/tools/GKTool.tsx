@@ -462,6 +462,33 @@ export default function GKTool() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* ═══ STATIC GK TAB ═══ */}
+        {tab === "static" && !activeTopic && (
+          <div className="space-y-3">
+            <h3 className="text-base font-bold text-foreground">📋 Static GK — Quick Reference Tables</h3>
+            <p className="text-xs text-muted-foreground">Instant-load fact tables for SSC, UPSC & competitive exams</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {Object.keys(STATIC_TABLES).map(title => (
+                <button key={title} onClick={() => setActiveTopic(title)}
+                  className="p-3 rounded-xl text-[13px] font-medium bg-muted/50 hover:bg-primary/10 hover:text-primary border border-border/40 hover:border-primary/30 transition-all text-left">
+                  {title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {tab === "static" && activeTopic && (
+          <div className="space-y-3">
+            <button onClick={() => setActiveTopic(null)} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="w-3 h-3" /> Back
+            </button>
+            <h3 className="text-base font-bold text-foreground">{activeTopic}</h3>
+            <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-xl bg-card border border-border/50 overflow-x-auto">
+              <ReactMarkdown>{STATIC_TABLES[activeTopic]}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
         {tab === "history" && !activeTopic && !loading && renderTopicGrid(HISTORY_TOPICS, "History")}
         {tab === "polity" && !activeTopic && !loading && renderTopicGrid(POLITY_TOPICS, "Indian Polity")}
         {tab === "geography" && !activeTopic && !loading && renderTopicGrid(GEOGRAPHY_TOPICS, "Geography")}
