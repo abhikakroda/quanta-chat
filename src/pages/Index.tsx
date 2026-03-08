@@ -104,6 +104,8 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "ssc-reasoning": SSCReasoningTool,
   "gk-tool": GKTool,
   "ssc-mock-test": SSCMockTestTool,
+  "ece-tool": ECETool,
+  "custom-skill": CustomSkillTool,
 };
 
 export default function Index() {

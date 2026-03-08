@@ -69,6 +69,8 @@ export const ALL_TOOLS = [
   { id: "ssc-reasoning", icon: Code2, label: "SSC Reasoning", badge: "New", prompt: "SSC CGL/CHSL Reasoning: Verbal, Non-Verbal & Analytical.", category: "Learning" },
   { id: "gk-tool", icon: Globe, label: "General Knowledge", badge: "New", prompt: "GK & General Awareness: History, Polity, Geography, Science & Current Affairs.", category: "Learning" },
   { id: "ssc-mock-test", icon: Clock, label: "SSC Mock Test", badge: "🔥", prompt: "Timed mixed-subject mock tests for SSC CGL/CHSL with scoring.", category: "Learning" },
+  { id: "ece-tool", icon: Code2, label: "ECE Engineering", badge: "New", prompt: "Digital, Analog, Signals & Communication Systems for ECE students.", category: "Learning" },
+  { id: "custom-skill", icon: BookOpen, label: "My Skills", badge: "✨", prompt: "Create and study your own custom skills and topics.", category: "Learning" },
 ] as const;
 
 export type SkillId = typeof SKILLS[number]["id"];
