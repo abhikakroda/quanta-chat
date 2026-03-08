@@ -41,7 +41,14 @@ const IDIOM_CATEGORIES = [
   "Food Idioms", "Nature Idioms", "Common Proverbs",
 ];
 
-// ─── AI Stream helper ───
+const STATIC_ENG: Record<string, string> = {
+  "One Word Substitution": "**Common Examples:**\n| Phrase | One Word |\n|--------|----------|\n| One who loves mankind | Philanthropist |\n| One who hates mankind | Misanthrope |\n| One who can speak two languages | Bilingual |\n| A person who lives alone | Recluse |\n| Government by the people | Democracy |\n| Murder of a king | Regicide |",
+  "Synonyms & Antonyms": "**High-Frequency SSC Words:**\n- Abandon → Forsake (S), Retain (A)\n- Benevolent → Kind (S), Malevolent (A)\n- Candid → Frank (S), Evasive (A)\n- Diligent → Industrious (S), Lazy (A)\n- Eloquent → Articulate (S), Inarticulate (A)\n- Frugal → Thrifty (S), Extravagant (A)",
+  "Tenses": "**12 Tenses Quick Chart:**\n| Tense | Structure | Example |\n|-------|-----------|--------|\n| Simple Present | V1/V1+s | He goes |\n| Present Cont. | is/am/are+V-ing | He is going |\n| Present Perfect | has/have+V3 | He has gone |\n| Simple Past | V2 | He went |\n| Past Cont. | was/were+V-ing | He was going |\n| Past Perfect | had+V3 | He had gone |",
+  "Active & Passive Voice": "**Formula:**\n- Active: Subject + Verb + Object\n- Passive: Object + be + V3 + by + Subject\n\n**Quick Rules:**\n- Simple Present: is/am/are + V3\n- Simple Past: was/were + V3\n- Future: will be + V3\n- Modal: Modal + be + V3",
+  "Articles": "**Rules:**\n- 'A' before consonant sounds: a boy, a university\n- 'An' before vowel sounds: an hour, an MBA\n- 'The' for specific/unique: the sun, the Ganga\n- No article: proper nouns, meals, games, languages\n- Exception: the USA, the UK, the Himalayas",
+  "Error Spotting": "**Common Errors:**\n1. Subject-Verb agreement: 'Each of the boys *are*' ❌ → '*is*' ✓\n2. Pronoun case: 'Between you and *I*' ❌ → '*me*' ✓\n3. Preposition: 'Comprise *of*' ❌ → 'Comprise' ✓\n4. Tense consistency: Don't mix past and present\n5. Double negatives: 'hardly *no*' ❌ → 'hardly *any*' ✓",
+};
 async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
   const res = await supabase.functions.invoke("chat", {
     body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
@@ -351,15 +358,22 @@ answer is the 0-based index. Make questions realistic SSC exam level.`,
                 {aiLoading && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
               </div>
             </div>
-            <div className="rounded-xl border border-border/40 bg-card/50 p-4 min-h-[200px]">
+            <div className="rounded-xl border border-border/40 bg-card/50 p-4 min-h-[200px] space-y-3">
+              {/* Instant static reference */}
+              {STATIC_ENG[selectedTopic] && (
+                <div className="prose prose-sm dark:prose-invert max-w-none p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">⚡ Quick Reference</div>
+                  <ReactMarkdown>{STATIC_ENG[selectedTopic]}</ReactMarkdown>
+                </div>
+              )}
               {aiContent ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-table:text-xs">
                   <ReactMarkdown>{aiContent}</ReactMarkdown>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
                   <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-                  <p className="text-xs text-muted-foreground">Generating SSC study material…</p>
+                  <p className="text-xs text-muted-foreground">Loading detailed content…</p>
                 </div>
               )}
             </div>

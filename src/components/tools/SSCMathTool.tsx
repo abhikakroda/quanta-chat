@@ -43,6 +43,22 @@ const QUIZ_TYPES = [
   "Data Interpretation", "Mixed SSC Quant", "Previous Year Questions",
 ];
 
+// Pre-loaded instant reference data
+const STATIC_MATH: Record<string, string> = {
+  "Number System": "**Key Shortcuts:**\n- Divisibility by 3: Sum of digits divisible by 3\n- Divisibility by 11: Difference of alternate sums = 0 or ×11\n- Unit digit cycles: 2→{2,4,8,6}, 3→{3,9,7,1}, 7→{7,9,3,1}\n- Remainder theorem: f(x)/（x-a) → remainder = f(a)",
+  "HCF & LCM": "**Formulas:**\n- HCF × LCM = Product of two numbers\n- HCF of fractions = HCF(numerators)/LCM(denominators)\n- LCM of fractions = LCM(numerators)/HCF(denominators)\n- For co-prime numbers: HCF = 1",
+  "Percentage": "**Quick Tricks:**\n- x% of y = y% of x\n- Successive: a% then b% = (a+b+ab/100)%\n- If price ↑ by r%, reduce consumption by r/(100+r)×100%\n- Population: P(1+r/100)ⁿ",
+  "Profit & Loss": "**Formulas:**\n- Profit% = (Profit/CP)×100\n- SP = CP×(100+P%)/100\n- Discount% = (Discount/MP)×100\n- SP = MP×(100-D%)/100\n- Two articles: one at x% profit, one at x% loss → Net loss = x²/100 %",
+  "Simple Interest": "**SI = PRT/100**\n- Amount A = P + SI = P(1+RT/100)\n- If SI = P, then T = 100/R years\n- Equal installments: Each = Total×100/(100n+Rn(n-1)/2)",
+  "Compound Interest": "**CI = P(1+R/100)ⁿ - P**\n- Half-yearly: rate=R/2, time=2n\n- Quarterly: rate=R/4, time=4n\n- Difference CI-SI (2 yrs) = P(R/100)²\n- Difference CI-SI (3 yrs) = PR²(300+R)/100³",
+  "Ratio & Proportion": "**Key Rules:**\n- a:b = c:d (cross multiply: ad=bc)\n- Componendo: (a+b)/b = (c+d)/d\n- Dividendo: (a-b)/b = (c-d)/d\n- Mean proportion of a,b = √(ab)",
+  "Time & Work": "**Shortcuts:**\n- A's 1 day work = 1/a\n- Together: 1/a + 1/b = (a+b)/ab days\n- If A is x times efficient as B: Time ratio = 1:x\n- Pipe problems: Inlet (+), Outlet (−)",
+  "Time, Speed & Distance": "**Formulas:**\n- Speed = Distance/Time\n- Relative speed (same dir): S1−S2\n- Relative speed (opposite): S1+S2\n- Average speed: 2S1·S2/(S1+S2) [equal distances]\n- Train: Time = (L1+L2)/(S1±S2)",
+  "Average": "**Quick Methods:**\n- Average = Sum/Count\n- New avg when adding: (Old sum + new)/（n+1)\n- Weighted avg = Σ(wi×xi)/Σwi\n- Consecutive n numbers: avg = (first+last)/2",
+  "Triangles": "**Key Formulas:**\n- Area = ½×b×h = √[s(s-a)(s-b)(s-c)]\n- Equilateral: Area = (√3/4)a², height = (√3/2)a\n- Pythagorean triplets: (3,4,5), (5,12,13), (8,15,17), (7,24,25)\n- Angle bisector theorem: BD/DC = AB/AC",
+  "Trigonometry": "**Standard Values:**\n| θ | sin | cos | tan |\n|---|-----|-----|-----|\n| 0° | 0 | 1 | 0 |\n| 30° | 1/2 | √3/2 | 1/√3 |\n| 45° | 1/√2 | 1/√2 | 1 |\n| 60° | √3/2 | 1/2 | √3 |\n| 90° | 1 | 0 | ∞ |\n\nsin²θ + cos²θ = 1",
+};
+
 async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
   const res = await supabase.functions.invoke("chat", {
     body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
@@ -68,6 +84,7 @@ export default function SSCMathTool() {
   const [tab, setTab] = useState<TabId>("arithmetic");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTopic, setActiveTopic] = useState<string | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQ[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -75,6 +92,7 @@ export default function SSCMathTool() {
   const [streak, setStreak] = useState(0);
 
   const fetchTopic = useCallback(async (topic: string, category: string) => {
+    setActiveTopic(topic);
     setLoading(true);
     setContent("");
     const sys = `You are an SSC CGL/CHSL Quantitative Aptitude expert. Explain the topic "${topic}" under "${category}" clearly with formulas, shortcuts, tricks, and 3-5 solved examples with step-by-step solutions. Format with markdown. Add exam tips and common mistakes to avoid.`;
@@ -137,7 +155,7 @@ export default function SSCMathTool() {
       {/* Tabs */}
       <div className="flex gap-1 px-4 py-2 border-b border-border/30 overflow-x-auto">
         {TABS.map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setContent(""); setQuizQuestions([]); }}
+          <button key={t.id} onClick={() => { setTab(t.id); setContent(""); setActiveTopic(null); setQuizQuestions([]); }}
             className={cn("px-3 py-1.5 rounded-lg text-[13px] font-medium whitespace-nowrap transition-all",
               tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted/50")}>
             {t.emoji} {t.label}
@@ -147,10 +165,10 @@ export default function SSCMathTool() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {tab === "arithmetic" && !content && !loading && renderTopicGrid(ARITHMETIC_TOPICS, "Arithmetic")}
-        {tab === "algebra" && !content && !loading && renderTopicGrid(ALGEBRA_TOPICS, "Algebra")}
-        {tab === "geometry" && !content && !loading && renderTopicGrid(GEOMETRY_TOPICS, "Geometry")}
-        {tab === "di" && !content && !loading && renderTopicGrid(DI_TOPICS, "Data Interpretation")}
+        {tab === "arithmetic" && !activeTopic && !loading && renderTopicGrid(ARITHMETIC_TOPICS, "Arithmetic")}
+        {tab === "algebra" && !activeTopic && !loading && renderTopicGrid(ALGEBRA_TOPICS, "Algebra")}
+        {tab === "geometry" && !activeTopic && !loading && renderTopicGrid(GEOMETRY_TOPICS, "Geometry")}
+        {tab === "di" && !activeTopic && !loading && renderTopicGrid(DI_TOPICS, "Data Interpretation")}
 
         {tab === "quiz" && !quizQuestions.length && !loading && (
           <div className="grid grid-cols-2 gap-2">
@@ -163,21 +181,30 @@ export default function SSCMathTool() {
           </div>
         )}
 
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="ml-2 text-sm text-muted-foreground">Generating...</span>
-          </div>
-        )}
-
-        {content && (
+        {activeTopic && tab !== "quiz" && (
           <div className="space-y-3">
-            <button onClick={() => setContent("")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setActiveTopic(null); setContent(""); }} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-3 h-3" /> Back to topics
             </button>
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown>{content}</ReactMarkdown>
-            </div>
+            <h3 className="text-base font-bold text-foreground">{activeTopic}</h3>
+            {/* Instant static reference */}
+            {STATIC_MATH[activeTopic] && (
+              <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">⚡ Quick Reference</div>
+                <ReactMarkdown>{STATIC_MATH[activeTopic]}</ReactMarkdown>
+              </div>
+            )}
+            {loading && !content && (
+              <div className="flex items-center gap-2 py-4 justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Loading detailed explanation...</span>
+              </div>
+            )}
+            {content && (
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown>{content}</ReactMarkdown>
+              </div>
+            )}
           </div>
         )}
 

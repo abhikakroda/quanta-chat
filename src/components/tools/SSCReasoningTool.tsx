@@ -37,6 +37,17 @@ const QUIZ_TYPES = [
   "Mixed SSC Reasoning", "Coding-Decoding Special", "Previous Year Questions",
 ];
 
+const STATIC_REASON: Record<string, string> = {
+  "Coding-Decoding": "**Types:**\n- Letter coding: A=1,B=2...Z=26 or shift pattern\n- Number coding: Replace letters with numbers\n- Mixed coding: Conditions-based\n\n**Shortcuts:**\n- Check position shift: +1,+2,−1,−2\n- Reverse alphabet: A↔Z, B↔Y, C↔X\n- Opposite letters sum = 27 (A+Z=1+26)",
+  "Blood Relations": "**Key Rules:**\n- Father's/Mother's son = Brother\n- Father's/Mother's daughter = Sister\n- Father's father = Grandfather\n- Mother's brother = Maternal Uncle\n- Father's sister = Paternal Aunt\n\n**Tip:** Draw family tree, use + for male, − for female",
+  "Direction Sense": "**Compass:**\n- Right of North = East\n- Left of North = West\n- Opposite of NE = SW\n\n**Shadow Rule:**\n- Morning: Shadow falls West (sun in East)\n- Evening: Shadow falls East (sun in West)\n- Noon: No/minimal shadow",
+  "Syllogism": "**Rules:**\n- All A are B + All B are C → All A are C ✓\n- Some A are B + All B are C → Some A are C ✓\n- No A are B → No B are A ✓\n- Some A are B → Some B are A ✓\n\n**Tip:** Use Venn diagrams for every question",
+  "Mirror Image": "**Rules:**\n- Left↔Right reversal (horizontal mirror)\n- Top↔Bottom reversal (vertical mirror)\n- Letters/numbers: Write backwards\n- Clock in mirror: Subtract from 12:00",
+  "Dice & Cubes": "**Rules:**\n- Opposite faces never adjacent\n- In standard dice: 1↔6, 2↔5, 3↔4\n- Two adjacent faces visible → third is opposite of hidden\n- Painted cube cut into n³: Corner=3 faces, Edge=2, Face=1, Inside=0",
+  "Calendar": "**Key Facts:**\n- Odd days: Mon=1, Tue=2...Sun=0\n- Normal year = 1 odd day, Leap = 2\n- 100 years = 5 odd days\n- 400 years = 0 odd days\n- Leap year: divisible by 4, century by 400",
+  "Clock": "**Formulas:**\n- Angle = |30H − 5.5M|\n- Hands overlap: every 65 5/11 min\n- Right angle: 22 times in 12 hours\n- Straight line: 22 times in 12 hours\n- Gain/Loss: Minute hand gains 5.5°/min over hour hand",
+};
+
 async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
   const res = await supabase.functions.invoke("chat", {
     body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
@@ -62,6 +73,7 @@ export default function SSCReasoningTool() {
   const [tab, setTab] = useState<TabId>("verbal");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
+  const [activeTopic, setActiveTopic] = useState<string | null>(null);
   const [quizQuestions, setQuizQuestions] = useState<QuizQ[]>([]);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
@@ -69,6 +81,7 @@ export default function SSCReasoningTool() {
   const [streak, setStreak] = useState(0);
 
   const fetchTopic = useCallback(async (topic: string, category: string) => {
+    setActiveTopic(topic);
     setLoading(true);
     setContent("");
     const sys = `You are an SSC CGL/CHSL Reasoning expert. Explain "${topic}" under "${category}" with clear concepts, shortcuts, tricks, and 3-5 solved examples with step-by-step solutions. Format with markdown. Add exam tips.`;
@@ -129,7 +142,7 @@ export default function SSCReasoningTool() {
 
       <div className="flex gap-1 px-4 py-2 border-b border-border/30 overflow-x-auto">
         {TABS.map(t => (
-          <button key={t.id} onClick={() => { setTab(t.id); setContent(""); setQuizQuestions([]); }}
+          <button key={t.id} onClick={() => { setTab(t.id); setContent(""); setActiveTopic(null); setQuizQuestions([]); }}
             className={cn("px-3 py-1.5 rounded-lg text-[13px] font-medium whitespace-nowrap transition-all",
               tab === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted/50")}>
             {t.emoji} {t.label}
@@ -138,9 +151,9 @@ export default function SSCReasoningTool() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {tab === "verbal" && !content && !loading && renderTopicGrid(VERBAL_TOPICS, "Verbal Reasoning")}
-        {tab === "nonverbal" && !content && !loading && renderTopicGrid(NONVERBAL_TOPICS, "Non-Verbal Reasoning")}
-        {tab === "analytical" && !content && !loading && renderTopicGrid(ANALYTICAL_TOPICS, "Analytical Reasoning")}
+        {tab === "verbal" && !activeTopic && !loading && renderTopicGrid(VERBAL_TOPICS, "Verbal Reasoning")}
+        {tab === "nonverbal" && !activeTopic && !loading && renderTopicGrid(NONVERBAL_TOPICS, "Non-Verbal Reasoning")}
+        {tab === "analytical" && !activeTopic && !loading && renderTopicGrid(ANALYTICAL_TOPICS, "Analytical Reasoning")}
 
         {tab === "quiz" && !quizQuestions.length && !loading && (
           <div className="grid grid-cols-2 gap-2">
@@ -153,21 +166,29 @@ export default function SSCReasoningTool() {
           </div>
         )}
 
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="ml-2 text-sm text-muted-foreground">Generating...</span>
-          </div>
-        )}
-
-        {content && (
+        {activeTopic && tab !== "quiz" && (
           <div className="space-y-3">
-            <button onClick={() => setContent("")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setActiveTopic(null); setContent(""); }} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-3 h-3" /> Back
             </button>
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown>{content}</ReactMarkdown>
-            </div>
+            <h3 className="text-base font-bold text-foreground">{activeTopic}</h3>
+            {STATIC_REASON[activeTopic] && (
+              <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">⚡ Quick Reference</div>
+                <ReactMarkdown>{STATIC_REASON[activeTopic]}</ReactMarkdown>
+              </div>
+            )}
+            {loading && !content && (
+              <div className="flex items-center gap-2 py-4 justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Loading detailed explanation...</span>
+              </div>
+            )}
+            {content && (
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown>{content}</ReactMarkdown>
+              </div>
+            )}
           </div>
         )}
 
