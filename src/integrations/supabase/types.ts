@@ -195,6 +195,36 @@ export type Database = {
           },
         ]
       }
+      typing_progress: {
+        Row: {
+          accuracy: number
+          chapter_id: string
+          completed_at: string
+          created_at: string
+          id: string
+          user_id: string
+          wpm: number
+        }
+        Insert: {
+          accuracy?: number
+          chapter_id: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          user_id: string
+          wpm?: number
+        }
+        Update: {
+          accuracy?: number
+          chapter_id?: string
+          completed_at?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          wpm?: number
+        }
+        Relationships: []
+      }
       user_memories: {
         Row: {
           category: string
