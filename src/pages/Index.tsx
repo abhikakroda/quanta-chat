@@ -361,6 +361,82 @@ export default function Index() {
       { role: "user" as const, content: userContent },
     ];
 
+    // Detect image generation requests and handle them separately
+    const lowerInput = userContent.toLowerCase();
+    const isImageRequest = /\b(make|create|generate|draw|design|paint|sketch)\b.*\b(image|picture|photo|illustration|art|drawing|logo|icon|poster|wallpaper)\b/.test(lowerInput) ||
+        /\b(image|picture|photo|illustration)\b.*\b(of|for|about|with)\b/.test(lowerInput);
+
+    if (isImageRequest && !imageData) {
+      setStreaming(true);
+      setStreamContent("");
+      setStreamingHint("🎨 Generating image…");
+
+      try {
+        const { data: { session: imgSession } } = await supabase.auth.getSession();
+        const imgToken = imgSession?.access_token;
+        if (!imgToken) throw new Error("Not authenticated");
+
+        const imgResp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-image`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${imgToken}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({ prompt: userContent }),
+        });
+
+        const imgData = await imgResp.json();
+        let assistantContent: string;
+        if (!imgResp.ok || !imgData.success) {
+          assistantContent = `⚠️ Image generation failed: ${imgData.error || "Unknown error"}. Please try again.`;
+        } else {
+          const imgUrl = imgData.images?.[0]?.image_url?.url || "";
+          const desc = imgData.text || "";
+          assistantContent = imgUrl
+            ? `![Generated Image](${imgUrl})\n\n${desc}`
+            : `⚠️ No image was returned. ${desc}`;
+        }
+
+        const assistantMsg = {
+          id: crypto.randomUUID(),
+          conversation_id: convId || "ghost",
+          role: "assistant" as const,
+          content: assistantContent,
+          created_at: new Date().toISOString(),
+        };
+
+        if (isGhost) {
+          setGhostMessages((prev) => [...prev, assistantMsg]);
+        } else {
+          setMessages((prev: any) => [...prev, { ...assistantMsg, _skipAnimation: false } as any]);
+          // Save to DB
+          supabase.from("messages").insert({ conversation_id: convId!, role: "assistant" as const, content: assistantContent });
+        }
+      } catch (err: any) {
+        const errorMsg = {
+          id: crypto.randomUUID(),
+          conversation_id: convId || "ghost",
+          role: "assistant" as const,
+          content: `⚠️ Image generation failed: ${err.message || "Unknown error"}`,
+          created_at: new Date().toISOString(),
+        };
+        if (isGhost) {
+          setGhostMessages((prev: any) => [...prev, errorMsg]);
+        } else {
+          setMessages((prev: any) => [...prev, errorMsg]);
+        }
+      } finally {
+        setStreaming(false);
+        setStreamingHint(null);
+      }
+
+      if (!isGhost && messages.length === 0 && convId) {
+        updateTitle(convId, input.slice(0, 50));
+      }
+      return;
+    }
+
     const controller = new AbortController();
     abortRef.current = controller;
     setStreaming(true);
@@ -369,11 +445,8 @@ export default function Index() {
     setIsThinkingPhase(thinkingEnabled || agentMode);
     setAgentStep(agentMode ? 1 : null);
     // Detect task type for progress hints
-    const lowerInput = input.toLowerCase();
-    if (/\b(make|create|generate|draw|design|paint)\b.*\b(image|picture|photo|illustration|art|drawing|logo|icon)\b/.test(lowerInput) ||
-        /\b(image|picture|photo|illustration)\b.*\b(of|for|about|with)\b/.test(lowerInput)) {
-      setStreamingHint("🎨 Generating image…");
-    } else if (/\b(search|find|look up|google)\b/.test(lowerInput)) {
+    const lowerInput2 = input.toLowerCase();
+    if (/\b(search|find|look up|google)\b/.test(lowerInput2)) {
       setStreamingHint("🔍 Searching…");
     } else {
       setStreamingHint(null);
