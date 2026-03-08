@@ -70,7 +70,7 @@ export type ToolId = typeof ALL_TOOLS[number]["id"];
 // Main sidebar items shown as top-level nav (Kimi-style)
 const SIDEBAR_ITEMS = [
   { id: "deep-research", icon: Globe, label: "Deep Research" },
-  { id: "code-assistant", icon: Code2, label: "Kode" },
+  { id: "code-assistant", icon: Code2, label: "Website" },
   { id: "writer", icon: FileText, label: "Writer" },
   { id: "doc-analyzer", icon: FilePen, label: "Docs" },
   { id: "image-generator", icon: Wand2, label: "Create" },
