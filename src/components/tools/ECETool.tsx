@@ -42,6 +42,23 @@ const COMM_TOPICS = [
   "Transmission Lines", "Satellite & Optical Communication",
 ];
 
+// Instant static reference data per topic
+const STATIC_DATA: Record<string, string> = {
+  "Number Systems & Conversions": "**Key Formulas:**\n- Binary → Decimal: Multiply each bit by 2^position\n- Decimal → Binary: Repeated division by 2\n- Octal (base 8), Hexadecimal (base 16)\n- BCD: Each decimal digit → 4-bit binary\n- 1's complement: Flip all bits | 2's complement: 1's comp + 1\n- r's complement = rⁿ − N",
+  "Boolean Algebra & K-Maps": "**Key Laws:**\n- De Morgan: (A·B)' = A'+B', (A+B)' = A'·B'\n- Absorption: A+A·B = A, A·(A+B) = A\n- Consensus: AB+A'C+BC = AB+A'C\n- K-Map grouping: Powers of 2 (1,2,4,8)\n- SOP (Sum of Products) & POS (Product of Sums)\n- Don't care conditions: Use X in K-Map",
+  "Logic Gates & Circuits": "**7 Basic Gates:**\n| Gate | Expression | Truth |\n|------|-----------|-------|\n| AND | Y=A·B | 1 only if both 1 |\n| OR | Y=A+B | 0 only if both 0 |\n| NOT | Y=A' | Inverts |\n| NAND | Y=(A·B)' | Universal gate |\n| NOR | Y=(A+B)' | Universal gate |\n| XOR | Y=A⊕B | Odd 1s |\n| XNOR | Y=(A⊕B)' | Even 1s |",
+  "Combinational Circuits (MUX, Decoder, Adder)": "**Quick Reference:**\n- **MUX** 2ⁿ:1 → n select lines, 1 output\n- **Decoder** n:2ⁿ → n inputs, 2ⁿ outputs\n- **Half Adder**: S=A⊕B, C=A·B\n- **Full Adder**: S=A⊕B⊕Cin, Cout=AB+Cin(A⊕B)\n- **Encoder**: 2ⁿ inputs → n outputs\n- **Comparator**: A>B, A=B, A<B outputs",
+  "Sequential Circuits (Flip-Flops, Counters)": "**Flip-Flop Types:**\n| Type | Characteristic Eq |\n|------|-------------------|\n| SR | Q+ = S + R'Q, SR=0 |\n| JK | Q+ = JQ' + K'Q |\n| D | Q+ = D |\n| T | Q+ = TQ' + T'Q = T⊕Q |\n\n- **Mod-N counter**: N states, needs ⌈log₂N⌉ FFs\n- **Ring counter**: N FFs → Mod-N\n- **Johnson**: N FFs → Mod-2N",
+  "Diode Circuits & Rectifiers": "**Key Formulas:**\n- V_D = 0.7V (Si), 0.3V (Ge)\n- **Half-wave**: Vdc = Vm/π, ripple = 1.21\n- **Full-wave**: Vdc = 2Vm/π, ripple = 0.48\n- **Bridge**: 4 diodes, no center tap\n- **Zener**: Voltage regulation, reverse breakdown\n- PIV: Half=Vm, Center-tap=2Vm, Bridge=Vm",
+  "BJT Biasing & Amplifiers": "**Quick Reference:**\n- **CE**: High Av, Ai, 180° phase shift\n- **CB**: High Av, Ai≈1, no phase shift\n- **CC**: Av≈1, High Ai, no phase shift (emitter follower)\n- β = Ic/Ib, α = Ic/Ie, β = α/(1-α)\n- Stability factor S = (1+β)/(1+β·Re/(Re+Rb))\n- **Voltage divider bias**: Most stable",
+  "Operational Amplifiers": "**Ideal Op-Amp:**\n- Gain = ∞, Rin = ∞, Rout = 0, BW = ∞\n- **Inverting**: Av = -Rf/Rin\n- **Non-inverting**: Av = 1 + Rf/Rin\n- **Summing**: Vo = -(V1·Rf/R1 + V2·Rf/R2)\n- **Differentiator**: Vo = -RC·dVin/dt\n- **Integrator**: Vo = -(1/RC)∫Vin·dt\n- CMRR = Ad/Acm (higher is better)",
+  "AM & FM Modulation": "**Key Formulas:**\n- **AM**: s(t) = Ac[1+μ·m(t)]cos(2πfct)\n- Modulation index μ = Am/Ac = (Vmax-Vmin)/(Vmax+Vmin)\n- BW_AM = 2fm, Power = Pc(1+μ²/2)\n- **FM**: BW = 2(Δf+fm) [Carson's rule]\n- Modulation index β = Δf/fm\n- FM is noise-resistant, AM is simpler",
+  "Fourier Series & Transform": "**Key Properties:**\n- x(t) = a₀ + Σ[aₙcos(nω₀t) + bₙsin(nω₀t)]\n- Parseval's theorem: Energy in time = Energy in freq\n- FT{x(t-t₀)} = X(ω)·e^(-jωt₀) [Time shift]\n- FT{x(t)·e^(jω₀t)} = X(ω-ω₀) [Freq shift]\n- Convolution in time ↔ Multiplication in freq\n- δ(t) ↔ 1, 1 ↔ 2πδ(ω)",
+  "Sampling Theorem": "**Nyquist:**\n- fs ≥ 2·fmax (minimum sampling rate)\n- Aliasing occurs when fs < 2·fmax\n- Anti-aliasing filter: LPF before sampling\n- Reconstruction: Ideal LPF (sinc interpolation)\n- Practical: fs = 2.5 to 5 × fmax",
+  "Laplace Transform": "**Common Pairs:**\n| f(t) | F(s) |\n|------|------|\n| δ(t) | 1 |\n| u(t) | 1/s |\n| e^(-at) | 1/(s+a) |\n| t^n | n!/s^(n+1) |\n| sin(ωt) | ω/(s²+ω²) |\n| cos(ωt) | s/(s²+ω²) |",
+  "Z-Transform": "**Common Pairs:**\n| x[n] | X(z) |\n|------|------|\n| δ[n] | 1 |\n| u[n] | z/(z-1) |\n| aⁿu[n] | z/(z-a) |\n| naⁿu[n] | az/(z-a)² |\n\n- ROC determines stability & causality\n- Causal: ROC is exterior of circle\n- Stable: ROC includes unit circle",
+};
+
 async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
   const res = await supabase.functions.invoke("chat", {
     body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
