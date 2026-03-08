@@ -723,7 +723,7 @@ export default function Index() {
 
                 return (
                   <ChatMessage
-                    key={m.id}
+                    key={(m as any)._stableKey || m.id}
                     role={m.role}
                     content={displayContent}
                     thinking={thinking}
