@@ -52,7 +52,7 @@ export default function ImageGeneratorTool() {
     if (!imageUrl) return;
     const a = document.createElement("a");
     a.href = imageUrl;
-    a.download = `quanta-image-${Date.now()}.png`;
+    a.download = `opentropic-image-${Date.now()}.png`;
     a.click();
   };
 

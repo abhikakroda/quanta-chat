@@ -18,8 +18,8 @@ export default defineConfig(() => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt", "placeholder.svg"],
       manifest: {
-        name: "Quanta AI",
-        short_name: "Quanta",
+        name: "OpenTropic",
+        short_name: "OpenTropic",
         description: "AI that is free",
         theme_color: "#000000",
         background_color: "#000000",

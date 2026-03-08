@@ -37,7 +37,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
     <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-4 pb-[10vh] animate-fade-in">
       {/* Large centered brand — Kimi style */}
       <div className="mb-10 animate-slide-up">
-        <span className="text-5xl sm:text-6xl font-bold tracking-tighter text-foreground uppercase">QUANTA</span>
+        <span className="text-5xl sm:text-6xl font-bold tracking-tighter text-foreground uppercase">OPENTROPIC</span>
       </div>
 
       <div className="w-full max-w-[640px]">
