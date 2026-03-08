@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import {
   FileText, Loader2, Upload, RotateCcw, Wand2, Presentation, ChevronLeft, ChevronRight,
-  Download, X, Grid3X3, StickyNote, Play, Pencil, Check, FileDown, Sparkles, File
+  Download, X, Grid3X3, StickyNote, Play, Pencil, Check, FileDown, Sparkles, File,
+  ScanText, Copy, CheckCheck, Eye
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
