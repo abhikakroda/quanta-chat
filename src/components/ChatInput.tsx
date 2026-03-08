@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Plus, ChevronDown, ChevronUp, Mic, MicOff, Loader2, Paperclip, AudioLines } from "lucide-react";
+import { ArrowUp, Square, Plus, ChevronDown, ChevronUp, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
+import mammoth from "mammoth";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
@@ -85,9 +86,22 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     }
   };
 
+  const readDocxContent = async (file: File): Promise<string> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      return result.value || "[DOCX contained no extractable text]";
+    } catch {
+      return `[Could not read DOCX: ${file.name}]`;
+    }
+  };
+
   const readFileContent = async (file: File): Promise<{ content: string; dataUrl?: string }> => {
     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
       return { content: await readPdfContent(file) };
+    }
+    if (file.name.endsWith(".docx") || file.name.endsWith(".doc") || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      return { content: await readDocxContent(file) };
     }
     if (file.type.startsWith("image/")) {
       return new Promise((resolve) => {
@@ -218,14 +232,23 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
         {attachedFiles.length > 0 && !dragging && (
           <div className="flex gap-2 mb-2 flex-wrap">
             {attachedFiles.map((f, i) => (
-              <div key={i} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted text-xs text-muted-foreground">
+              <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/80 border border-border/40 text-xs text-foreground group">
                 {f.dataUrl ? (
                   <img src={f.dataUrl} alt={f.name} className="w-8 h-8 rounded object-cover" />
                 ) : (
-                  <Paperclip className="w-3 h-3" />
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <FileText className="w-4 h-4 text-primary/60" />
+                  </div>
                 )}
-                <span className="truncate max-w-[120px]">{f.name}</span>
-                <button onClick={() => removeFile(i)} className="text-muted-foreground/50 hover:text-foreground ml-0.5">×</button>
+                <div className="min-w-0">
+                  <span className="truncate max-w-[140px] block font-medium text-[12px]">{f.name}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {f.type.startsWith("image/") ? "Image" : f.name.endsWith(".pdf") ? "PDF" : f.name.endsWith(".docx") || f.name.endsWith(".doc") ? "Word Doc" : "Text file"}
+                  </span>
+                </div>
+                <button onClick={() => removeFile(i)} className="p-0.5 rounded-md text-muted-foreground/40 hover:text-foreground hover:bg-muted transition-colors">
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
             ))}
           </div>
@@ -238,7 +261,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           )}
         >
           {/* Plus / attach */}
-          <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,image/*" multiple className="hidden" onChange={handleFileSelect} />
+          <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,.docx,.doc,image/*" multiple className="hidden" onChange={handleFileSelect} />
           <button
             onClick={() => fileRef.current?.click()}
             className="shrink-0 w-10 h-10 ml-1.5 mb-1 rounded-full hover:bg-accent text-muted-foreground/50 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
