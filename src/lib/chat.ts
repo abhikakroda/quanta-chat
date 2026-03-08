@@ -198,10 +198,11 @@ export async function streamChat({
 
     let resp: Response;
     try {
-      // Create a timeout that aborts after 30 seconds if no response
-      const timeoutId = setTimeout(() => {
-        if (!signal?.aborted) controller?.abort?.();
-      }, 30000);
+      // Timeout: if fetch takes >30s, auto-fallback
+      const fetchController = new AbortController();
+      const timeoutId = setTimeout(() => fetchController.abort(), 30000);
+      // Link user's signal to our controller
+      signal?.addEventListener("abort", () => fetchController.abort());
       
       resp = await fetch(url, {
         method: "POST",
