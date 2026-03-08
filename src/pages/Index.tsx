@@ -619,7 +619,7 @@ export default function Index() {
         setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null); setStreamingHint(null);
       },
       onError: (err) => {
-        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null); setStreamingHint(null);
         console.error(err);
       },
     });
