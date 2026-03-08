@@ -366,7 +366,14 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                       selectedModel === m.id ? "text-foreground font-medium bg-accent" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                     )}
                   >
-                    <span>{m.label}</span>
+                    <span className="flex items-center gap-1.5">
+                      {m.label}
+                      {m.premium && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-500 border border-amber-500/20 uppercase tracking-wider">
+                          Pro
+                        </span>
+                      )}
+                    </span>
                     {selectedModel === m.id && <span className="text-foreground">✓</span>}
                   </button>
                 ))}
