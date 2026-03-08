@@ -766,10 +766,18 @@ export default function Index() {
               {streaming && !streamContent && !streamThinking && (
                 <div className="py-3 sm:py-5 px-3 sm:px-6 animate-message-in">
                   <div className="max-w-[720px] mx-auto">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
+                      </div>
+                      {streamingHint && (
+                        <span className="text-xs text-muted-foreground/60 animate-pulse">{streamingHint}</span>
+                      )}
+                      {agentStep && (
+                        <span className="text-xs text-muted-foreground/60">Step {agentStep}…</span>
+                      )}
                     </div>
                   </div>
                 </div>
