@@ -54,7 +54,7 @@ export const ALL_TOOLS = [
   { id: "weakness-heatmap", icon: Flame, label: "Skill Heatmap", badge: "New", prompt: "Weakness analysis dashboard.", category: "Learning" },
   { id: "debate-mode", icon: Swords, label: "Debate Mode", badge: "New", prompt: "You are a debate opponent.", category: "Learning" },
   { id: "failure-simulator", icon: AlertTriangle, label: "Failure Sim", badge: "New", prompt: "You simulate rejection and stress scenarios.", category: "Career" },
-  { id: "ai-lab", icon: FlaskConical, label: "AI Lab", badge: "🧪", prompt: "Experimental AI tools.", category: "AI" },
+  { id: "ai-lab", icon: FlaskConical, label: "AI Playground", badge: "🧪", prompt: "Experimental AI tools.", category: "AI" },
   { id: "shadow-clone", icon: Dna, label: "Shadow Clone", badge: "🧬", prompt: "Your AI digital twin.", category: "AI" },
   { id: "future-projection", icon: TrendingUp, label: "Career Projection", badge: "New", prompt: "AI career path analysis.", category: "Career" },
   { id: "scenario-sim", icon: Zap, label: "Scenario Sim", badge: "🔥", prompt: "Real-world crisis simulator.", category: "Career" },
@@ -155,13 +155,13 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                 </button>
               ))}
 
-              {/* AI Labs */}
+              {/* AI Playground */}
               <Link
-                to="/ai-labs"
+                to="/ai-playground"
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left press-scale text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               >
                 <FlaskConical className="w-[18px] h-[18px] shrink-0 opacity-70" />
-                <span className="flex-1 truncate">AI Labs</span>
+                <span className="flex-1 truncate">AI Playground</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
               </Link>
             </div>
