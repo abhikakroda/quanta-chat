@@ -106,9 +106,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
         <div className={cn("flex flex-col h-full w-[260px]")}>
 
           {/* Header */}
-          <div className="flex items-center px-3 pt-3.5 pb-2 justify-between">
+          <div className="flex items-center px-3 pt-4 pb-2 justify-between">
             <div className="flex items-center">
-              <span className="text-[20px] font-extrabold text-sidebar-foreground tracking-tight lowercase">opentropic</span>
+              <span className="text-[22px] font-bold text-sidebar-foreground tracking-tight lowercase">opentropic</span>
             </div>
             <div className="flex items-center gap-0.5">
               <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
@@ -121,21 +121,21 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           </div>
 
           {/* New Chat */}
-          <div className="px-3 pt-1">
+          <div className="px-3 pt-2">
             <button
               onClick={() => { onNew(); onSelectSkill?.(null); }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-sidebar-foreground hover:bg-sidebar-accent/60 transition-all duration-200 touch-manipulation text-left press-scale"
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] text-sidebar-foreground hover:bg-sidebar-accent/60 transition-all duration-200 touch-manipulation text-left press-scale border border-sidebar-border/40"
             >
-              <SquarePen className="w-[18px] h-[18px] shrink-0 opacity-60" />
+              <SquarePen className="w-5 h-5 shrink-0 opacity-60" />
               <span className="flex-1 truncate font-medium">New Chat</span>
             </button>
           </div>
 
-          <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
+          <div className="mx-3 my-3 h-px bg-sidebar-border/40" />
 
           {/* Main nav items */}
           <div className="flex-1 overflow-y-auto">
-            <div className="px-3 space-y-0.5">
+            <div className="px-3 space-y-1">
               {SIDEBAR_ITEMS.map((item) => (
                 <button
                   key={item.id}
@@ -144,13 +144,13 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     onNew();
                   }}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left press-scale",
+                    "w-full flex items-center gap-3.5 px-3 py-3 rounded-xl text-[15px] transition-all duration-200 touch-manipulation text-left press-scale",
                     activeSkill === item.id
                       ? "bg-sidebar-accent text-sidebar-foreground font-medium"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                   )}
                 >
-                  <item.icon className="w-[18px] h-[18px] shrink-0 opacity-70" />
+                  <item.icon className="w-5 h-5 shrink-0 opacity-70" />
                   <span className="flex-1 truncate">{item.label}</span>
                 </button>
               ))}
@@ -158,9 +158,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               {/* AI Playground */}
               <Link
                 to="/ai-playground"
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left press-scale text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                className="w-full flex items-center gap-3.5 px-3 py-3 rounded-xl text-[15px] transition-all duration-200 touch-manipulation text-left press-scale text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
               >
-                <FlaskConical className="w-[18px] h-[18px] shrink-0 opacity-70" />
+                <FlaskConical className="w-5 h-5 shrink-0 opacity-70" />
                 <span className="flex-1 truncate">AI Playground</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
               </Link>
@@ -172,9 +172,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             <div className="px-3">
               <button
                 onClick={() => setHistoryOpen((o) => !o)}
-                className="flex items-center gap-2 px-3 py-2 text-[13px] text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors w-full"
+                className="flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors w-full"
               >
-                <Clock className="w-[16px] h-[16px] shrink-0" />
+                <Clock className="w-5 h-5 shrink-0" />
                 <span className="flex-1 text-left font-medium">Chat History</span>
                 {historyOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
@@ -182,7 +182,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               {historyOpen && (
                 <div className="space-y-0.5 pb-2 mt-1">
                   {filteredConversations.length === 0 && (
-                    <p className="text-[12px] text-muted-foreground/30 text-center py-3">
+                    <p className="text-[13px] text-muted-foreground/30 text-center py-3">
                       No conversations yet
                     </p>
                   )}
@@ -190,7 +190,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     <div
                       key={c.id}
                       className={cn(
-                        "group flex items-center gap-2 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 text-[13px]",
+                        "group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 text-[14px]",
                         activeId === c.id
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
                           : "text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
