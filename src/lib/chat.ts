@@ -212,7 +212,7 @@ export async function streamChat({
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
         body: JSON.stringify(bodyPayload),
-        signal,
+        signal: fetchController.signal,
       });
       
       clearTimeout(timeoutId);
