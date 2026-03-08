@@ -112,6 +112,8 @@ export default function Index() {
   const [smartPrompt, setSmartPrompt] = useState(false);
   const [optimizing, setOptimizing] = useState(false);
   const [projectMemory, setProjectMemory] = useState<string>("");
+  const [memoryDialogOpen, setMemoryDialogOpen] = useState(false);
+  const [memoryDraft, setMemoryDraft] = useState("");
   const [agentStep, setAgentStep] = useState<number | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
@@ -568,11 +570,7 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-1">
             <button
-              onClick={() => {
-                const current = projectMemory;
-                const newMemory = prompt("Project Memory — set persistent context:", current);
-                if (newMemory !== null) setProjectMemory(newMemory);
-              }}
+              onClick={() => { setMemoryDraft(projectMemory); setMemoryDialogOpen(true); }}
               className={cn(
                 "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
                 projectMemory ? "text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
