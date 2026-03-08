@@ -84,6 +84,13 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [pinnedToolIds, setPinnedToolIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem("pinned_tools") || "[]"); } catch { return []; }
+  });
+
+  useEffect(() => { localStorage.setItem("pinned_tools", JSON.stringify(pinnedToolIds)); }, [pinnedToolIds]);
+
+  const pinnedTools = useMemo(() => ALL_TOOLS.filter(t => pinnedToolIds.includes(t.id)), [pinnedToolIds]);
 
   const filteredConversations = useMemo(() => {
     if (!searchQuery.trim()) return conversations;
