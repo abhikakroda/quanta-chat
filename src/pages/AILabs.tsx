@@ -124,7 +124,7 @@ export default function AIPlayground() {
               key={cat}
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2.5 rounded-2xl text-sm font-medium whitespace-nowrap transition-all duration-200 press-scale border",
+                "flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 press-scale border",
                 activeCategory === cat
                   ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/20"
                   : "bg-card border-border/50 text-muted-foreground hover:bg-accent hover:text-foreground hover:border-border"
