@@ -1016,7 +1016,7 @@ export default function CodeAssistantTool() {
                 }}
                 className={cn(
                   "p-1.5 rounded-lg transition-colors",
-                  editMode === "visual" ? "bg-blue-500 text-white" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  editMode === "visual" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                 )}
                 title={editMode === "visual" ? "Exit visual edit" : "Visual edit mode"}
               >
