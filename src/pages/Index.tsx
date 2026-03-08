@@ -97,7 +97,7 @@ function ModelSelector({ selectedModel, onSelectModel }: { selectedModel: ModelI
         <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 mb-1 bg-popover border border-border/40 rounded-2xl shadow-lg z-[100] min-w-[200px] max-h-[400px] overflow-y-auto py-1.5" style={{ transformOrigin: 'bottom left' }}>
+        <div className="absolute top-full left-0 mt-1 bg-popover border border-border/40 rounded-2xl shadow-lg z-[100] min-w-[200px] max-h-[400px] overflow-y-auto py-1.5" style={{ transformOrigin: 'top left' }}>
           {MODELS.map((m) => (
             <button
               key={m.id}
@@ -797,7 +797,8 @@ export default function Index() {
             <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
               <Menu className="w-4 h-4 text-muted-foreground" />
             </button>
-            {/* Model selector moved above input bar */}
+            {/* Model selector */}
+            <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
             {ghostMode && (
               <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/40">
                 <Ghost className="w-3 h-3" />
@@ -920,9 +921,6 @@ export default function Index() {
                   </div>
                 </div>
               )}
-            </div>
-            <div className="flex items-center px-3 sm:px-4 pb-1">
-              <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
             </div>
             <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming || optimizing} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
           </>
