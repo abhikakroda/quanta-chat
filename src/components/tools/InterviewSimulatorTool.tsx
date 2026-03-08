@@ -178,7 +178,7 @@ export default function InterviewSimulatorTool() {
       setRecording(true);
     } catch (err) {
       console.error("Mic error:", err);
-      setError(getMicErrorMessage(err));
+      toast({ title: "Microphone Error", description: getMicErrorMessage(err), variant: "destructive" });
     }
   };
 

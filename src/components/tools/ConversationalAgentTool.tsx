@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Mic, MicOff, Square, Phone, PhoneOff, Globe, Volume2, Loader2, User, ChevronDown, Send, MessageSquare, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { getMicErrorMessage } from "@/lib/micErrors";
 import ReactMarkdown from "react-markdown";
 
 const LANGUAGES = [
