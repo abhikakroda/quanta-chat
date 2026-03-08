@@ -222,7 +222,8 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     } catch (err) { console.error("Microphone access denied:", err); }
   }, [recording]);
 
-  const selectedModelLabel = MODELS.find((m) => m.id === selectedModel)?.label || "Auto";
+  const selectedModelObj = MODELS.find((m) => m.id === selectedModel);
+  const selectedModelLabel = selectedModelObj?.label || "Auto";
 
   return (
     <div
@@ -352,7 +353,12 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
               onClick={() => setModelMenuOpen((o) => !o)}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation"
             >
-              <span>{selectedModelLabel}</span>
+              <span className="flex items-center gap-1">
+                {selectedModelLabel}
+                {selectedModelObj?.premium && (
+                  <span className="text-[8px] font-bold px-1 py-0.5 rounded bg-primary/10 text-primary uppercase tracking-wider">Pro</span>
+                )}
+              </span>
               {modelMenuOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
             {modelMenuOpen && (
@@ -369,7 +375,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                     <span className="flex items-center gap-1.5">
                       {m.label}
                       {m.premium && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-500 border border-amber-500/20 uppercase tracking-wider">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/20 uppercase tracking-wider">
                           Pro
                         </span>
                       )}
