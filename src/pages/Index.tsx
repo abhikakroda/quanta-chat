@@ -100,6 +100,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "ssc-math": SSCMathTool,
   "ssc-reasoning": SSCReasoningTool,
   "gk-tool": GKTool,
+  "ssc-mock-test": SSCMockTestTool,
 };
 
 export default function Index() {
