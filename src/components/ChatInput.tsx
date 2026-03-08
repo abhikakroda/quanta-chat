@@ -50,14 +50,6 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     }
   }, [input]);
 
-  useEffect(() => {
-    if (!modelMenuOpen) return;
-    const handler = (e: MouseEvent) => {
-      if (modelRef.current && !modelRef.current.contains(e.target as Node)) setModelMenuOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [modelMenuOpen]);
 
   const handleSubmit = () => {
     const trimmed = input.trim();
