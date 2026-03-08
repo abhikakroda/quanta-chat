@@ -141,6 +141,7 @@ export default function Index() {
   const [memoryDialogOpen, setMemoryDialogOpen] = useState(false);
   const [memoryDraft, setMemoryDraft] = useState("");
   const [agentStep, setAgentStep] = useState<number | null>(null);
+  const [streamingHint, setStreamingHint] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
     return (saved as ModelId) || "mistral";
@@ -367,6 +368,16 @@ export default function Index() {
     setStreamThinking("");
     setIsThinkingPhase(thinkingEnabled || agentMode);
     setAgentStep(agentMode ? 1 : null);
+    // Detect task type for progress hints
+    const lowerInput = input.toLowerCase();
+    if (/\b(make|create|generate|draw|design|paint)\b.*\b(image|picture|photo|illustration|art|drawing|logo|icon)\b/.test(lowerInput) ||
+        /\b(image|picture|photo|illustration)\b.*\b(of|for|about|with)\b/.test(lowerInput)) {
+      setStreamingHint("🎨 Generating image…");
+    } else if (/\b(search|find|look up|google)\b/.test(lowerInput)) {
+      setStreamingHint("🔍 Searching…");
+    } else {
+      setStreamingHint(null);
+    }
     let fullContent = "";
     let fullThinking = "";
 
@@ -433,6 +444,7 @@ export default function Index() {
           setStreamThinking("");
           setIsThinkingPhase(false);
           setAgentStep(null);
+          setStreamingHint(null);
           setGhostMessages((prev) => [...prev, ghostAssistant]);
         } else {
           const savedContent = fullThinking
@@ -457,6 +469,7 @@ export default function Index() {
           setStreamThinking("");
           setIsThinkingPhase(false);
           setAgentStep(null);
+          setStreamingHint(null);
           setMessages((prev) => [...prev, { ...optimisticAssistant, _skipAnimation: true } as any]);
           // Set streaming false AFTER adding message to avoid gap
           setStreaming(false);
@@ -489,6 +502,7 @@ export default function Index() {
         setIsThinkingPhase(false);
         setStreaming(false);
         setAgentStep(null);
+        setStreamingHint(null);
         console.error(err);
         // Show error to user as a temporary assistant message
         const errorMsg = {
@@ -515,6 +529,7 @@ export default function Index() {
     setStreamThinking("");
     setIsThinkingPhase(false);
     setAgentStep(null);
+    setStreamingHint(null);
   };
 
   const handleNewChat = async () => {
@@ -601,10 +616,10 @@ export default function Index() {
           setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
           setMessages((prev) => [...prev, data as any]);
         }
-        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null); setStreamingHint(null);
       },
       onError: (err) => {
-        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null); setStreamingHint(null);
         console.error(err);
       },
     });
@@ -751,10 +766,18 @@ export default function Index() {
               {streaming && !streamContent && !streamThinking && (
                 <div className="py-3 sm:py-5 px-3 sm:px-6 animate-message-in">
                   <div className="max-w-[720px] mx-auto">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
-                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
+                      </div>
+                      {streamingHint && (
+                        <span className="text-xs text-muted-foreground/60 animate-pulse">{streamingHint}</span>
+                      )}
+                      {agentStep && (
+                        <span className="text-xs text-muted-foreground/60">Step {agentStep}…</span>
+                      )}
                     </div>
                   </div>
                 </div>

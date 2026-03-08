@@ -1,7 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ImageIcon, Loader2, Download, RotateCcw, Wand2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+
+function ImageProgress() {
+  const [elapsed, setElapsed] = useState(0);
+  const STEPS = [
+    { at: 0, label: "Initializing AI model…" },
+    { at: 3, label: "Interpreting your prompt…" },
+    { at: 6, label: "Generating image…" },
+    { at: 12, label: "Refining details…" },
+    { at: 20, label: "Almost there…" },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const currentStep = [...STEPS].reverse().find((s) => elapsed >= s.at) || STEPS[0];
+  const progress = Math.min((elapsed / 30) * 100, 95);
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 py-12">
+      <div className="relative w-16 h-16">
+        <div className="absolute inset-0 rounded-full border-2 border-primary/10" />
+        <svg className="absolute inset-0 w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="hsl(var(--primary))" strokeWidth="2.5" strokeLinecap="round"
+            strokeDasharray={`${progress * 1.76} 176`} className="transition-all duration-1000 ease-out" opacity="0.6" />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Wand2 className="w-6 h-6 text-primary/50 animate-pulse" />
+        </div>
+      </div>
+      <div className="text-center space-y-1">
+        <p className="text-sm text-foreground/70 font-medium">{currentStep.label}</p>
+        <p className="text-[11px] text-muted-foreground/50">{elapsed}s elapsed</p>
+      </div>
+    </div>
+  );
+}
 
 export default function ImageGeneratorTool() {
   const [prompt, setPrompt] = useState("");
@@ -103,12 +141,7 @@ export default function ImageGeneratorTool() {
 
       {error && <p className="text-destructive text-xs text-center">{error}</p>}
 
-      {loading && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3 py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
-          <p className="text-sm text-muted-foreground">Creating your image...</p>
-        </div>
-      )}
+      {loading && <ImageProgress />}
 
       {imageUrl && !loading && (
         <div className="flex-1 flex flex-col items-center gap-4 min-h-0">
