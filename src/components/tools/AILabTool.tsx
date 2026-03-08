@@ -89,7 +89,7 @@ export default function AILabTool() {
 function PromptLab() {
   const [prompt, setPrompt] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
-  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["qwen", "mistral"]);
+  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["gemini-flash", "gemini-pro"]);
   const [results, setResults] = useState<PromptTestResult[]>([]);
   const [running, setRunning] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);

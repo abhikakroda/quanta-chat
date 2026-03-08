@@ -517,7 +517,7 @@ export default function Index() {
             content: cleanContent,
             created_at: new Date().toISOString(),
           };
-          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          const effectiveModel = agentMode ? "gemini-pro" as ModelId : resolveAutoModel(selectedModel, activeSkill);
           setMessageModels((prev) => ({ ...prev, [ghostAssistant.id]: getModelLabel(effectiveModel) }));
           // Clear streaming and add final message in one batch
           setStreaming(false);
@@ -541,7 +541,7 @@ export default function Index() {
             content: savedContent,
             created_at: new Date().toISOString(),
           };
-          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          const effectiveModel = agentMode ? "gemini-pro" as ModelId : resolveAutoModel(selectedModel, activeSkill);
           setMessageModels((prev) => ({ ...prev, [optimisticAssistantId]: getModelLabel(effectiveModel) }));
           
           // Clear streaming and add final message atomically (no flicker)
@@ -693,7 +693,7 @@ export default function Index() {
           .select()
           .single();
         if (data) {
-          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          const effectiveModel = agentMode ? "gemini-pro" as ModelId : resolveAutoModel(selectedModel, activeSkill);
           setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
           setMessages((prev) => [...prev, data as any]);
         }
