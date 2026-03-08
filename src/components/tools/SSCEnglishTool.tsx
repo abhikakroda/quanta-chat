@@ -358,15 +358,22 @@ answer is the 0-based index. Make questions realistic SSC exam level.`,
                 {aiLoading && <Loader2 className="w-4 h-4 text-primary animate-spin" />}
               </div>
             </div>
-            <div className="rounded-xl border border-border/40 bg-card/50 p-4 min-h-[200px]">
+            <div className="rounded-xl border border-border/40 bg-card/50 p-4 min-h-[200px] space-y-3">
+              {/* Instant static reference */}
+              {STATIC_ENG[selectedTopic] && (
+                <div className="prose prose-sm dark:prose-invert max-w-none p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">⚡ Quick Reference</div>
+                  <ReactMarkdown>{STATIC_ENG[selectedTopic]}</ReactMarkdown>
+                </div>
+              )}
               {aiContent ? (
                 <div className="prose prose-sm dark:prose-invert max-w-none text-foreground prose-headings:text-foreground prose-strong:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground prose-table:text-xs">
                   <ReactMarkdown>{aiContent}</ReactMarkdown>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 gap-3">
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
                   <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-                  <p className="text-xs text-muted-foreground">Generating SSC study material…</p>
+                  <p className="text-xs text-muted-foreground">Loading detailed content…</p>
                 </div>
               )}
             </div>
