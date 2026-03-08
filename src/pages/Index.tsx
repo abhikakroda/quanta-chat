@@ -62,6 +62,7 @@ const GKTool = lazy(() => import("@/components/tools/GKTool"));
 const SSCMockTestTool = lazy(() => import("@/components/tools/SSCMockTestTool"));
 const ECETool = lazy(() => import("@/components/tools/ECETool"));
 const CustomSkillTool = lazy(() => import("@/components/tools/CustomSkillTool"));
+const IESETTool = lazy(() => import("@/components/tools/IESETTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
@@ -106,6 +107,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "ssc-mock-test": SSCMockTestTool,
   "ece-tool": ECETool,
   "custom-skill": CustomSkillTool,
+  "ies-et": IESETTool,
 };
 
 export default function Index() {
