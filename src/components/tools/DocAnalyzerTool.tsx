@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import {
   FileText, Loader2, Upload, RotateCcw, Wand2, Presentation, ChevronLeft, ChevronRight,
-  Download, X, Grid3X3, StickyNote, Play, Pencil, Check, FileDown, Sparkles, File
+  Download, X, Grid3X3, StickyNote, Play, Pencil, Check, FileDown, Sparkles, File,
+  ScanText, Copy, CheckCheck, Eye
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
@@ -20,7 +21,7 @@ type Slide = {
   accent: string;
 };
 
-type Mode = "home" | "analyze" | "slides" | "pdf-preview";
+type Mode = "home" | "analyze" | "slides" | "pdf-preview" | "ocr";
 
 const ACCENT_COLORS: Record<string, { bg: string; text: string; gradient: string }> = {
   blue: { bg: "bg-blue-500", text: "text-blue-400", gradient: "from-blue-600 to-blue-400" },
@@ -60,6 +61,15 @@ export default function DocAnalyzerTool() {
   const [showNotes, setShowNotes] = useState(false);
   const [slideStyle, setSlideStyle] = useState("professional");
   const [editingSlide, setEditingSlide] = useState<number | null>(null);
+
+  // OCR state
+  const [ocrText, setOcrText] = useState("");
+  const [ocrLoading, setOcrLoading] = useState(false);
+  const [ocrProgress, setOcrProgress] = useState(0);
+  const [ocrTotalPages, setOcrTotalPages] = useState(0);
+  const [ocrPageTexts, setOcrPageTexts] = useState<string[]>([]);
+  const [ocrCopied, setOcrCopied] = useState(false);
+  const ocrFileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -257,7 +267,95 @@ export default function DocAnalyzerTool() {
     setFileName(""); setExtractedText(""); setAnalysis(""); setError("");
     setSlides([]); setCurrentSlide(0); setMode("home"); setPdfContent("");
     setPrompt(""); setEditingSlide(null); setEditingPdf(false);
+    setOcrText(""); setOcrPageTexts([]); setOcrProgress(0); setOcrTotalPages(0);
     if (fileRef.current) fileRef.current.value = "";
+    if (ocrFileRef.current) ocrFileRef.current.value = "";
+  };
+
+  // ─── OCR: Handwritten PDF → Digital Text ───
+  const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.includes("pdf") && !file.name.endsWith(".pdf")) {
+      setError("Please upload a PDF file for OCR");
+      return;
+    }
+    setFileName(file.name);
+    setError("");
+    setOcrText("");
+    setOcrPageTexts([]);
+    setOcrLoading(true);
+    setOcrProgress(0);
+    setMode("ocr");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const totalPages = Math.min(pdf.numPages, 20);
+      setOcrTotalPages(totalPages);
+      const pageResults: string[] = [];
+
+      for (let i = 1; i <= totalPages; i++) {
+        setOcrProgress(i);
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Convert canvas to base64
+        const dataUrl = canvas.toDataURL("image/png");
+        const base64 = dataUrl.split(",")[1];
+
+        // Send to AI vision for OCR
+        const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/describe-image`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            imageBase64: base64,
+            mimeType: "image/png",
+            prompt: "You are an expert OCR engine specialized in handwritten text recognition. Extract ALL text from this handwritten document image with maximum accuracy. Preserve the original structure, paragraphs, and line breaks. If there are diagrams or drawings, describe them briefly in [brackets]. Output ONLY the extracted text, no commentary or explanations. If text is unclear, make your best guess and mark uncertain words with (?).",
+          }),
+        });
+
+        if (!resp.ok) throw new Error(`OCR failed on page ${i}`);
+        const data = await resp.json();
+        const pageText = data.description || `[Page ${i}: No text extracted]`;
+        pageResults.push(pageText);
+        setOcrPageTexts([...pageResults]);
+        setOcrText(pageResults.map((t, idx) => `── Page ${idx + 1} ──\n${t}`).join("\n\n"));
+      }
+    } catch (err: any) {
+      setError(err.message || "OCR processing failed");
+    } finally {
+      setOcrLoading(false);
+    }
+  };
+
+  const copyOcrText = () => {
+    navigator.clipboard.writeText(ocrText);
+    setOcrCopied(true);
+    setTimeout(() => setOcrCopied(false), 2000);
+  };
+
+  const downloadOcrText = () => {
+    const blob = new Blob([ocrText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${fileName?.replace(/\.pdf$/i, "") || "ocr-output"}-digitized.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Download PDF via print
@@ -445,30 +543,114 @@ export default function DocAnalyzerTool() {
           {/* Divider */}
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-border/30" />
-            <span className="text-[11px] text-muted-foreground/50">or upload a file</span>
+            <span className="text-[11px] text-muted-foreground/50">or</span>
             <div className="flex-1 h-px bg-border/30" />
           </div>
 
-          {/* File Upload */}
-          <label className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-border/40 rounded-2xl cursor-pointer hover:border-primary/30 transition-colors py-12 gap-3">
-            <input ref={fileRef} type="file" accept=".pdf,.txt,.md,.csv,.json,.xml,.html,.css,.js,.ts,.py,.java,.c,.cpp,.docx" onChange={handleFile} className="hidden" />
-            {loading ? (
-              <>
-                <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
-                <p className="text-sm text-muted-foreground">Reading file...</p>
-              </>
-            ) : (
-              <>
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10">
-                  <Upload className="w-6 h-6 text-primary/30" />
+          {/* Two cards: Upload Doc & OCR Handwriting */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* File Upload */}
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-border/40 rounded-2xl cursor-pointer hover:border-primary/30 transition-colors py-10 gap-3">
+              <input ref={fileRef} type="file" accept=".pdf,.txt,.md,.csv,.json,.xml,.html,.css,.js,.ts,.py,.java,.c,.cpp,.docx" onChange={handleFile} className="hidden" />
+              {loading ? (
+                <>
+                  <Loader2 className="w-8 h-8 animate-spin text-primary/40" />
+                  <p className="text-sm text-muted-foreground">Reading file...</p>
+                </>
+              ) : (
+                <>
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10">
+                    <Upload className="w-6 h-6 text-primary/30" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-foreground/60">Upload a document</p>
+                    <p className="text-xs text-muted-foreground/50 mt-0.5">PDF, TXT, MD, CSV, JSON, DOCX</p>
+                  </div>
+                </>
+              )}
+            </label>
+
+            {/* OCR Handwriting Upload */}
+            <label className="flex flex-col items-center justify-center border-2 border-dashed border-border/40 rounded-2xl cursor-pointer hover:border-amber-400/30 transition-colors py-10 gap-3 group">
+              <input ref={ocrFileRef} type="file" accept=".pdf" onChange={handleOcrUpload} className="hidden" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 flex items-center justify-center border border-amber-500/15 group-hover:border-amber-500/30 transition-colors">
+                <ScanText className="w-6 h-6 text-amber-500/40 group-hover:text-amber-500/60 transition-colors" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-medium text-foreground/60">Handwritten PDF → Text</p>
+                <p className="text-xs text-muted-foreground/50 mt-0.5">AI-powered OCR extraction</p>
+              </div>
+            </label>
+          </div>
+        </div>
+      )}
+
+      {/* ─── OCR RESULTS ─── */}
+      {mode === "ocr" && (
+        <div className="flex-1 flex flex-col min-h-0 gap-3">
+          {ocrLoading ? (
+            <div className="flex-1 flex flex-col items-center justify-center gap-5">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full border-4 border-muted/30 flex items-center justify-center">
+                  <ScanText className="w-8 h-8 text-amber-500 animate-pulse" />
                 </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-foreground/60">Upload a document</p>
-                  <p className="text-xs text-muted-foreground/50 mt-0.5">PDF, TXT, MD, CSV, JSON, DOCX</p>
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-500 animate-spin" style={{ animationDuration: "1.5s" }} />
+              </div>
+              <div className="text-center space-y-2">
+                <p className="text-sm font-medium text-foreground/80">Extracting handwritten text...</p>
+                <p className="text-xs text-muted-foreground">Processing page {ocrProgress} of {ocrTotalPages}</p>
+                <div className="w-48 h-1.5 rounded-full bg-muted/30 overflow-hidden mx-auto">
+                  <div className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${ocrTotalPages ? (ocrProgress / ocrTotalPages) * 100 : 0}%` }} />
                 </div>
-              </>
-            )}
-          </label>
+              </div>
+              {ocrPageTexts.length > 0 && (
+                <div className="w-full max-w-lg rounded-xl bg-muted/10 border border-border/30 p-4 max-h-40 overflow-y-auto mt-2">
+                  <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wider mb-2">Live Preview</p>
+                  <pre className="text-xs text-foreground/60 whitespace-pre-wrap font-mono leading-relaxed">{ocrPageTexts[ocrPageTexts.length - 1]?.slice(0, 300)}...</pre>
+                </div>
+              )}
+            </div>
+          ) : ocrText ? (
+            <>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <ScanText className="w-4 h-4 text-amber-500" />
+                  <span className="text-sm font-medium text-foreground">{fileName}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-medium">{ocrPageTexts.length} page{ocrPageTexts.length !== 1 ? "s" : ""} extracted</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={copyOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
+                    {ocrCopied ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    {ocrCopied ? "Copied!" : "Copy"}
+                  </button>
+                  <button onClick={downloadOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
+                    <Download className="w-3.5 h-3.5" /> Download .txt
+                  </button>
+                  <button onClick={() => { setPdfContent(ocrText); setMode("pdf-preview"); setPdfTitle(fileName?.replace(/\.pdf$/i, "") || "OCR Document"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
+                    <FileDown className="w-3.5 h-3.5" /> Export PDF
+                  </button>
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto rounded-xl bg-card border border-border/30 shadow-sm min-h-0">
+                <div className="p-6 space-y-6">
+                  {ocrPageTexts.map((pageText, i) => (
+                    <div key={i} className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center text-[10px] font-bold text-amber-600">{i + 1}</div>
+                        <span className="text-[11px] text-muted-foreground font-medium">Page {i + 1}</span>
+                        <div className="flex-1 h-px bg-border/20" />
+                      </div>
+                      <pre className="text-sm text-foreground/85 whitespace-pre-wrap font-sans leading-relaxed pl-8">{pageText}</pre>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-sm text-muted-foreground">No text extracted yet.</p>
+            </div>
+          )}
         </div>
       )}
 
