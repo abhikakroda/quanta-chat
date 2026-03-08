@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Mic, MicOff, Play, RotateCcw, ChevronDown, Loader2, CheckCircle2, XCircle, ArrowRight, Trophy, Timer, Maximize2, Minimize2, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getMicErrorMessage } from "@/lib/micErrors";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserMemories, buildInterviewMemory } from "@/hooks/useUserMemories";
