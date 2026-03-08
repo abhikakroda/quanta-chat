@@ -54,7 +54,7 @@ export const ALL_TOOLS = [
   { id: "weakness-heatmap", icon: Flame, label: "Skill Heatmap", badge: "New", prompt: "Weakness analysis dashboard.", category: "Learning" },
   { id: "debate-mode", icon: Swords, label: "Debate Mode", badge: "New", prompt: "You are a debate opponent.", category: "Learning" },
   { id: "failure-simulator", icon: AlertTriangle, label: "Failure Sim", badge: "New", prompt: "You simulate rejection and stress scenarios.", category: "Career" },
-  { id: "ai-lab", icon: FlaskConical, label: "AI Lab", badge: "🧪", prompt: "Experimental AI tools.", category: "AI" },
+  { id: "ai-lab", icon: FlaskConical, label: "AI Playground", badge: "🧪", prompt: "Experimental AI tools.", category: "AI" },
   { id: "shadow-clone", icon: Dna, label: "Shadow Clone", badge: "🧬", prompt: "Your AI digital twin.", category: "AI" },
   { id: "future-projection", icon: TrendingUp, label: "Career Projection", badge: "New", prompt: "AI career path analysis.", category: "Career" },
   { id: "scenario-sim", icon: Zap, label: "Scenario Sim", badge: "🔥", prompt: "Real-world crisis simulator.", category: "Career" },
