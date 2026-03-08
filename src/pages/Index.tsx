@@ -925,7 +925,7 @@ export default function Index() {
             <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming || optimizing} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
           </>
         ) : (
-          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} onSelectModel={setSelectedModel} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
+          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
         )}
       </div>
 
