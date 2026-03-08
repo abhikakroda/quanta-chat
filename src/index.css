@@ -230,11 +230,7 @@ button, a, input, textarea, select, [role="button"] {
   50% { opacity: 0; }
 }
 
-/* macOS traffic light safe area — only in standalone/Electron mode */
-@media all and (display-mode: standalone) {
-  .standalone-safe-left {
-    padding-left: 76px;
-  }
+/* macOS traffic light padding is now handled via useIsElectron hook */
 }
 
 /* GPU-accelerated smooth scroll */
