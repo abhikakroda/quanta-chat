@@ -41,6 +41,81 @@ const NVIDIA_MODEL_MAP: Record<string, string> = {
 // Which models route through which provider
 const MISTRAL_MODELS = new Set(["mistral"]);
 const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan"]);
+const CLAUDE_MODELS = new Set(["claude"]);
+const CLAUDE_MODEL = "claude-sonnet-4-20250514";
+
+async function callClaudeAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
+  const systemMsg = messages.find((m: any) => m.role === "system");
+  const chatMsgs = messages.filter((m: any) => m.role !== "system");
+
+  const body: any = {
+    model: CLAUDE_MODEL,
+    max_tokens: maxTokens,
+    messages: chatMsgs,
+    stream,
+  };
+  if (systemMsg) body.system = systemMsg.content;
+
+  return await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+// Transform Claude SSE stream to OpenAI-compatible SSE stream
+function transformClaudeStream(claudeBody: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const reader = claudeBody.getReader();
+  const decoder = new TextDecoder();
+  const encoder = new TextEncoder();
+  let buffer = "";
+
+  return new ReadableStream({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        if (done) {
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+          return;
+        }
+
+        buffer += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ") || line.trim() === "") continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (!jsonStr) continue;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            if (parsed.type === "content_block_delta" && parsed.delta?.text) {
+              const openaiChunk = {
+                choices: [{ delta: { content: parsed.delta.text }, index: 0 }],
+              };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(openaiChunk)}\n\n`));
+            }
+            if (parsed.type === "message_stop") {
+              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+              controller.close();
+              return;
+            }
+          } catch { /* skip malformed */ }
+        }
+      } catch (err) {
+        controller.error(err);
+      }
+    },
+  });
+}
 
 async function callMistralAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
   return await fetch("https://api.mistral.ai/v1/chat/completions", {
