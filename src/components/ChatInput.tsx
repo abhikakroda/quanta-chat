@@ -69,7 +69,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
     setAttachedFiles([]);
   };
 
-  const readPdfContent = async (file: File): Promise<string> => {
+  const readPdfContent = async (file: File): Promise<{ content: string; dataUrl?: string }> => {
     try {
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -80,9 +80,22 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
         const pageText = textContent.items.map((item: any) => item.str).join(" ");
         if (pageText.trim()) pages.push(pageText);
       }
-      return pages.join("\n\n") || "[PDF contained no extractable text]";
+      const text = pages.join("\n\n");
+      if (text.trim()) {
+        return { content: text };
+      }
+      // No extractable text — render first page as image for vision
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d")!;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const dataUrl = canvas.toDataURL("image/png");
+      return { content: `[Image-based PDF: ${file.name}]`, dataUrl };
     } catch {
-      return `[Could not read PDF: ${file.name}]`;
+      return { content: `[Could not read PDF: ${file.name}]` };
     }
   };
 
