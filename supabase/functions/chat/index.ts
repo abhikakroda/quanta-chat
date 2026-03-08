@@ -9,13 +9,13 @@ const corsHeaders = {
 
 const SYSTEM_PROMPT = "You are OpenTropic, a powerful and helpful AI assistant created by Abhishek Meena. When anyone asks who made you or who created you, always answer: 'I was created by Abhishek Meena.' You provide clear, accurate, and thoughtful responses. You can help with coding, writing, analysis, math, and general knowledge. Be concise but thorough.";
 
-// Google AI Studio model mapping
+// Google AI Studio model mapping — use stable model names
 const GOOGLE_MODEL_MAP: Record<string, string> = {
-  "gemini-flash": "gemini-2.5-flash-preview-05-20",
-  "gemini-pro": "gemini-2.5-pro-preview-05-06",
+  "gemini-flash": "gemini-2.5-flash",
+  "gemini-pro": "gemini-2.5-pro",
   "gemini-flash-lite": "gemini-2.0-flash-lite",
-  "gpt5-mini": "gemini-2.5-flash-preview-05-20",
-  "gpt5": "gemini-2.5-pro-preview-05-06",
+  "gpt5-mini": "gemini-2.5-flash",
+  "gpt5": "gemini-2.5-pro",
 };
 
 // Lovable AI gateway fallback model mapping
@@ -25,24 +25,27 @@ const LOVABLE_MODEL_MAP: Record<string, string> = {
   "gemini-flash-lite": "google/gemini-2.5-flash-lite",
   "gpt5-mini": "openai/gpt-5-mini",
   "gpt5": "openai/gpt-5",
+  "mistral": "google/gemini-3-flash-preview",
+  "minimax": "google/gemini-3-flash-preview",
+  "glm": "google/gemini-3-flash-preview",
+  "kimi": "google/gemini-3-flash-preview",
+  "swan": "google/gemini-3-flash-preview",
 };
 
 // Mistral model mapping
 const MISTRAL_MODEL = "mistral-small-latest";
 
-// NVIDIA NIM model mapping for Minimax, GLM, Kimi, Swan
+// NVIDIA NIM model mapping (build.nvidia.com)
 const NVIDIA_MODEL_MAP: Record<string, string> = {
-  "minimax": "minimax/minimax-m1-80k",
-  "glm": "thudm/chatglm-3-6b",
-  "kimi": "moonshot/moonshot-v1-8k",
+  "minimax": "minimaxi/minimax-m1-80k",
+  "glm": "thudm/glm-4-32b-instruct",
+  "kimi": "moonshotai/kimi-k2-instruct",
   "swan": "snowflake/arctic",
 };
 
 // Which models route through which provider
 const MISTRAL_MODELS = new Set(["mistral"]);
 const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan"]);
-const CLAUDE_MODELS = new Set(["claude"]);
-const CLAUDE_MODEL = "claude-sonnet-4-20250514";
 
 async function callClaudeAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
   const systemMsg = messages.find((m: any) => m.role === "system");
