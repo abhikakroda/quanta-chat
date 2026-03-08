@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { RotateCcw, Timer, Zap, Target, Trophy } from "lucide-react";
+import { RotateCcw, Timer, Zap, Target, Trophy, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const WORD_POOL = [
@@ -38,6 +38,48 @@ function generateWords(count: number): string[] {
 
 type GameState = "idle" | "playing" | "finished";
 
+// Web Audio API key sounds
+function createKeySound(ctx: AudioContext, type: "click" | "space" | "back" | "error") {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  const now = ctx.currentTime;
+  if (type === "click") {
+    osc.type = "square";
+    osc.frequency.setValueAtTime(800 + Math.random() * 400, now);
+    osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+    gain.gain.setValueAtTime(0.04, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+    osc.start(now);
+    osc.stop(now + 0.06);
+  } else if (type === "space") {
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  } else if (type === "back") {
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(400, now);
+    osc.frequency.exponentialRampToValueAtTime(150, now + 0.04);
+    gain.gain.setValueAtTime(0.03, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  } else {
+    osc.type = "square";
+    osc.frequency.setValueAtTime(200, now);
+    gain.gain.setValueAtTime(0.04, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    osc.start(now);
+    osc.stop(now + 0.1);
+  }
+}
+
 export default function TypingSpeedTool() {
   const [duration, setDuration] = useState<number>(30);
   const [words, setWords] = useState<string[]>(() => generateWords(200));
@@ -51,9 +93,21 @@ export default function TypingSpeedTool() {
   const [correctWords, setCorrectWords] = useState(0);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const [charStatuses, setCharStatuses] = useState<Map<string, "correct" | "incorrect">>(new Map());
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const getAudioCtx = useCallback(() => {
+    if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
+    return audioCtxRef.current;
+  }, []);
+
+  const playKeySound = useCallback((type: "click" | "space" | "back" | "error") => {
+    if (!soundEnabled) return;
+    try { createKeySound(getAudioCtx(), type); } catch {}
+  }, [soundEnabled, getAudioCtx]);
 
   const restart = useCallback(() => {
     setWords(generateWords(200));
@@ -113,6 +167,7 @@ export default function TypingSpeedTool() {
     if (key === " ") {
       e.preventDefault();
       if (input.length === 0) return;
+      playKeySound("space");
       const currentWord = words[wordIndex];
       if (input === currentWord) {
         setCorrectWords(p => p + 1);
@@ -125,6 +180,7 @@ export default function TypingSpeedTool() {
 
     if (key === "Backspace") {
       if (input.length > 0) {
+        playKeySound("back");
         const newKey = `${wordIndex}-${input.length - 1}`;
         setCharStatuses(prev => {
           const next = new Map(prev);
@@ -142,6 +198,7 @@ export default function TypingSpeedTool() {
       const ci = input.length;
       const isCorrect = ci < currentWord.length && key === currentWord[ci];
       
+      playKeySound(isCorrect ? "click" : "error");
       setTotalChars(p => p + 1);
       if (isCorrect) setCorrectChars(p => p + 1);
       
@@ -208,6 +265,14 @@ export default function TypingSpeedTool() {
               </button>
             ))}
           </div>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); setSoundEnabled(p => !p); }}
+            className={cn("p-2 rounded-lg transition-colors", soundEnabled ? "text-primary hover:bg-accent" : "text-muted-foreground/40 hover:bg-accent")}
+            title={soundEnabled ? "Mute sounds" : "Enable sounds"}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
 
           <button
             onClick={(e) => { e.stopPropagation(); restart(); }}
