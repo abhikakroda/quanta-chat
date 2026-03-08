@@ -340,7 +340,7 @@ export default function Index() {
     if (!isGhost && convId) {
       supabase.from("messages").insert({ conversation_id: convId, role: "user" as const, content: userContent }).select().single().then(({ data }) => {
         if (data) {
-          setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? data : m));
+          setMessages((prev: any) => prev.map((m: any) => m.id === tempId ? { ...data, _stableKey: tempId } : m));
           if (displayImageFile?.dataUrl) {
             setMessageImages((prev) => {
               const next = { ...prev, [data.id]: prev[tempId] };
@@ -416,7 +416,6 @@ export default function Index() {
         const cleanContent = fullContent.replace(/\[(CONTINUE|DONE)\]\s*/g, "").trim();
         
         if (isGhost) {
-          // Ghost mode: just add to local state, no DB
           const ghostAssistant = {
             id: crypto.randomUUID(),
             conversation_id: "ghost",
@@ -426,30 +425,59 @@ export default function Index() {
           };
           const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
           setMessageModels((prev) => ({ ...prev, [ghostAssistant.id]: getModelLabel(effectiveModel) }));
+          // Clear streaming and add final message in one batch
+          setStreaming(false);
+          setStreamContent("");
+          setStreamThinking("");
+          setIsThinkingPhase(false);
+          setAgentStep(null);
           setGhostMessages((prev) => [...prev, ghostAssistant]);
         } else {
           const savedContent = fullThinking
             ? `<!--thinking:${btoa(encodeURIComponent(fullThinking))}-->${cleanContent}`
             : cleanContent;
-          const { data } = await supabase
+          
+          // Add message optimistically from stream content FIRST, clear streaming simultaneously
+          const optimisticAssistantId = crypto.randomUUID();
+          const optimisticAssistant = {
+            id: optimisticAssistantId,
+            conversation_id: convId!,
+            role: "assistant" as const,
+            content: savedContent,
+            created_at: new Date().toISOString(),
+          };
+          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          setMessageModels((prev) => ({ ...prev, [optimisticAssistantId]: getModelLabel(effectiveModel) }));
+          
+          // Clear streaming and add final message atomically (no flicker)
+          setStreaming(false);
+          setStreamContent("");
+          setStreamThinking("");
+          setIsThinkingPhase(false);
+          setAgentStep(null);
+          setMessages((prev) => [...prev, optimisticAssistant as any]);
+          
+          // Save to DB in background, swap optimistic ID with real ID
+          supabase
             .from("messages")
             .insert({ conversation_id: convId!, role: "assistant" as const, content: savedContent })
             .select()
-            .single();
-          if (data) {
-            const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
-            setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
-            setMessages((prev) => [...prev, data as any]);
-          }
+            .single()
+            .then(({ data }) => {
+              if (data) {
+                setMessageModels((prev) => {
+                  const next = { ...prev, [data.id]: prev[optimisticAssistantId] };
+                  delete next[optimisticAssistantId];
+                  return next;
+                });
+                setMessages((prev) => prev.map((m: any) => m.id === optimisticAssistantId ? { ...data, _stableKey: optimisticAssistantId } : m));
+              }
+            });
+          
           if (messages.length === 0) {
-            await updateTitle(convId!, input.slice(0, 50));
+            updateTitle(convId!, input.slice(0, 50));
           }
         }
-        setStreamContent("");
-        setStreamThinking("");
-        setIsThinkingPhase(false);
-        setStreaming(false);
-        setAgentStep(null);
       },
       onError: (err) => {
         setStreamContent("");
@@ -695,7 +723,7 @@ export default function Index() {
 
                 return (
                   <ChatMessage
-                    key={m.id}
+                    key={(m as any)._stableKey || m.id}
                     role={m.role}
                     content={displayContent}
                     thinking={thinking}
