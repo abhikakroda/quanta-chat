@@ -69,6 +69,9 @@ export default function DocAnalyzerTool() {
   const [ocrTotalPages, setOcrTotalPages] = useState(0);
   const [ocrPageTexts, setOcrPageTexts] = useState<string[]>([]);
   const [ocrCopied, setOcrCopied] = useState(false);
+  const [ocrPageImages, setOcrPageImages] = useState<string[]>([]);
+  const [ocrEditingPage, setOcrEditingPage] = useState<number | null>(null);
+  const [ocrViewMode, setOcrViewMode] = useState<"text" | "sidebyside">("text");
   const ocrFileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -268,52 +271,15 @@ export default function DocAnalyzerTool() {
     setSlides([]); setCurrentSlide(0); setMode("home"); setPdfContent("");
     setPrompt(""); setEditingSlide(null); setEditingPdf(false);
     setOcrText(""); setOcrPageTexts([]); setOcrProgress(0); setOcrTotalPages(0);
+    setOcrPageImages([]); setOcrEditingPage(null); setOcrViewMode("text");
     if (fileRef.current) fileRef.current.value = "";
     if (ocrFileRef.current) ocrFileRef.current.value = "";
   };
 
-  // ─── OCR: Handwritten PDF → Digital Text ───
-  const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.includes("pdf") && !file.name.endsWith(".pdf")) {
-      setError("Please upload a PDF file for OCR");
-      return;
-    }
-    setFileName(file.name);
-    setError("");
-    setOcrText("");
-    setOcrPageTexts([]);
-    setOcrLoading(true);
-    setOcrProgress(0);
-    setMode("ocr");
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error("Not authenticated");
-
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const totalPages = Math.min(pdf.numPages, 20);
-      setOcrTotalPages(totalPages);
-      const pageResults: string[] = [];
-
-      for (let i = 1; i <= totalPages; i++) {
-        setOcrProgress(i);
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 });
-        const canvas = document.createElement("canvas");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d")!;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // Convert canvas to base64
-        const dataUrl = canvas.toDataURL("image/png");
-        const base64 = dataUrl.split(",")[1];
-
-        // Send to AI vision for OCR
+  // ─── OCR: Handwritten PDF/Image → Digital Text ───
+  const ocrSinglePage = async (base64: string, mimeType: string, pageNum: number, token: string, retries = 2): Promise<string> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
         const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/describe-image`, {
           method: "POST",
           headers: {
@@ -323,17 +289,138 @@ export default function DocAnalyzerTool() {
           },
           body: JSON.stringify({
             imageBase64: base64,
-            mimeType: "image/png",
-            prompt: "You are an expert OCR engine specialized in handwritten text recognition. Extract ALL text from this handwritten document image with maximum accuracy. Preserve the original structure, paragraphs, and line breaks. If there are diagrams or drawings, describe them briefly in [brackets]. Output ONLY the extracted text, no commentary or explanations. If text is unclear, make your best guess and mark uncertain words with (?).",
+            mimeType,
+            model: "google/gemini-2.5-flash",
+            maxTokens: 4096,
+            prompt: `You are a world-class OCR engine for handwritten documents. Your task:
+1. Extract ALL handwritten text with maximum accuracy
+2. Preserve original structure: paragraphs, headings, lists, indentation
+3. If text is unclear, provide your best guess with (?) marker
+4. For diagrams/drawings, describe briefly in [brackets]
+5. For mathematical formulas, use LaTeX notation
+6. Output ONLY the extracted text — no commentary, headers, or meta-text`,
           }),
         });
 
-        if (!resp.ok) throw new Error(`OCR failed on page ${i}`);
+        if (resp.status === 429) {
+          await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+          continue;
+        }
+        if (!resp.ok) throw new Error(`OCR failed (${resp.status})`);
         const data = await resp.json();
-        const pageText = data.description || `[Page ${i}: No text extracted]`;
-        pageResults.push(pageText);
-        setOcrPageTexts([...pageResults]);
-        setOcrText(pageResults.map((t, idx) => `── Page ${idx + 1} ──\n${t}`).join("\n\n"));
+        return data.description || `[Page ${pageNum}: No text extracted]`;
+      } catch (err) {
+        if (attempt === retries) return `[Page ${pageNum}: Extraction failed after retries]`;
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
+    return `[Page ${pageNum}: Extraction failed]`;
+  };
+
+  const renderPageToBase64 = async (pdf: any, pageNum: number): Promise<{ base64: string; thumbnail: string }> => {
+    const page = await pdf.getPage(pageNum);
+    // High-res for OCR
+    const viewport = page.getViewport({ scale: 2.5 });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d")!;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const base64 = canvas.toDataURL("image/jpeg", 0.85).split(",")[1];
+    // Thumbnail for preview
+    const thumbViewport = page.getViewport({ scale: 0.5 });
+    const thumbCanvas = document.createElement("canvas");
+    thumbCanvas.width = thumbViewport.width;
+    thumbCanvas.height = thumbViewport.height;
+    const thumbCtx = thumbCanvas.getContext("2d")!;
+    await page.render({ canvasContext: thumbCtx, viewport: thumbViewport }).promise;
+    const thumbnail = thumbCanvas.toDataURL("image/jpeg", 0.6);
+    return { base64, thumbnail };
+  };
+
+  const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isImage = file.type.startsWith("image/");
+    const isPdf = file.type.includes("pdf") || file.name.endsWith(".pdf");
+    if (!isPdf && !isImage) {
+      setError("Upload a PDF or image file (JPG, PNG)");
+      return;
+    }
+
+    setFileName(file.name);
+    setError("");
+    setOcrText("");
+    setOcrPageTexts([]);
+    setOcrPageImages([]);
+    setOcrLoading(true);
+    setOcrProgress(0);
+    setOcrEditingPage(null);
+    setMode("ocr");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
+      if (isImage) {
+        // Single image OCR
+        setOcrTotalPages(1);
+        setOcrProgress(1);
+        const reader = new FileReader();
+        const dataUrl = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+        setOcrPageImages([dataUrl]);
+        const base64 = dataUrl.split(",")[1];
+        const text = await ocrSinglePage(base64, file.type, 1, token);
+        setOcrPageTexts([text]);
+        setOcrText(`── Page 1 ──\n${text}`);
+      } else {
+        // PDF OCR with parallel batch processing
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const totalPages = Math.min(pdf.numPages, 30);
+        setOcrTotalPages(totalPages);
+
+        const pageResults: (string | null)[] = new Array(totalPages).fill(null);
+        const pageImages: string[] = new Array(totalPages).fill("");
+        const BATCH_SIZE = 3;
+
+        for (let batch = 0; batch < totalPages; batch += BATCH_SIZE) {
+          const batchEnd = Math.min(batch + BATCH_SIZE, totalPages);
+          const batchPromises = [];
+
+          for (let i = batch; i < batchEnd; i++) {
+            batchPromises.push(
+              (async () => {
+                const { base64, thumbnail } = await renderPageToBase64(pdf, i + 1);
+                pageImages[i] = thumbnail;
+                setOcrPageImages([...pageImages]);
+                const text = await ocrSinglePage(base64, "image/jpeg", i + 1, token);
+                pageResults[i] = text;
+                setOcrProgress(prev => prev + 1);
+                // Update texts progressively
+                const currentTexts = pageResults.filter((t): t is string => t !== null);
+                setOcrPageTexts([...pageResults.filter((t): t is string => t !== null)]);
+                setOcrText(
+                  pageResults
+                    .map((t, idx) => t ? `── Page ${idx + 1} ──\n${t}` : null)
+                    .filter(Boolean)
+                    .join("\n\n")
+                );
+              })()
+            );
+          }
+          await Promise.all(batchPromises);
+        }
+
+        // Final assembly in order
+        const finalTexts = pageResults.filter((t): t is string => t !== null);
+        setOcrPageTexts(finalTexts);
+        setOcrText(finalTexts.map((t, i) => `── Page ${i + 1} ──\n${t}`).join("\n\n"));
       }
     } catch (err: any) {
       setError(err.message || "OCR processing failed");
@@ -342,18 +429,25 @@ export default function DocAnalyzerTool() {
     }
   };
 
+  const updateOcrPageText = (index: number, newText: string) => {
+    setOcrPageTexts(prev => prev.map((t, i) => i === index ? newText : t));
+    setOcrText(ocrPageTexts.map((t, i) => `── Page ${i + 1} ──\n${i === index ? newText : t}`).join("\n\n"));
+  };
+
   const copyOcrText = () => {
-    navigator.clipboard.writeText(ocrText);
+    const cleanText = ocrPageTexts.join("\n\n---\n\n");
+    navigator.clipboard.writeText(cleanText);
     setOcrCopied(true);
     setTimeout(() => setOcrCopied(false), 2000);
   };
 
   const downloadOcrText = () => {
-    const blob = new Blob([ocrText], { type: "text/plain" });
+    const cleanText = ocrPageTexts.map((t, i) => `Page ${i + 1}\n${"─".repeat(40)}\n${t}`).join("\n\n");
+    const blob = new Blob([cleanText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${fileName?.replace(/\.pdf$/i, "") || "ocr-output"}-digitized.txt`;
+    a.download = `${fileName?.replace(/\.[^.]+$/i, "") || "ocr-output"}-digitized.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -572,13 +666,13 @@ export default function DocAnalyzerTool() {
 
             {/* OCR Handwriting Upload */}
             <label className="flex flex-col items-center justify-center border-2 border-dashed border-border/40 rounded-2xl cursor-pointer hover:border-amber-400/30 transition-colors py-10 gap-3 group">
-              <input ref={ocrFileRef} type="file" accept=".pdf" onChange={handleOcrUpload} className="hidden" />
+              <input ref={ocrFileRef} type="file" accept=".pdf,image/*" onChange={handleOcrUpload} className="hidden" />
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/15 to-orange-500/5 flex items-center justify-center border border-amber-500/15 group-hover:border-amber-500/30 transition-colors">
                 <ScanText className="w-6 h-6 text-amber-500/40 group-hover:text-amber-500/60 transition-colors" />
               </div>
               <div className="text-center">
-                <p className="text-sm font-medium text-foreground/60">Handwritten PDF → Text</p>
-                <p className="text-xs text-muted-foreground/50 mt-0.5">AI-powered OCR extraction</p>
+                <p className="text-sm font-medium text-foreground/60">Handwriting → Text</p>
+                <p className="text-xs text-muted-foreground/50 mt-0.5">PDF or image • AI OCR</p>
               </div>
             </label>
           </div>
@@ -590,57 +684,120 @@ export default function DocAnalyzerTool() {
         <div className="flex-1 flex flex-col min-h-0 gap-3">
           {ocrLoading ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-5">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full border-4 border-muted/30 flex items-center justify-center">
-                  <ScanText className="w-8 h-8 text-amber-500 animate-pulse" />
+              <div className="relative w-24 h-24">
+                <svg className="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--muted))" strokeWidth="6" opacity="0.3" />
+                  <circle cx="50" cy="50" r="42" fill="none" stroke="hsl(var(--primary))" strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={`${ocrTotalPages ? (ocrProgress / ocrTotalPages) * 264 : 0} 264`}
+                    className="transition-all duration-700"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-bold text-foreground">{ocrProgress}</span>
+                  <span className="text-[9px] text-muted-foreground">of {ocrTotalPages}</span>
                 </div>
-                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-amber-500 animate-spin" style={{ animationDuration: "1.5s" }} />
               </div>
-              <div className="text-center space-y-2">
-                <p className="text-sm font-medium text-foreground/80">Extracting handwritten text...</p>
-                <p className="text-xs text-muted-foreground">Processing page {ocrProgress} of {ocrTotalPages}</p>
-                <div className="w-48 h-1.5 rounded-full bg-muted/30 overflow-hidden mx-auto">
-                  <div className="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-500" style={{ width: `${ocrTotalPages ? (ocrProgress / ocrTotalPages) * 100 : 0}%` }} />
-                </div>
+              <div className="text-center space-y-1">
+                <p className="text-sm font-semibold text-foreground/90">Scanning handwriting...</p>
+                <p className="text-xs text-muted-foreground">Processing {Math.min(3, ocrTotalPages - ocrProgress + 1)} pages in parallel</p>
               </div>
-              {ocrPageTexts.length > 0 && (
-                <div className="w-full max-w-lg rounded-xl bg-muted/10 border border-border/30 p-4 max-h-40 overflow-y-auto mt-2">
-                  <p className="text-[10px] text-muted-foreground/50 uppercase tracking-wider mb-2">Live Preview</p>
-                  <pre className="text-xs text-foreground/60 whitespace-pre-wrap font-mono leading-relaxed">{ocrPageTexts[ocrPageTexts.length - 1]?.slice(0, 300)}...</pre>
+              {/* Page thumbnails progress */}
+              {ocrPageImages.some(Boolean) && (
+                <div className="flex gap-1.5 flex-wrap justify-center max-w-md">
+                  {ocrPageImages.map((img, i) => (
+                    <div key={i} className={cn(
+                      "w-12 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300",
+                      ocrPageTexts[i] ? "border-primary/40 opacity-100" : img ? "border-border/30 opacity-50 animate-pulse" : "border-border/20 opacity-20"
+                    )}>
+                      {img ? (
+                        <img src={img} alt={`Page ${i + 1}`} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-muted/20" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
           ) : ocrText ? (
             <>
+              {/* Toolbar */}
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
-                  <ScanText className="w-4 h-4 text-amber-500" />
+                  <ScanText className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium text-foreground">{fileName}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 font-medium">{ocrPageTexts.length} page{ocrPageTexts.length !== 1 ? "s" : ""} extracted</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                    {ocrPageTexts.length} page{ocrPageTexts.length !== 1 ? "s" : ""}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
+                  {/* View toggle */}
+                  {ocrPageImages.some(Boolean) && (
+                    <div className="flex gap-0.5 bg-muted/30 rounded-lg p-0.5 border border-border/30">
+                      <button onClick={() => setOcrViewMode("text")} className={cn("px-2 py-1 rounded-md text-[10px] font-medium transition-all", ocrViewMode === "text" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}>
+                        Text
+                      </button>
+                      <button onClick={() => setOcrViewMode("sidebyside")} className={cn("px-2 py-1 rounded-md text-[10px] font-medium transition-all", ocrViewMode === "sidebyside" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}>
+                        Side by Side
+                      </button>
+                    </div>
+                  )}
                   <button onClick={copyOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
                     {ocrCopied ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    {ocrCopied ? "Copied!" : "Copy"}
+                    {ocrCopied ? "Copied!" : "Copy All"}
                   </button>
                   <button onClick={downloadOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
-                    <Download className="w-3.5 h-3.5" /> Download .txt
+                    <Download className="w-3.5 h-3.5" /> .txt
                   </button>
-                  <button onClick={() => { setPdfContent(ocrText); setMode("pdf-preview"); setPdfTitle(fileName?.replace(/\.pdf$/i, "") || "OCR Document"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
-                    <FileDown className="w-3.5 h-3.5" /> Export PDF
+                  <button onClick={() => { setPdfContent(ocrPageTexts.join("\n\n---\n\n")); setMode("pdf-preview"); setPdfTitle(fileName?.replace(/\.[^.]+$/i, "") || "OCR Document"); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity">
+                    <FileDown className="w-3.5 h-3.5" /> PDF
                   </button>
                 </div>
               </div>
+
+              {/* Content */}
               <div className="flex-1 overflow-y-auto rounded-xl bg-card border border-border/30 shadow-sm min-h-0">
-                <div className="p-6 space-y-6">
+                <div className="p-5 space-y-5">
                   {ocrPageTexts.map((pageText, i) => (
-                    <div key={i} className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center text-[10px] font-bold text-amber-600">{i + 1}</div>
-                        <span className="text-[11px] text-muted-foreground font-medium">Page {i + 1}</span>
-                        <div className="flex-1 h-px bg-border/20" />
+                    <div key={i} className={cn(
+                      "rounded-xl border border-border/20 overflow-hidden transition-all",
+                      ocrEditingPage === i && "ring-2 ring-primary/20"
+                    )}>
+                      {/* Page header */}
+                      <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b border-border/20">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">{i + 1}</span>
+                          <span className="text-[11px] text-muted-foreground font-medium">Page {i + 1}</span>
+                        </div>
+                        <button
+                          onClick={() => setOcrEditingPage(ocrEditingPage === i ? null : i)}
+                          className={cn("p-1 rounded-md transition-colors", ocrEditingPage === i ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted")}
+                        >
+                          {ocrEditingPage === i ? <Check className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
+                        </button>
                       </div>
-                      <pre className="text-sm text-foreground/85 whitespace-pre-wrap font-sans leading-relaxed pl-8">{pageText}</pre>
+
+                      <div className={cn(ocrViewMode === "sidebyside" && ocrPageImages[i] ? "grid grid-cols-2 divide-x divide-border/20" : "")}>
+                        {/* Image preview (side by side) */}
+                        {ocrViewMode === "sidebyside" && ocrPageImages[i] && (
+                          <div className="p-3 bg-muted/10 flex items-start justify-center">
+                            <img src={ocrPageImages[i]} alt={`Page ${i + 1}`} className="max-h-[400px] rounded-lg border border-border/20 object-contain" />
+                          </div>
+                        )}
+
+                        {/* Text */}
+                        <div className="p-4">
+                          {ocrEditingPage === i ? (
+                            <textarea
+                              value={pageText}
+                              onChange={e => updateOcrPageText(i, e.target.value)}
+                              className="w-full min-h-[200px] bg-transparent text-sm text-foreground outline-none resize-none leading-relaxed font-mono"
+                            />
+                          ) : (
+                            <pre className="text-sm text-foreground/85 whitespace-pre-wrap font-sans leading-relaxed">{pageText}</pre>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

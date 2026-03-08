@@ -31,8 +31,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("Service not configured");
 
-    const { imageBase64, mimeType = "image/png", prompt = "Describe this image in detail." } = await req.json();
+    const { imageBase64, mimeType = "image/png", prompt = "Describe this image in detail.", model, maxTokens } = await req.json();
     if (!imageBase64) throw new Error("Image data is required");
+
+    const chosenModel = model || "google/gemini-3-flash-preview";
+    const chosenMaxTokens = maxTokens || 2048;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -41,7 +44,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: chosenModel,
         messages: [
           {
             role: "user",
@@ -51,7 +54,7 @@ serve(async (req) => {
             ],
           },
         ],
-        max_tokens: 2048,
+        max_tokens: chosenMaxTokens,
       }),
     });
 
