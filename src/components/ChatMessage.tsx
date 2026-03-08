@@ -80,9 +80,10 @@ type Props = {
   onRegenerate?: () => void;
   feedback?: string | null;
   onFeedback?: (type: "up" | "down") => void;
+  skipAnimation?: boolean;
 };
 
-function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUrl, modelLabel, onEdit, onRegenerate, feedback, onFeedback }: Props) {
+function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUrl, modelLabel, onEdit, onRegenerate, feedback, onFeedback, skipAnimation }: Props) {
   const isUser = role === "user";
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [copied, setCopied] = useState(false);
