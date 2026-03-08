@@ -36,7 +36,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 }, _ref) {
   const [input, setInput] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
-  const [modelMenuOpen, setModelMenuOpen] = useState(false);
+  const [modelMenuOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
   const ref = useRef<HTMLTextAreaElement>(null);
