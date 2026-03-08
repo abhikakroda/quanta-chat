@@ -226,7 +226,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 
   return (
     <div
-      className={cn("px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2", !noBorder && "border-t border-border/30")}
+      className={cn("px-2 sm:px-4 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2", !noBorder && "border-t border-border/30")}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}
