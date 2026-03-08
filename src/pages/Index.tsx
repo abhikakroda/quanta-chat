@@ -368,6 +368,16 @@ export default function Index() {
     setStreamThinking("");
     setIsThinkingPhase(thinkingEnabled || agentMode);
     setAgentStep(agentMode ? 1 : null);
+    // Detect task type for progress hints
+    const lowerInput = input.toLowerCase();
+    if (/\b(make|create|generate|draw|design|paint)\b.*\b(image|picture|photo|illustration|art|drawing|logo|icon)\b/.test(lowerInput) ||
+        /\b(image|picture|photo|illustration)\b.*\b(of|for|about|with)\b/.test(lowerInput)) {
+      setStreamingHint("🎨 Generating image…");
+    } else if (/\b(search|find|look up|google)\b/.test(lowerInput)) {
+      setStreamingHint("🔍 Searching…");
+    } else {
+      setStreamingHint(null);
+    }
     let fullContent = "";
     let fullThinking = "";
 
