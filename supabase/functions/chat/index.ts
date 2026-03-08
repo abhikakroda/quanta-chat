@@ -82,7 +82,7 @@ async function callNvidiaAI(apiKey: string, model: string, messages: any[], stre
 }
 
 async function callGoogleAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
-  const googleModel = GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash-preview-05-20";
+  const googleModel = GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash";
   
   // Convert OpenAI-style messages to Google Generative AI format
   const systemInstruction = messages.find((m: any) => m.role === "system");
