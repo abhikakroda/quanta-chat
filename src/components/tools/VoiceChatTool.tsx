@@ -60,8 +60,8 @@ export default function VoiceChatTool() {
       mediaRef.current = recorder;
       setIsRecording(true);
       setError("");
-    } catch {
-      setError("Microphone access denied");
+    } catch (err) {
+      setError(getMicErrorMessage(err));
     }
   }, []);
 

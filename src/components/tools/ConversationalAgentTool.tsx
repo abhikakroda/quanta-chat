@@ -149,8 +149,8 @@ export default function ConversationalAgentTool() {
       recorder.start();
       mediaRef.current = recorder;
       setIsListening(true);
-    } catch {
-      setError("Microphone access denied.");
+    } catch (err) {
+      setError(getMicErrorMessage(err));
     }
   }, [language, turns, voice]);
 

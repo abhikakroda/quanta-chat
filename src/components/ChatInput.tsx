@@ -209,7 +209,12 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
       };
       mediaRecorder.start();
       setRecording(true);
-    } catch (err) { console.error("Microphone access denied:", err); }
+    } catch (err) {
+      console.error("Mic error:", err);
+      const { getMicErrorMessage } = await import("@/lib/micErrors");
+      const { toast } = await import("@/hooks/use-toast");
+      toast({ title: "Microphone Error", description: getMicErrorMessage(err), variant: "destructive" });
+    }
   }, [recording]);
 
 

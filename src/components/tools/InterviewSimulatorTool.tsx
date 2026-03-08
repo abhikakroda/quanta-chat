@@ -175,7 +175,8 @@ export default function InterviewSimulatorTool() {
       mediaRecorderRef.current = recorder;
       setRecording(true);
     } catch (err) {
-      console.error("Mic access denied:", err);
+      console.error("Mic error:", err);
+      setError(getMicErrorMessage(err));
     }
   };
 
