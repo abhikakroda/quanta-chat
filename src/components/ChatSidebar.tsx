@@ -25,8 +25,6 @@ type Props = {
   onSelectSkill?: (skill: string | null) => void;
   activeAvatar?: string | null;
   onSelectAvatar?: (avatarId: string | null) => void;
-  userSkills?: UserSkills | null;
-  xpGained?: number | null;
 };
 
 export const SKILLS = [

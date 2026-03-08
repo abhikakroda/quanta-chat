@@ -599,7 +599,7 @@ export default function Index() {
           <>
             {ghostMode && (
               <div className="shrink-0 flex items-center justify-center gap-2 px-3 py-1.5 bg-muted/50 border-b border-border/30 text-[11px] text-muted-foreground">
-                <ShieldOff className="w-3 h-3" />
+                <Ghost className="w-3 h-3" />
                 <span>Ghost Mode — messages are temporary and won't be saved</span>
               </div>
             )}
