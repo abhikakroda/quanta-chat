@@ -640,8 +640,8 @@ export default function CodeAssistantTool() {
       <div className="max-w-2xl w-full space-y-8">
         {/* Hero */}
         <div className="text-center space-y-3">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/20 to-violet-500/20 flex items-center justify-center mx-auto border border-blue-500/10">
-            <Globe className="w-8 h-8 text-blue-500" />
+          <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mx-auto border border-border/50">
+            <Globe className="w-8 h-8 text-foreground/70" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">What do you want to build?</h1>
           <p className="text-sm text-muted-foreground max-w-md mx-auto">
@@ -657,11 +657,11 @@ export default function CodeAssistantTool() {
               <button
                 key={i}
                 onClick={() => { setInput(t.prompt); inputRef.current?.focus(); }}
-                className="group flex flex-col items-start gap-2 p-4 rounded-xl border border-border/40 bg-card/50 hover:bg-card hover:border-border hover:shadow-lg hover:shadow-primary/5 transition-all duration-200 text-left hover:-translate-y-0.5"
+                className="group flex flex-col items-start gap-2 p-4 rounded-xl border border-border/40 bg-card hover:bg-accent hover:border-border hover:shadow-lg hover:shadow-foreground/5 transition-all duration-200 text-left hover:-translate-y-0.5 press-scale"
               >
                 <span className="text-2xl">{t.icon}</span>
                 <div>
-                  <p className="text-sm font-semibold text-foreground group-hover:text-foreground">{t.title}</p>
+                  <p className="text-sm font-semibold text-foreground">{t.title}</p>
                   <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{t.desc}</p>
                 </div>
               </button>
