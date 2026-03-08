@@ -231,6 +231,17 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                         pre({ children }) {
                           return <>{children}</>;
                         },
+                        img({ src, alt, ...props }) {
+                          return (
+                            <img
+                              src={src}
+                              alt={alt || "Generated image"}
+                              className="rounded-2xl max-w-full max-h-[60vh] object-contain border border-border/20 my-3"
+                              loading="lazy"
+                              {...props}
+                            />
+                          );
+                        },
                       }}
                     >
                       {content}
