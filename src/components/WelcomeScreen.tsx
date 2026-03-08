@@ -17,7 +17,7 @@ type Props = {
   agentMode?: boolean;
   onToggleAgent?: () => void;
   selectedModel?: ModelId;
-  onSelectModel?: (model: ModelId) => void;
+  
   onSelectSkill?: (skill: string) => void;
   activeSkillLabel?: string | null;
 };
