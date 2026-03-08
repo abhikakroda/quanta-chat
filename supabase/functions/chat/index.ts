@@ -285,8 +285,42 @@ serve(async (req) => {
       throw new Error("No AI API key configured");
     }
 
-    // Standard text chat — Try Google first, fallback to Lovable AI
-    if (GOOGLE_API_KEY) {
+    // ── Route by model provider ──
+
+    // Mistral models → Mistral API
+    if (MISTRAL_MODELS.has(model) && MISTRAL_API_KEY) {
+      try {
+        const resp = await callMistralAI(MISTRAL_API_KEY, allMessages, true, 4096);
+        if (resp.ok && resp.body) {
+          console.log("✅ Chat: Using Mistral API");
+          return new Response(resp.body, {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+        console.warn("⚠️ Mistral failed:", resp.status, await resp.text());
+      } catch (e) {
+        console.warn("⚠️ Mistral error:", e);
+      }
+    }
+
+    // NVIDIA models (Minimax, GLM, Kimi, Swan) → NVIDIA NIM API
+    if (NVIDIA_MODELS.has(model) && NVIDIA_API_KEY) {
+      try {
+        const resp = await callNvidiaAI(NVIDIA_API_KEY, model, allMessages, true, 4096);
+        if (resp.ok && resp.body) {
+          console.log("✅ Chat: Using NVIDIA NIM -", NVIDIA_MODEL_MAP[model] || model);
+          return new Response(resp.body, {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+        console.warn("⚠️ NVIDIA failed:", resp.status, await resp.text());
+      } catch (e) {
+        console.warn("⚠️ NVIDIA error:", e);
+      }
+    }
+
+    // Google Gemini models → Google AI Studio (primary for gemini-* and gpt5-*)
+    if (GOOGLE_API_KEY && !MISTRAL_MODELS.has(model) && !NVIDIA_MODELS.has(model)) {
       try {
         const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, allMessages, true, 4096);
         if (googleResp.ok && googleResp.body) {
@@ -302,9 +336,9 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to Lovable AI
+    // Fallback to Lovable AI for any model
     if (LOVABLE_API_KEY) {
-      console.log("🔄 Chat: Falling back to Lovable AI");
+      console.log("🔄 Chat: Falling back to Lovable AI for model:", model);
       const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, allMessages, true, 4096);
       if (!lovableResp.ok) {
         if (lovableResp.status === 429) {
