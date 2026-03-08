@@ -275,48 +275,10 @@ export default function DocAnalyzerTool() {
     if (ocrFileRef.current) ocrFileRef.current.value = "";
   };
 
-  // ─── OCR: Handwritten PDF → Digital Text ───
-  const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.includes("pdf") && !file.name.endsWith(".pdf")) {
-      setError("Please upload a PDF file for OCR");
-      return;
-    }
-    setFileName(file.name);
-    setError("");
-    setOcrText("");
-    setOcrPageTexts([]);
-    setOcrLoading(true);
-    setOcrProgress(0);
-    setMode("ocr");
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error("Not authenticated");
-
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const totalPages = Math.min(pdf.numPages, 20);
-      setOcrTotalPages(totalPages);
-      const pageResults: string[] = [];
-
-      for (let i = 1; i <= totalPages; i++) {
-        setOcrProgress(i);
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 });
-        const canvas = document.createElement("canvas");
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d")!;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        // Convert canvas to base64
-        const dataUrl = canvas.toDataURL("image/png");
-        const base64 = dataUrl.split(",")[1];
-
-        // Send to AI vision for OCR
+  // ─── OCR: Handwritten PDF/Image → Digital Text ───
+  const ocrSinglePage = async (base64: string, mimeType: string, pageNum: number, token: string, retries = 2): Promise<string> => {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
         const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/describe-image`, {
           method: "POST",
           headers: {
@@ -326,17 +288,138 @@ export default function DocAnalyzerTool() {
           },
           body: JSON.stringify({
             imageBase64: base64,
-            mimeType: "image/png",
-            prompt: "You are an expert OCR engine specialized in handwritten text recognition. Extract ALL text from this handwritten document image with maximum accuracy. Preserve the original structure, paragraphs, and line breaks. If there are diagrams or drawings, describe them briefly in [brackets]. Output ONLY the extracted text, no commentary or explanations. If text is unclear, make your best guess and mark uncertain words with (?).",
+            mimeType,
+            model: "google/gemini-2.5-flash",
+            maxTokens: 4096,
+            prompt: `You are a world-class OCR engine for handwritten documents. Your task:
+1. Extract ALL handwritten text with maximum accuracy
+2. Preserve original structure: paragraphs, headings, lists, indentation
+3. If text is unclear, provide your best guess with (?) marker
+4. For diagrams/drawings, describe briefly in [brackets]
+5. For mathematical formulas, use LaTeX notation
+6. Output ONLY the extracted text — no commentary, headers, or meta-text`,
           }),
         });
 
-        if (!resp.ok) throw new Error(`OCR failed on page ${i}`);
+        if (resp.status === 429) {
+          await new Promise(r => setTimeout(r, 2000 * (attempt + 1)));
+          continue;
+        }
+        if (!resp.ok) throw new Error(`OCR failed (${resp.status})`);
         const data = await resp.json();
-        const pageText = data.description || `[Page ${i}: No text extracted]`;
-        pageResults.push(pageText);
-        setOcrPageTexts([...pageResults]);
-        setOcrText(pageResults.map((t, idx) => `── Page ${idx + 1} ──\n${t}`).join("\n\n"));
+        return data.description || `[Page ${pageNum}: No text extracted]`;
+      } catch (err) {
+        if (attempt === retries) return `[Page ${pageNum}: Extraction failed after retries]`;
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
+    return `[Page ${pageNum}: Extraction failed]`;
+  };
+
+  const renderPageToBase64 = async (pdf: any, pageNum: number): Promise<{ base64: string; thumbnail: string }> => {
+    const page = await pdf.getPage(pageNum);
+    // High-res for OCR
+    const viewport = page.getViewport({ scale: 2.5 });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    const ctx = canvas.getContext("2d")!;
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const base64 = canvas.toDataURL("image/jpeg", 0.85).split(",")[1];
+    // Thumbnail for preview
+    const thumbViewport = page.getViewport({ scale: 0.5 });
+    const thumbCanvas = document.createElement("canvas");
+    thumbCanvas.width = thumbViewport.width;
+    thumbCanvas.height = thumbViewport.height;
+    const thumbCtx = thumbCanvas.getContext("2d")!;
+    await page.render({ canvasContext: thumbCtx, viewport: thumbViewport }).promise;
+    const thumbnail = thumbCanvas.toDataURL("image/jpeg", 0.6);
+    return { base64, thumbnail };
+  };
+
+  const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isImage = file.type.startsWith("image/");
+    const isPdf = file.type.includes("pdf") || file.name.endsWith(".pdf");
+    if (!isPdf && !isImage) {
+      setError("Upload a PDF or image file (JPG, PNG)");
+      return;
+    }
+
+    setFileName(file.name);
+    setError("");
+    setOcrText("");
+    setOcrPageTexts([]);
+    setOcrPageImages([]);
+    setOcrLoading(true);
+    setOcrProgress(0);
+    setOcrEditingPage(null);
+    setMode("ocr");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
+      if (isImage) {
+        // Single image OCR
+        setOcrTotalPages(1);
+        setOcrProgress(1);
+        const reader = new FileReader();
+        const dataUrl = await new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
+        setOcrPageImages([dataUrl]);
+        const base64 = dataUrl.split(",")[1];
+        const text = await ocrSinglePage(base64, file.type, 1, token);
+        setOcrPageTexts([text]);
+        setOcrText(`── Page 1 ──\n${text}`);
+      } else {
+        // PDF OCR with parallel batch processing
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const totalPages = Math.min(pdf.numPages, 30);
+        setOcrTotalPages(totalPages);
+
+        const pageResults: (string | null)[] = new Array(totalPages).fill(null);
+        const pageImages: string[] = new Array(totalPages).fill("");
+        const BATCH_SIZE = 3;
+
+        for (let batch = 0; batch < totalPages; batch += BATCH_SIZE) {
+          const batchEnd = Math.min(batch + BATCH_SIZE, totalPages);
+          const batchPromises = [];
+
+          for (let i = batch; i < batchEnd; i++) {
+            batchPromises.push(
+              (async () => {
+                const { base64, thumbnail } = await renderPageToBase64(pdf, i + 1);
+                pageImages[i] = thumbnail;
+                setOcrPageImages([...pageImages]);
+                const text = await ocrSinglePage(base64, "image/jpeg", i + 1, token);
+                pageResults[i] = text;
+                setOcrProgress(prev => prev + 1);
+                // Update texts progressively
+                const currentTexts = pageResults.filter((t): t is string => t !== null);
+                setOcrPageTexts([...pageResults.filter((t): t is string => t !== null)]);
+                setOcrText(
+                  pageResults
+                    .map((t, idx) => t ? `── Page ${idx + 1} ──\n${t}` : null)
+                    .filter(Boolean)
+                    .join("\n\n")
+                );
+              })()
+            );
+          }
+          await Promise.all(batchPromises);
+        }
+
+        // Final assembly in order
+        const finalTexts = pageResults.filter((t): t is string => t !== null);
+        setOcrPageTexts(finalTexts);
+        setOcrText(finalTexts.map((t, i) => `── Page ${i + 1} ──\n${t}`).join("\n\n"));
       }
     } catch (err: any) {
       setError(err.message || "OCR processing failed");
@@ -345,18 +428,25 @@ export default function DocAnalyzerTool() {
     }
   };
 
+  const updateOcrPageText = (index: number, newText: string) => {
+    setOcrPageTexts(prev => prev.map((t, i) => i === index ? newText : t));
+    setOcrText(ocrPageTexts.map((t, i) => `── Page ${i + 1} ──\n${i === index ? newText : t}`).join("\n\n"));
+  };
+
   const copyOcrText = () => {
-    navigator.clipboard.writeText(ocrText);
+    const cleanText = ocrPageTexts.join("\n\n---\n\n");
+    navigator.clipboard.writeText(cleanText);
     setOcrCopied(true);
     setTimeout(() => setOcrCopied(false), 2000);
   };
 
   const downloadOcrText = () => {
-    const blob = new Blob([ocrText], { type: "text/plain" });
+    const cleanText = ocrPageTexts.map((t, i) => `Page ${i + 1}\n${"─".repeat(40)}\n${t}`).join("\n\n");
+    const blob = new Blob([cleanText], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${fileName?.replace(/\.pdf$/i, "") || "ocr-output"}-digitized.txt`;
+    a.download = `${fileName?.replace(/\.[^.]+$/i, "") || "ocr-output"}-digitized.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
