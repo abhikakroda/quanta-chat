@@ -63,6 +63,7 @@ export const ALL_TOOLS = [
   { id: "file-processor", icon: FileText, label: "File Processor", badge: "📄", prompt: "Transform files into summaries, notes, flashcards, quizzes.", category: "Productivity" },
   { id: "task-executor", icon: FileDown, label: "Task Executor", badge: "⚡", prompt: "Generate documents from tasks.", category: "Productivity" },
   { id: "student-ai", icon: GraduationCap, label: "Student AI", badge: "🎓", prompt: "AI study companion: explain topics, quiz, summarize notes, solve homework.", category: "Learning" },
+  { id: "world-map", icon: Globe, label: "World Map", badge: "Live", prompt: "Interactive world map for UPSC & competitive exam geography preparation.", category: "Learning" },
 ] as const;
 
 export type SkillId = typeof SKILLS[number]["id"];
