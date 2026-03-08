@@ -965,17 +965,17 @@ export default function CodeAssistantTool() {
   return (
     <div className="h-full flex flex-col">
       {/* ─── HEADER ─── */}
-      <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-b border-border/30 bg-card/50 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-b border-border/30 glass-subtle">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/15 to-violet-500/15 flex items-center justify-center border border-blue-500/10">
-            <Globe className="w-4 h-4 text-blue-500" />
+          <div className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center border border-border/50">
+            <Globe className="w-4 h-4 text-foreground/70" />
           </div>
           <div>
             <h2 className="text-[14px] font-bold text-foreground">Website Builder</h2>
             {loading && buildProgress > 0 && (
               <div className="flex items-center gap-1.5 mt-0.5">
                 <div className="w-24 h-1 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-500 to-violet-500 rounded-full transition-all duration-300 ease-out" style={{ width: `${buildProgress}%` }} />
+                  <div className="h-full bg-foreground rounded-full transition-all duration-300 ease-out" style={{ width: `${buildProgress}%` }} />
                 </div>
                 <span className="text-[9px] text-muted-foreground font-mono">{Math.round(buildProgress)}%</span>
               </div>
