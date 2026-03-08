@@ -277,10 +277,10 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,.docx,.doc,image/*" multiple className="hidden" onChange={handleFileSelect} />
           <button
             onClick={() => fileRef.current?.click()}
-            className="shrink-0 w-10 h-10 ml-1.5 mb-1 rounded-full hover:bg-accent text-muted-foreground/50 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
+            className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 ml-1 sm:ml-1.5 mb-1 rounded-full hover:bg-accent text-muted-foreground/50 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
             title="Attach file"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
           {/* Textarea */}
