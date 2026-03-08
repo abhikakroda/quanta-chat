@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Plus, ChevronDown, ChevronUp, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X } from "lucide-react";
+import { ArrowUp, Square, Plus, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
