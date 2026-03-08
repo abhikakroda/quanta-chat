@@ -2,16 +2,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Message = { role: "user" | "assistant"; content: string };
 
-export type ModelId = "auto" | "qwen" | "qwen-coder" | "mistral" | "minimax" | "deepseek" | "sarvam";
+export type ModelId = "auto" | "gemini-flash" | "gemini-pro" | "gemini-flash-lite" | "gpt5-mini" | "gpt5";
 
 export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean }[] = [
   { id: "auto", label: "Auto", supportsThinking: true },
-  { id: "qwen", label: "Qwen 3.5", supportsThinking: true },
-  { id: "qwen-coder", label: "Qwen3 Coder", supportsThinking: true },
-  { id: "mistral", label: "Mistral Small" },
-  { id: "minimax", label: "MiniMax M2.1" },
-  { id: "deepseek", label: "DeepSeek V3.2", supportsThinking: true },
-  { id: "sarvam", label: "Sarvam M", supportsThinking: true },
+  { id: "gemini-flash", label: "Gemini Flash", supportsThinking: true },
+  { id: "gemini-pro", label: "Gemini Pro", supportsThinking: true },
+  { id: "gemini-flash-lite", label: "Flash Lite" },
+  { id: "gpt5-mini", label: "GPT-5 Mini", supportsThinking: true },
+  { id: "gpt5", label: "GPT-5", supportsThinking: true },
 ];
 
 export function getModelLabel(modelId: ModelId): string {
@@ -20,52 +19,39 @@ export function getModelLabel(modelId: ModelId): string {
 
 // Auto-select the best model based on the active skill/tool
 const AUTO_MODEL_MAP: Record<string, ModelId> = {
-  "code-assistant": "qwen-coder",
-  "deep-research": "deepseek",
-  "summarizer": "qwen",
-  "writer": "mistral",
-  
-  "conversational-agent": "sarvam",
-  "translator": "sarvam",
-  "voice-chat": "sarvam",
-  "calculator": "qwen",
-  "image-describer": "qwen",
-  "vision": "qwen",
-  "task-scheduler": "mistral",
-  "news": "mistral",
-  "web-scraper": "qwen",
+  "code-assistant": "gemini-pro",
+  "deep-research": "gemini-pro",
+  "summarizer": "gemini-flash",
+  "writer": "gemini-flash",
+  "conversational-agent": "gemini-flash",
+  "translator": "gemini-flash",
+  "voice-chat": "gemini-flash",
+  "calculator": "gemini-flash",
+  "image-describer": "gemini-flash",
+  "vision": "gemini-flash",
+  "task-scheduler": "gemini-flash",
+  "news": "gemini-flash-lite",
+  "web-scraper": "gemini-flash",
 };
 
 export function resolveAutoModel(model: ModelId, activeSkill?: string | null, lastMessage?: string): ModelId {
   if (model !== "auto") return model;
   if (activeSkill && AUTO_MODEL_MAP[activeSkill]) return AUTO_MODEL_MAP[activeSkill];
   
-  // Smart routing: analyze query content
   if (lastMessage) {
     const lower = lastMessage.toLowerCase();
-    // Code-related queries
     if (/\b(code|function|class|debug|error|bug|api|javascript|python|typescript|react|html|css|sql|algorithm|regex)\b/.test(lower)) {
-      return "qwen-coder";
+      return "gemini-pro";
     }
-    // Research/analysis queries
     if (/\b(research|analyze|compare|study|investigate|explain in detail|comprehensive|deep dive)\b/.test(lower)) {
-      return "deepseek";
+      return "gemini-pro";
     }
-    // Creative/writing queries
-    if (/\b(write|essay|story|poem|article|blog|email|letter|creative|draft)\b/.test(lower)) {
-      return "mistral";
-    }
-    // Math/calculation queries
     if (/\b(calculate|math|equation|formula|solve|compute|integral|derivative)\b/.test(lower)) {
-      return "qwen";
-    }
-    // Indian languages or translation
-    if (/[\u0900-\u097F\u0A00-\u0A7F\u0B00-\u0B7F\u0C00-\u0C7F\u0D00-\u0D7F]/.test(lower) || /\b(hindi|tamil|telugu|bengali|marathi|gujarati|kannada|malayalam)\b/.test(lower)) {
-      return "sarvam";
+      return "gemini-flash";
     }
   }
   
-  return "mistral"; // default fallback for general chat
+  return "gemini-flash";
 }
 
 const AGENT_SYSTEM_PROMPT = `You are an advanced AI agent capable of multi-step reasoning and task chaining. When given a complex task:
@@ -102,7 +88,7 @@ const THINKING_LEVEL_CONFIG: Record<ThinkingLevel, { enabled: boolean; prompt?: 
 
 export async function streamChat({
   messages,
-  model = "qwen",
+  model = "gemini-flash",
   enableThinking = true,
   thinkingLevel = "off",
   selfVerify = false,
@@ -135,16 +121,13 @@ export async function streamChat({
   onAgentStep?: (step: number, total: number | null) => void;
   signal?: AbortSignal;
 }) {
-  // Resolve auto model based on active skill and message content, then agent mode overrides
   const lastMsg = messages[messages.length - 1]?.content || "";
   const resolvedModel = resolveAutoModel(model || "auto", activeSkill, lastMsg);
-  const effectiveModel = agentMode ? "qwen" : resolvedModel;
+  const effectiveModel = agentMode ? "gemini-pro" : resolvedModel;
   
-  // Thinking: use thinkingLevel if set, otherwise fall back to enableThinking boolean
   const thinkingConfig = thinkingLevel !== "off" ? THINKING_LEVEL_CONFIG[thinkingLevel] : { enabled: enableThinking };
   const effectiveThinking = agentMode ? true : thinkingConfig.enabled;
   
-  // Build the effective skill prompt with all enhancements
   let basePrompt = skillPrompt || "";
   if (thinkingConfig.prompt) basePrompt += thinkingConfig.prompt;
   if (selfVerify) basePrompt += VERIFY_PROMPT;
@@ -154,24 +137,12 @@ export async function streamChat({
     ? (basePrompt ? `${AGENT_SYSTEM_PROMPT}\n\nAdditional context: ${basePrompt}` : AGENT_SYSTEM_PROMPT)
     : (basePrompt || undefined);
 
-  // Fallback order: try different models if the primary one fails
-  const FALLBACK_MODELS: ModelId[] = ["qwen", "mistral", "deepseek", "minimax"];
-  
-  const getFallbacks = (primary: ModelId): ModelId[] => {
-    const others = FALLBACK_MODELS.filter((m) => m !== primary);
-    return others;
-  };
-
   let currentMessages = [...messages];
   let agentStep = 1;
-  let maxSteps = 5; // Safety limit for auto-continuation
-  let fullAgentContent = "";
+  const maxSteps = 5;
 
-  const runStep = async (modelToUse?: ModelId, fallbacksLeft?: ModelId[]): Promise<void> => {
+  const runStep = async (): Promise<void> => {
     if (signal?.aborted) return;
-
-    const currentModel = modelToUse || effectiveModel;
-    const remainingFallbacks = fallbacksLeft ?? getFallbacks(currentModel);
 
     if (agentMode) {
       onAgentStep?.(agentStep, null);
@@ -186,10 +157,9 @@ export async function streamChat({
     const bodyPayload: any = {
       messages: currentMessages,
       enableThinking: effectiveThinking,
-      model: currentModel,
+      model: effectiveModel,
       skillPrompt: effectiveSkillPrompt,
     };
-    // Only send imageData on the first step
     if (imageData && agentStep === 1) {
       bodyPayload.imageData = imageData;
     } else if (imageData && !agentMode) {
@@ -198,10 +168,8 @@ export async function streamChat({
 
     let resp: Response;
     try {
-      // Timeout: if fetch takes >30s, auto-fallback
       const fetchController = new AbortController();
-      const timeoutId = setTimeout(() => fetchController.abort(), 30000);
-      // Link user's signal to our controller
+      const timeoutId = setTimeout(() => fetchController.abort(), 60000);
       signal?.addEventListener("abort", () => fetchController.abort());
       
       resp = await fetch(url, {
@@ -218,30 +186,17 @@ export async function streamChat({
       clearTimeout(timeoutId);
     } catch (fetchErr: any) {
       if (signal?.aborted) return;
-      // Network error — try fallback
-      if (remainingFallbacks.length > 0) {
-        console.warn(`Model ${currentModel} network error, trying ${remainingFallbacks[0]}...`);
-        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
-      }
       onError(fetchErr.message || "Network error");
       return;
     }
 
     if (!resp.ok) {
-      // Model failed — try fallback
-      if (remainingFallbacks.length > 0) {
-        console.warn(`Model ${currentModel} returned ${resp.status}, trying ${remainingFallbacks[0]}...`);
-        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
-      }
       const err = await resp.json().catch(() => ({ error: "Request failed" }));
-      onError(err.error || "Request failed");
+      onError(err.error || `Request failed (${resp.status})`);
       return;
     }
 
     if (!resp.body) {
-      if (remainingFallbacks.length > 0) {
-        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
-      }
       onError("No response body");
       return;
     }
@@ -252,7 +207,6 @@ export async function streamChat({
     let inThinking = false;
     let thinkingDone = false;
     let stepContent = "";
-    let gotContent = false;
 
     try {
       while (true) {
@@ -268,28 +222,17 @@ export async function streamChat({
           if (!line.startsWith("data: ")) continue;
           const json = line.slice(6).trim();
           if (json === "[DONE]") {
-            // If we got no content at all and have fallbacks, try next model
-            if (!gotContent && remainingFallbacks.length > 0) {
-              console.warn(`Model ${currentModel} returned empty, trying ${remainingFallbacks[0]}...`);
-              return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
-            }
-            
-            // Check for agent continuation
             if (agentMode && stepContent.trim().endsWith("[CONTINUE]") && agentStep < maxSteps) {
               const cleanContent = stepContent.replace(/\[CONTINUE\]\s*$/, "").trim();
-              fullAgentContent = cleanContent + "\n\n";
-              
               currentMessages = [
                 ...currentMessages,
                 { role: "assistant" as const, content: cleanContent },
                 { role: "user" as const, content: "Continue with the next step." },
               ];
               agentStep++;
-              
-              await runStep(currentModel, getFallbacks(currentModel));
+              await runStep();
               return;
             }
-            
             onDone();
             return;
           }
@@ -297,7 +240,6 @@ export async function streamChat({
             const parsed = JSON.parse(json);
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
-              gotContent = true;
               let remaining = content as string;
 
               while (remaining.length > 0) {
@@ -343,16 +285,11 @@ export async function streamChat({
                 }
               }
             }
-          } catch { /* partial */ }
+          } catch { /* partial JSON */ }
         }
       }
     } catch (streamErr: any) {
       if (signal?.aborted) return;
-      // Stream error mid-way — if we got no content, try fallback
-      if (!gotContent && remainingFallbacks.length > 0) {
-        console.warn(`Model ${currentModel} stream error, trying ${remainingFallbacks[0]}...`);
-        return runStep(remainingFallbacks[0], remainingFallbacks.slice(1));
-      }
     }
     onDone();
   };

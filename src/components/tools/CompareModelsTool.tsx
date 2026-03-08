@@ -14,16 +14,16 @@ type ModelResponse = {
 };
 
 const COMPARE_MODELS: { id: ModelId; label: string }[] = [
-  { id: "qwen", label: "Qwen 3.5" },
-  { id: "mistral", label: "Mistral" },
-  { id: "deepseek", label: "DeepSeek" },
-  { id: "minimax", label: "MiniMax" },
-  { id: "sarvam", label: "Sarvam" },
+  { id: "gemini-flash", label: "Gemini Flash" },
+  { id: "gemini-pro", label: "Gemini Pro" },
+  { id: "gemini-flash-lite", label: "Flash Lite" },
+  { id: "gpt5-mini", label: "GPT-5 Mini" },
+  { id: "gpt5", label: "GPT-5" },
 ];
 
 export default function CompareModelsTool() {
   const [prompt, setPrompt] = useState("");
-  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["qwen", "mistral"]);
+  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["gemini-flash", "gemini-pro"]);
   const [responses, setResponses] = useState<ModelResponse[]>([]);
   const [running, setRunning] = useState(false);
   const abortRefs = useRef<AbortController[]>([]);

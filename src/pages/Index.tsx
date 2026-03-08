@@ -144,7 +144,9 @@ export default function Index() {
   const [streamingHint, setStreamingHint] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
-    return (saved as ModelId) || "mistral";
+    const validModels: ModelId[] = ["auto", "gemini-flash", "gemini-pro", "gemini-flash-lite", "gpt5-mini", "gpt5"];
+    if (saved && validModels.includes(saved as ModelId)) return saved as ModelId;
+    return "gemini-flash";
   });
 
   useEffect(() => {

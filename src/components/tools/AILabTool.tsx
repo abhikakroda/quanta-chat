@@ -27,12 +27,11 @@ type QualityResult = {
 };
 
 const TESTABLE_MODELS: { id: ModelId; label: string }[] = [
-  { id: "qwen", label: "Qwen 3.5" },
-  { id: "mistral", label: "Mistral Small" },
-  { id: "minimax", label: "MiniMax M2.1" },
-  { id: "deepseek", label: "DeepSeek V3.2" },
-  { id: "sarvam", label: "Sarvam M" },
-  { id: "qwen-coder", label: "Qwen3 Coder" },
+  { id: "gemini-flash", label: "Gemini Flash" },
+  { id: "gemini-pro", label: "Gemini Pro" },
+  { id: "gemini-flash-lite", label: "Flash Lite" },
+  { id: "gpt5-mini", label: "GPT-5 Mini" },
+  { id: "gpt5", label: "GPT-5" },
 ];
 
 export default function AILabTool() {
