@@ -248,7 +248,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
 
               {/* Action icons row — ChatGPT style */}
               {content && !isThinking && !isStreaming && (
-                <div className="flex items-center gap-0.5 pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="flex items-center gap-0.5 pt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                   <button
                     onClick={handleCopy}
                     className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors touch-manipulation"

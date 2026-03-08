@@ -746,7 +746,7 @@ export default function Index() {
                 />
               )}
               {streaming && !streamContent && !streamThinking && (
-                <div className="py-5 px-4 sm:px-6 animate-message-in">
+                <div className="py-3 sm:py-5 px-3 sm:px-6 animate-message-in">
                   <div className="max-w-[720px] mx-auto">
                     <div className="flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />

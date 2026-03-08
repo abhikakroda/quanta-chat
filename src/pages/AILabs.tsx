@@ -153,7 +153,7 @@ export default function AIPlayground() {
                 key={tool.id}
                 onClick={() => handleSelectTool(tool.id)}
                 className={cn(
-                  "group relative flex flex-col items-start gap-3 p-5 rounded-2xl border bg-card transition-all duration-300 text-left press-scale",
+                  "group relative flex flex-col items-start gap-2.5 sm:gap-3 p-4 sm:p-5 rounded-xl sm:rounded-2xl border bg-card transition-all duration-300 text-left press-scale",
                   "hover:-translate-y-1 hover:shadow-xl",
                   colors.border,
                   `hover:${colors.glow}`
