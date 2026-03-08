@@ -652,7 +652,7 @@ export default function DocAnalyzerTool() {
             </div>
           )}
         </div>
-      )
+      )}
 
       {/* ─── ANALYZE TAB (from file) ─── */}
       {mode === "analyze" && extractedText && (
