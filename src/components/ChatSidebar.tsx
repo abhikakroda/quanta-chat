@@ -1,9 +1,8 @@
 import { memo, useState, useMemo } from "react";
 import {
-  SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
+  SquarePen, Trash2, LogOut, X, PanelLeftClose,
   Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
-  Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, Phone,
-  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown
+  FilePen, Wand2, FlaskConical
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
