@@ -534,7 +534,7 @@ export default function Index() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
+        {/* Top bar — minimal */}
         <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40">
           <div className="flex items-center gap-2.5">
             <button onClick={() => setSidebarOpen(true)} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation md:hidden">
@@ -553,43 +553,17 @@ export default function Index() {
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            {activeAvatar && !streaming && (() => {
-              const av = AVATARS.find((a) => a.id === activeAvatar);
-              return av ? (
-                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:flex items-center gap-1">
-                  <av.icon className="w-3 h-3" />
-                  {av.name}
-                </span>
-              ) : null;
-            })()}
-            {agentMode && !streaming && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">Agent</span>
-            )}
-            {selfVerify && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">Verify</span>
-            )}
-            {smartPrompt && (
-              <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-500 border border-amber-400/20 hidden sm:flex">
-                <Sparkles className="w-3 h-3" />
-                Smart
-              </span>
-            )}
-            {thinkingLevel !== "off" && (
-              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 hidden sm:block">
-                {thinkingLevel === "deep" ? "Deep Think" : "Think"}
-              </span>
-            )}
             <button
               onClick={() => {
                 const current = projectMemory;
-                const newMemory = prompt("Project Memory — set persistent context:\n\n• 'I'm building a React e-commerce app'\n• 'Use TypeScript, follow SOLID principles'", current);
+                const newMemory = prompt("Project Memory — set persistent context:", current);
                 if (newMemory !== null) setProjectMemory(newMemory);
               }}
               className={cn(
                 "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
                 projectMemory ? "text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
               )}
-              title={projectMemory ? `Memory: ${projectMemory.slice(0, 50)}...` : "Set Project Memory"}
+              title="Project Memory"
             >
               <BookMarked className="w-4 h-4" />
             </button>
@@ -604,7 +578,7 @@ export default function Index() {
                 "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
                 ghostMode ? "text-foreground bg-muted" : "text-muted-foreground/40 hover:text-muted-foreground"
               )}
-              title={ghostMode ? "Ghost Mode ON — nothing saved" : "Enable Ghost Mode"}
+              title={ghostMode ? "Ghost Mode ON" : "Ghost Mode"}
             >
               <Ghost className="w-4 h-4" />
             </button>
