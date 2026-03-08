@@ -37,7 +37,7 @@ export default function Auth() {
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
             <Bot className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome to Quanta AI</h1>
+          <h1 className="text-2xl font-bold text-foreground">Welcome to OpenTropic</h1>
           <p className="text-muted-foreground text-sm">
             {isSignUp ? "Create an account to get started" : "Sign in to start chatting"}
           </p>

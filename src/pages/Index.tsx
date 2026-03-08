@@ -655,10 +655,10 @@ export default function Index() {
                 <div className="py-3 sm:py-4 px-4 sm:px-6 bg-muted/20 animate-message-in">
                   <div className="max-w-[640px] mx-auto flex gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
-                      {agentMode ? <Atom className="w-3.5 h-3.5" /> : "Q"}
+                      {agentMode ? <Atom className="w-3.5 h-3.5" /> : "O"}
                     </div>
                     <div className="pt-2">
-                      <span className="text-xs font-medium text-foreground mb-1 block">Quanta</span>
+                      <span className="text-xs font-medium text-foreground mb-1 block">OpenTropic</span>
                       <div className="flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
                         <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
@@ -682,7 +682,7 @@ export default function Index() {
           <div className="p-6 space-y-6">
             <div className="text-center space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                <span className="text-2xl font-bold text-primary lowercase">q</span>
+                <span className="text-2xl font-bold text-primary lowercase">o</span>
               </div>
               <h2 className="text-xl font-bold text-foreground">
                 {authIsSignUp ? "Create Account" : "Welcome Back"}

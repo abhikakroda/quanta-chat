@@ -144,7 +144,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
               "text-xs font-medium mb-1 block",
               isUser ? "text-muted-foreground/70" : "text-foreground"
             )}>
-              {isUser ? "You" : "Quanta"}
+              {isUser ? "You" : "OpenTropic"}
             </span>
 
             {isUser ? (

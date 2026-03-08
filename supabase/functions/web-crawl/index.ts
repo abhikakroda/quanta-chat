@@ -65,7 +65,7 @@ serve(async (req) => {
 
     const response = await fetch(formattedUrl, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (compatible; OpenClaw/1.0; +https://quanta.ai)",
+        "User-Agent": "Mozilla/5.0 (compatible; OpenTropic/1.0; +https://opentropic.ai)",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "en-US,en;q=0.5",
       },
