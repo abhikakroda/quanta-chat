@@ -198,6 +198,11 @@ export async function streamChat({
 
     let resp: Response;
     try {
+      // Create a timeout that aborts after 30 seconds if no response
+      const timeoutId = setTimeout(() => {
+        if (!signal?.aborted) controller?.abort?.();
+      }, 30000);
+      
       resp = await fetch(url, {
         method: "POST",
         headers: {
@@ -208,6 +213,8 @@ export async function streamChat({
         body: JSON.stringify(bodyPayload),
         signal,
       });
+      
+      clearTimeout(timeoutId);
     } catch (fetchErr: any) {
       if (signal?.aborted) return;
       // Network error — try fallback
