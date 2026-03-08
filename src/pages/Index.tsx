@@ -735,6 +735,7 @@ export default function Index() {
                     modelLabel={m.role === "assistant" ? messageModels[m.id] : undefined}
                     onEdit={m.role === "user" && !streaming ? (newContent) => handleEditMessage(i, newContent) : undefined}
                     onRegenerate={m.role === "assistant" && !streaming ? () => handleRegenerate(i) : undefined}
+                    skipAnimation={(m as any)._skipAnimation}
                   />
                 );
               })}
