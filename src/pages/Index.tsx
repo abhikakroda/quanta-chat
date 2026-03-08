@@ -141,6 +141,7 @@ export default function Index() {
   const [memoryDialogOpen, setMemoryDialogOpen] = useState(false);
   const [memoryDraft, setMemoryDraft] = useState("");
   const [agentStep, setAgentStep] = useState<number | null>(null);
+  const [streamingHint, setStreamingHint] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<ModelId>(() => {
     const saved = localStorage.getItem("quanta-selected-model");
     return (saved as ModelId) || "mistral";
