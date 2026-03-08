@@ -116,7 +116,7 @@ export default function AIPlayground() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-6">
         {/* Category pills with emoji + count */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-none">
           {CATEGORIES.map((cat) => (
