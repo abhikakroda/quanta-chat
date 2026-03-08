@@ -1,6 +1,4 @@
 import { memo, useState, useMemo } from "react";
-import SkillBadge from "@/components/SkillBadge";
-import type { UserSkills } from "@/hooks/useSkillLevel";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,

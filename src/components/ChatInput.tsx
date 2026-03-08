@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Plus, Bot, ChevronDown, ChevronUp, Atom, Mic, MicOff, Loader2, ShieldCheck, Brain, Sparkles, Paperclip } from "lucide-react";
+import { ArrowUp, Square, Plus, ChevronDown, ChevronUp, Atom, Mic, MicOff, Loader2, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId, ThinkingLevel } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
@@ -37,12 +37,7 @@ type Props = {
 const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
-  thinkingEnabled, onToggleThinking,
-  thinkingLevel = "off", onSetThinkingLevel,
-  selfVerify, onToggleSelfVerify,
-  smartPrompt, onToggleSmartPrompt,
   selectedModel = "mistral", onSelectModel,
-  modelSupportsThinking,
   activeSkillLabel,
 }, _ref) {
   const [input, setInput] = useState("");
