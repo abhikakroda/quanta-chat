@@ -151,9 +151,9 @@ export default function SSCReasoningTool() {
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {tab === "verbal" && !content && !loading && renderTopicGrid(VERBAL_TOPICS, "Verbal Reasoning")}
-        {tab === "nonverbal" && !content && !loading && renderTopicGrid(NONVERBAL_TOPICS, "Non-Verbal Reasoning")}
-        {tab === "analytical" && !content && !loading && renderTopicGrid(ANALYTICAL_TOPICS, "Analytical Reasoning")}
+        {tab === "verbal" && !activeTopic && !loading && renderTopicGrid(VERBAL_TOPICS, "Verbal Reasoning")}
+        {tab === "nonverbal" && !activeTopic && !loading && renderTopicGrid(NONVERBAL_TOPICS, "Non-Verbal Reasoning")}
+        {tab === "analytical" && !activeTopic && !loading && renderTopicGrid(ANALYTICAL_TOPICS, "Analytical Reasoning")}
 
         {tab === "quiz" && !quizQuestions.length && !loading && (
           <div className="grid grid-cols-2 gap-2">
@@ -166,21 +166,29 @@ export default function SSCReasoningTool() {
           </div>
         )}
 
-        {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="ml-2 text-sm text-muted-foreground">Generating...</span>
-          </div>
-        )}
-
-        {content && (
+        {activeTopic && tab !== "quiz" && (
           <div className="space-y-3">
-            <button onClick={() => setContent("")} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+            <button onClick={() => { setActiveTopic(null); setContent(""); }} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-3 h-3" /> Back
             </button>
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown>{content}</ReactMarkdown>
-            </div>
+            <h3 className="text-base font-bold text-foreground">{activeTopic}</h3>
+            {STATIC_REASON[activeTopic] && (
+              <div className="prose prose-sm dark:prose-invert max-w-none p-4 rounded-xl bg-primary/5 border border-primary/20">
+                <div className="text-xs font-semibold text-primary mb-2 flex items-center gap-1">⚡ Quick Reference</div>
+                <ReactMarkdown>{STATIC_REASON[activeTopic]}</ReactMarkdown>
+              </div>
+            )}
+            {loading && !content && (
+              <div className="flex items-center gap-2 py-4 justify-center">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                <span className="text-sm text-muted-foreground">Loading detailed explanation...</span>
+              </div>
+            )}
+            {content && (
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown>{content}</ReactMarkdown>
+              </div>
+            )}
           </div>
         )}
 
