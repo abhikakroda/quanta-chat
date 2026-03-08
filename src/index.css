@@ -48,10 +48,10 @@
 
     --chat-user: 204 94% 94%;
     --chat-user-foreground: 204 80% 16%;
-    --chat-ai: 0 0% 100%;
+    --chat-ai: 220 14% 99%;
     --chat-ai-foreground: 0 0% 0%;
 
-    --glass: 0 0% 100% / 0.8;
+    --glass: 220 14% 98% / 0.8;
     --glass-border: 0 0% 0% / 0.05;
 
     --badge-new: 199 89% 94%;
