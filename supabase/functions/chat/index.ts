@@ -211,7 +211,6 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
     const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 
     const { messages, enableThinking = true, model = "gemini-flash", skillPrompt, imageData } = await req.json();
 
