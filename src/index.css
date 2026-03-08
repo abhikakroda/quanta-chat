@@ -10,46 +10,46 @@
     --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 0 0% 9%;
+    --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
     --primary-glow: 0 0% 30%;
 
     --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 9%;
+    --secondary-foreground: 0 0% 0%;
 
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 0 0% 40%;
 
     --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 9%;
+    --accent-foreground: 0 0% 0%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 0 0% 92%;
     --input: 0 0% 92%;
-    --ring: 0 0% 9%;
+    --ring: 0 0% 0%;
 
     --radius: 0.625rem;
 
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 25%;
-    --sidebar-primary: 0 0% 9%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 94%;
-    --sidebar-accent-foreground: 0 0% 9%;
+    --sidebar-accent-foreground: 0 0% 0%;
     --sidebar-border: 0 0% 92%;
-    --sidebar-ring: 0 0% 9%;
+    --sidebar-ring: 0 0% 0%;
 
     --chat-user: 204 94% 94%;
     --chat-user-foreground: 204 80% 16%;
     --chat-ai: 0 0% 100%;
-    --chat-ai-foreground: 0 0% 9%;
+    --chat-ai-foreground: 0 0% 0%;
 
     --glass: 0 0% 100% / 0.8;
     --glass-border: 0 0% 0% / 0.05;
@@ -63,44 +63,44 @@
     --foreground: 0 0% 100%;
 
     --card: 220 10% 15%;
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 0 0% 100%;
 
     --popover: 220 10% 15%;
-    --popover-foreground: 0 0% 95%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 0 0% 93%;
-    --primary-foreground: 0 0% 7%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
     --primary-glow: 0 0% 70%;
 
     --secondary: 220 8% 18%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 220 8% 18%;
     --muted-foreground: 220 5% 65%;
 
     --accent: 220 8% 18%;
-    --accent-foreground: 0 0% 95%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 93%;
+    --destructive-foreground: 0 0% 100%;
 
     --border: 220 8% 20%;
     --input: 220 8% 20%;
-    --ring: 0 0% 95%;
+    --ring: 0 0% 100%;
 
     --sidebar-background: 220 10% 10%;
-    --sidebar-foreground: 220 5% 85%;
-    --sidebar-primary: 0 0% 95%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
     --sidebar-primary-foreground: 220 10% 10%;
     --sidebar-accent: 220 8% 16%;
-    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 8% 18%;
-    --sidebar-ring: 0 0% 95%;
+    --sidebar-ring: 0 0% 100%;
 
     --chat-user: 204 80% 20%;
-    --chat-user-foreground: 204 60% 90%;
+    --chat-user-foreground: 0 0% 100%;
     --chat-ai: 220 10% 15%;
-    --chat-ai-foreground: 0 0% 92%;
+    --chat-ai-foreground: 0 0% 100%;
 
     --glass: 0 0% 7% / 0.8;
     --glass-border: 0 0% 100% / 0.05;
