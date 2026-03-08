@@ -65,7 +65,7 @@ async function callMistralAI(apiKey: string, messages: any[], stream: boolean, m
 }
 
 async function callNvidiaAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
-  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "minimax/minimax-m1-80k";
+  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "minimaxi/minimax-m1-80k";
   return await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
     method: "POST",
     headers: {
