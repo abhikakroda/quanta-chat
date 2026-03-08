@@ -31,7 +31,7 @@ export const SKILLS = [
   { id: "deep-research", icon: Globe, label: "Deep Research", badge: null, prompt: "You are a deep research assistant. Analyze topics thoroughly from multiple angles, provide comprehensive findings with citations and evidence. Structure your responses with clear sections, key findings, and actionable insights." },
   { id: "code-assistant", icon: Code2, label: "Code Assistant", badge: "Pro", prompt: "You are an expert coding assistant. Write clean, efficient, well-documented code. Explain your approach, suggest best practices, handle edge cases, and provide working examples. Support debugging and code review." },
   { id: "summarizer", icon: Sparkles, label: "Summarizer", badge: null, prompt: "You are a summarization expert. Condense long texts into clear, concise summaries. Preserve key points, main arguments, and critical details. Provide bullet-point summaries and brief overviews." },
-  { id: "writer", icon: FileText, label: "Writer", badge: null, prompt: "You are a professional writer and editor. Help craft compelling content — articles, emails, essays, stories, and more. Focus on clarity, tone, structure, and engagement. Adapt your style to the user's needs." },
+  
 ] as const;
 
 export const ALL_TOOLS = [
