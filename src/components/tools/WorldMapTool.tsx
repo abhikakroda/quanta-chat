@@ -86,8 +86,8 @@ const MapChart = memo(({ onSelect, hoveredGeo, setHoveredGeo, highlighted, zoom,
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
-                onMouseEnter={() => { setHoveredGeo(geo.rsmKey); if (tooltipRef) tooltipRef.current = name; }}
-                onMouseLeave={() => { setHoveredGeo(null); if (tooltipRef) tooltipRef.current = ""; }}
+                onMouseEnter={() => { setHoveredGeo(geo.rsmKey); onHoverName(name); }}
+                onMouseLeave={() => { setHoveredGeo(null); onHoverName(""); }}
                 onClick={() => onSelect(name)}
                 style={{
                   default: { fill: getColor(geo, false, highlighted), stroke: "hsl(210 20% 18%)", strokeWidth: 0.5, outline: "none", transition: "fill 0.2s" },
