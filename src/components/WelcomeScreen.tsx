@@ -40,7 +40,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
         <ChatInput
           onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming}
           agentMode={agentMode} onToggleAgent={onToggleAgent}
-          selectedModel={selectedModel} onSelectModel={onSelectModel}
+          selectedModel={selectedModel}
           activeSkillLabel={activeSkillLabel}
           noBorder
         />
