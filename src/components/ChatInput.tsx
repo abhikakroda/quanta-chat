@@ -300,7 +300,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
           />
 
           {/* Right buttons */}
-          <div className="flex items-center gap-1 shrink-0 mr-1.5 mb-1">
+          <div className="flex items-center gap-0.5 shrink-0 mr-1 sm:mr-1.5 mb-1">
             {/* Voice input */}
             <button
               onClick={toggleRecording}
