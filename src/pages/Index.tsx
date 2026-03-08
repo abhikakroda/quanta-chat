@@ -529,6 +529,7 @@ export default function Index() {
     setStreamThinking("");
     setIsThinkingPhase(false);
     setAgentStep(null);
+    setStreamingHint(null);
   };
 
   const handleNewChat = async () => {
