@@ -375,7 +375,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                     <span className="flex items-center gap-1.5">
                       {m.label}
                       {m.premium && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-500 border border-amber-500/20 uppercase tracking-wider">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-primary/15 text-primary border border-primary/20 uppercase tracking-wider">
                           Pro
                         </span>
                       )}
