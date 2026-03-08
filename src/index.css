@@ -215,25 +215,15 @@ button, a, input, textarea, select, [role="button"] {
   animation: message-in 0.2s ease-out both;
 }
 
-/* Smooth streaming text animation */
-@keyframes word-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.streaming-word {
-  display: inline;
-  animation: word-fade-in 0.15s ease-out forwards;
-}
-.streaming-text .prose {
-  overflow: hidden;
-}
+/* Streaming cursor */
 .streaming-text .prose > *:last-child::after {
   content: '▊';
   display: inline;
   animation: cursor-blink 0.8s steps(2) infinite;
-  color: hsl(var(--foreground) / 0.35);
-  font-size: 0.85em;
-  margin-left: 1px;
+  color: hsl(var(--foreground) / 0.3);
+  font-size: 0.8em;
+  margin-left: 2px;
+  vertical-align: baseline;
 }
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
