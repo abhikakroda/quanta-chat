@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Plus, Bot, ChevronDown, ChevronUp, Atom, Mic, MicOff, Loader2, ShieldCheck, Brain, Sparkles, Paperclip } from "lucide-react";
+import { ArrowUp, Square, Plus, ChevronDown, ChevronUp, Atom, Mic, MicOff, Loader2, Paperclip } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MODELS, ModelId, ThinkingLevel } from "@/lib/chat";
+import { MODELS, ModelId } from "@/lib/chat";
 import * as pdfjsLib from "pdfjs-dist";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
@@ -20,30 +20,18 @@ type Props = {
   streaming?: boolean;
   agentMode?: boolean;
   onToggleAgent?: () => void;
-  thinkingEnabled?: boolean;
-  onToggleThinking?: () => void;
-  thinkingLevel?: ThinkingLevel;
-  onSetThinkingLevel?: (level: ThinkingLevel) => void;
-  selfVerify?: boolean;
-  onToggleSelfVerify?: () => void;
-  smartPrompt?: boolean;
-  onToggleSmartPrompt?: () => void;
   selectedModel?: ModelId;
   onSelectModel?: (model: ModelId) => void;
-  modelSupportsThinking?: boolean;
   activeSkillLabel?: string | null;
+  noBorder?: boolean;
 };
 
 const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
-  thinkingEnabled, onToggleThinking,
-  thinkingLevel = "off", onSetThinkingLevel,
-  selfVerify, onToggleSelfVerify,
-  smartPrompt, onToggleSmartPrompt,
   selectedModel = "mistral", onSelectModel,
-  modelSupportsThinking,
   activeSkillLabel,
+  noBorder,
 }, _ref) {
   const [input, setInput] = useState("");
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
@@ -217,7 +205,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 
   return (
     <div
-      className="px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 border-t border-border/30"
+      className={cn("px-3 sm:px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2", !noBorder && "border-t border-border/30")}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
       onDragOver={handleDragOver}

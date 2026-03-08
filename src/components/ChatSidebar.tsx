@@ -1,6 +1,4 @@
 import { memo, useState, useMemo } from "react";
-import SkillBadge from "@/components/SkillBadge";
-import type { UserSkills } from "@/hooks/useSkillLevel";
 import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose, PanelLeftOpen,
   Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
@@ -27,8 +25,6 @@ type Props = {
   onSelectSkill?: (skill: string | null) => void;
   activeAvatar?: string | null;
   onSelectAvatar?: (avatarId: string | null) => void;
-  userSkills?: UserSkills | null;
-  xpGained?: number | null;
 };
 
 export const SKILLS = [
@@ -80,7 +76,7 @@ const SIDEBAR_ITEMS = [
   { id: "image-generator", icon: Wand2, label: "Create" },
 ] as const;
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, userSkills, xpGained }: Props) {
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);

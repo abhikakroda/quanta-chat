@@ -133,7 +133,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                 ? "bg-primary/10 text-primary"
                 : "bg-primary text-primary-foreground"
             )}>
-              {isUser ? <User className="w-4 h-4" /> : "Q"}
+              {isUser ? <User className="w-4 h-4" /> : "O"}
             </div>
           </div>
 

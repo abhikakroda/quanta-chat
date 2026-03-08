@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Moon, Sun, Menu, Atom, Bot, X, BookMarked, Ghost, ShieldOff, Sparkles } from "lucide-react";
+import { Moon, Sun, Menu, Atom, BookMarked, Ghost } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -529,8 +529,6 @@ export default function Index() {
         onSelectSkill={(s) => { setActiveSkill(s); setActiveAvatar(null); }}
         activeAvatar={activeAvatar}
         onSelectAvatar={setActiveAvatar}
-        userSkills={skills}
-        xpGained={xpGained}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -599,7 +597,7 @@ export default function Index() {
           <>
             {ghostMode && (
               <div className="shrink-0 flex items-center justify-center gap-2 px-3 py-1.5 bg-muted/50 border-b border-border/30 text-[11px] text-muted-foreground">
-                <ShieldOff className="w-3 h-3" />
+                <Ghost className="w-3 h-3" />
                 <span>Ghost Mode — messages are temporary and won't be saved</span>
               </div>
             )}
@@ -669,10 +667,10 @@ export default function Index() {
                 </div>
               )}
             </div>
-            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming || optimizing} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
+            <ChatInput onSend={handleSend} onStop={handleStop} disabled={streaming || optimizing} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} onSelectModel={setSelectedModel} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
           </>
         ) : (
-          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} onSelectModel={setSelectedModel} modelSupportsThinking={modelSupportsThinking} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
+          <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} onSelectModel={setSelectedModel} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
         )}
       </div>
 
