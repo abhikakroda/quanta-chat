@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, Gamepad2, Trophy, Zap, Star, TrendingUp } from "lucide-react";
+import { ArrowLeft, Search, Gamepad2, Trophy, Zap, Star, TrendingUp, Pin, PinOff } from "lucide-react";
 import { ALL_TOOLS } from "@/components/ChatSidebar";
 import { cn } from "@/lib/utils";
 
