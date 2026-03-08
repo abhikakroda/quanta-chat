@@ -72,6 +72,7 @@ export default function DocAnalyzerTool() {
   const [ocrPageImages, setOcrPageImages] = useState<string[]>([]);
   const [ocrEditingPage, setOcrEditingPage] = useState<number | null>(null);
   const [ocrViewMode, setOcrViewMode] = useState<"text" | "sidebyside">("text");
+  const [ocrAiProcessing, setOcrAiProcessing] = useState<"rewrite" | "proofread" | null>(null);
   const ocrFileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -452,6 +453,75 @@ export default function DocAnalyzerTool() {
     URL.revokeObjectURL(url);
   };
 
+  // AI Rewrite / Proofread OCR text
+  const handleOcrAiAction = async (action: "rewrite" | "proofread") => {
+    if (!ocrPageTexts.length) return;
+    setOcrAiProcessing(action);
+    setError("");
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
+      const combinedText = ocrPageTexts.join("\n\n---\n\n");
+      const systemPrompt = action === "rewrite"
+        ? "You are a professional editor. Rewrite the following OCR-extracted handwritten text into clean, well-structured, publication-ready prose. Fix all grammar, spelling, and punctuation errors. Improve clarity and flow while preserving the original meaning and structure. Use proper paragraphs, headings (with markdown ##), and formatting. Output ONLY the rewritten text."
+        : "You are a meticulous proofreader. Review the following OCR-extracted handwritten text. Fix spelling, grammar, punctuation, and formatting errors. Preserve the original meaning, tone, and structure exactly. Mark any uncertain corrections with [corrected: original → fixed]. At the end, add a brief '## Proofreading Summary' section listing all changes made. Output the corrected text followed by the summary.";
+
+      const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          messages: [{ role: "user", content: `${action === "rewrite" ? "Rewrite" : "Proofread"} this OCR-extracted text:\n\n${combinedText.slice(0, 15000)}` }],
+          model: "auto",
+          enableThinking: false,
+          skillPrompt: systemPrompt,
+        }),
+      });
+
+      if (!resp.ok) throw new Error(`${action} failed`);
+      const reader = resp.body?.getReader();
+      if (!reader) throw new Error("No response");
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let full = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let idx: number;
+        while ((idx = buffer.indexOf("\n")) !== -1) {
+          let line = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (!line.startsWith("data: ")) continue;
+          const json = line.slice(6).trim();
+          if (json === "[DONE]") break;
+          try {
+            const parsed = JSON.parse(json);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              const clean = content.replace(/<\/?think>/g, "");
+              if (clean) { full += clean; setOcrText(full); }
+            }
+          } catch { /* partial */ }
+        }
+      }
+      if (full) {
+        setOcrPageTexts([full]);
+        setOcrText(`── ${action === "rewrite" ? "Rewritten" : "Proofread"} ──\n${full}`);
+      }
+    } catch (err: any) {
+      setError(err.message || `${action} failed`);
+    } finally {
+      setOcrAiProcessing(null);
+    }
+  };
+
   // Download PDF via print
   const downloadPdf = () => {
     const html = generatePdfHtml(pdfTitle, pdfContent);
@@ -742,6 +812,24 @@ export default function DocAnalyzerTool() {
                       </button>
                     </div>
                   )}
+                  {/* AI Actions */}
+                  <button
+                    onClick={() => handleOcrAiAction("rewrite")}
+                    disabled={!!ocrAiProcessing}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-40 transition-colors"
+                  >
+                    {ocrAiProcessing === "rewrite" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                    Rewrite
+                  </button>
+                  <button
+                    onClick={() => handleOcrAiAction("proofread")}
+                    disabled={!!ocrAiProcessing}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 disabled:opacity-40 transition-colors"
+                  >
+                    {ocrAiProcessing === "proofread" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />}
+                    Proofread
+                  </button>
+                  <div className="w-px h-4 bg-border/30" />
                   <button onClick={copyOcrText} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border border-border/50 text-foreground/70 hover:bg-muted transition-colors">
                     {ocrCopied ? <CheckCheck className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                     {ocrCopied ? "Copied!" : "Copy All"}
@@ -757,6 +845,17 @@ export default function DocAnalyzerTool() {
 
               {/* Content */}
               <div className="flex-1 overflow-y-auto rounded-xl bg-card border border-border/30 shadow-sm min-h-0">
+                {ocrAiProcessing ? (
+                  <div className="p-5">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                      <span className="text-sm font-medium text-foreground">{ocrAiProcessing === "rewrite" ? "Rewriting with AI..." : "Proofreading with AI..."}</span>
+                    </div>
+                    <div className="prose prose-sm max-w-none text-foreground">
+                      <ReactMarkdown>{ocrText}</ReactMarkdown>
+                    </div>
+                  </div>
+                ) : (
                 <div className="p-5 space-y-5">
                   {ocrPageTexts.map((pageText, i) => (
                     <div key={i} className={cn(
@@ -801,6 +900,7 @@ export default function DocAnalyzerTool() {
                     </div>
                   ))}
                 </div>
+                )}
               </div>
             </>
           ) : (
