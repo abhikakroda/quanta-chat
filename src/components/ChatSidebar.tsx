@@ -192,8 +192,8 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                       className={cn(
                         "group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 text-[14px]",
                         activeId === c.id
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/50 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
+                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                       )}
                       onClick={() => onSelect(c.id)}
                     >

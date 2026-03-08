@@ -76,7 +76,7 @@
     --secondary-foreground: 0 0% 93%;
 
     --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 55%;
+    --muted-foreground: 0 0% 60%;
 
     --accent: 0 0% 14%;
     --accent-foreground: 0 0% 93%;
@@ -89,7 +89,7 @@
     --ring: 0 0% 93%;
 
     --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 75%;
+    --sidebar-foreground: 0 0% 85%;
     --sidebar-primary: 0 0% 93%;
     --sidebar-primary-foreground: 0 0% 7%;
     --sidebar-accent: 0 0% 13%;
