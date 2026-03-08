@@ -1,5 +1,8 @@
-import { useState, memo, useCallback, useEffect, useRef } from "react";
+import { useState, memo, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import hljs from "highlight.js/lib/core";
 import javascript from "highlight.js/lib/languages/javascript";
 import typescript from "highlight.js/lib/languages/typescript";
@@ -29,6 +32,8 @@ hljs.registerLanguage("markdown", markdown);
 hljs.registerLanguage("md", markdown);
 import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipboard, ClipboardCheck, Volume2, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const MermaidDiagram = lazy(() => import("@/components/MermaidDiagram"));
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [copied, setCopied] = useState(false);
@@ -216,15 +221,27 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   )}
 
                   {content && (
-                    <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-p:leading-relaxed prose-headings:my-3 prose-headings:text-foreground prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-sm break-words overflow-hidden prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5">
+                    <div className="prose prose-sm max-w-none prose-p:my-1.5 prose-p:leading-relaxed prose-headings:my-3 prose-headings:text-foreground prose-pre:my-2 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] text-sm break-words overflow-hidden prose-li:my-0.5 prose-ul:my-1.5 prose-ol:my-1.5 [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground">
                       <ReactMarkdown
+                        remarkPlugins={[remarkMath]}
+                        rehypePlugins={[rehypeKatex]}
                         components={{
                           code({ className, children, ...props }) {
                             const match = /language-(\w+)/.exec(className || "");
+                            const lang = match?.[1] || "";
+                            const codeStr = String(children).replace(/\n$/, "");
                             const isBlock = match || (typeof children === "string" && children.includes("\n"));
+
+                            // Mermaid diagram
+                            if (lang === "mermaid") {
+                              return (
+                                <Suspense fallback={<div className="py-4 text-xs text-muted-foreground animate-pulse">Rendering diagram…</div>}>
+                                  <MermaidDiagram chart={codeStr} />
+                                </Suspense>
+                              );
+                            }
+
                             if (isBlock) {
-                              const lang = match?.[1] || "";
-                              const codeStr = String(children).replace(/\n$/, "");
                               return <CodeBlock lang={lang} code={codeStr} />;
                             }
                             return (
