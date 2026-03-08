@@ -296,7 +296,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             }}
             placeholder="Ask anything"
             rows={1}
-            className="flex-1 resize-none bg-transparent outline-none text-[15px] text-foreground placeholder:text-muted-foreground/40 max-h-[200px] py-3 min-h-[48px]"
+            className="flex-1 resize-none bg-transparent outline-none text-sm sm:text-[15px] text-foreground placeholder:text-muted-foreground/40 max-h-[200px] py-3 min-h-[44px] sm:min-h-[48px]"
           />
 
           {/* Right buttons */}
