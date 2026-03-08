@@ -797,8 +797,7 @@ export default function Index() {
             <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
               <Menu className="w-4 h-4 text-muted-foreground" />
             </button>
-            {/* Model selector */}
-            <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
+            
             {ghostMode && (
               <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/40">
                 <Ghost className="w-3 h-3" />
