@@ -541,7 +541,7 @@ export default function Index() {
             content: savedContent,
             created_at: new Date().toISOString(),
           };
-          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          const effectiveModel = agentMode ? "gemini-pro" as ModelId : resolveAutoModel(selectedModel, activeSkill);
           setMessageModels((prev) => ({ ...prev, [optimisticAssistantId]: getModelLabel(effectiveModel) }));
           
           // Clear streaming and add final message atomically (no flicker)
