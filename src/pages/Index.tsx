@@ -616,7 +616,7 @@ export default function Index() {
           setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
           setMessages((prev) => [...prev, data as any]);
         }
-        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
+        setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null); setStreamingHint(null);
       },
       onError: (err) => {
         setStreamContent(""); setStreamThinking(""); setIsThinkingPhase(false); setStreaming(false); setAgentStep(null);
