@@ -170,6 +170,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "ies-et": IESETTool,
   "gate-ece": GATEECETool,
   "pcb-design": PCBDesignTool,
+  "typing-speed": TypingSpeedTool,
 };
 
 export default function Index() {
