@@ -59,6 +59,7 @@ const SSCEnglishTool = lazy(() => import("@/components/tools/SSCEnglishTool"));
 const SSCMathTool = lazy(() => import("@/components/tools/SSCMathTool"));
 const SSCReasoningTool = lazy(() => import("@/components/tools/SSCReasoningTool"));
 const GKTool = lazy(() => import("@/components/tools/GKTool"));
+const SSCMockTestTool = lazy(() => import("@/components/tools/SSCMockTestTool"));
 
 
 const TOOL_UI_MAP: Record<string, React.ComponentType> = {
