@@ -97,7 +97,7 @@ function ModelSelector({ selectedModel, onSelectModel }: { selectedModel: ModelI
         <ChevronDown className={cn("w-3.5 h-3.5 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <div className="absolute top-full left-0 mt-1 glass-strong rounded-2xl shadow-float z-50 min-w-[200px] py-1.5 animate-scale-spring">
+        <div className="absolute top-full left-0 mt-1 bg-popover border border-border/40 rounded-2xl shadow-lg z-[100] min-w-[200px] max-h-[400px] overflow-y-auto py-1.5" style={{ transformOrigin: 'top left' }}>
           {MODELS.map((m) => (
             <button
               key={m.id}
