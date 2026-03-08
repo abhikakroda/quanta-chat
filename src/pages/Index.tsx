@@ -548,25 +548,21 @@ export default function Index() {
       />
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar — minimal */}
+        {/* Top bar — ChatGPT style: model name left, actions right */}
         <div className="h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-border/40">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button onClick={() => { if (sidebarCollapsed) setSidebarCollapsed(false); else setSidebarOpen(true); }} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
               <Menu className="w-4 h-4 text-muted-foreground" />
             </button>
+            <span className="text-sm font-semibold text-foreground">OpenTropic</span>
             {ghostMode && (
               <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/40">
                 <Ghost className="w-3 h-3" />
                 Ghost
               </span>
             )}
-            {activeId && !ghostMode && (
-              <span className="text-xs text-muted-foreground truncate max-w-[160px] sm:max-w-[250px]">
-                {conversations.find((c) => c.id === activeId)?.title || "Chat"}
-              </span>
-            )}
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => {
                 const current = projectMemory;
@@ -666,18 +662,12 @@ export default function Index() {
                 />
               )}
               {streaming && !streamContent && !streamThinking && (
-                <div className="py-3 sm:py-4 px-4 sm:px-6 bg-muted/20 animate-message-in">
-                  <div className="max-w-[640px] mx-auto flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold shrink-0">
-                      {agentMode ? <Atom className="w-3.5 h-3.5" /> : "O"}
-                    </div>
-                    <div className="pt-2">
-                      <span className="text-xs font-medium text-foreground mb-1 block">OpenTropic</span>
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
-                      </div>
+                <div className="py-5 px-4 sm:px-6 animate-message-in">
+                  <div className="max-w-[720px] mx-auto">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "0ms" }} />
+                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "100ms" }} />
+                      <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30 animate-fast-bounce" style={{ animationDelay: "200ms" }} />
                     </div>
                   </div>
                 </div>
