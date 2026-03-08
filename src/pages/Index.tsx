@@ -117,6 +117,7 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
 
 export default function Index() {
   const { user, loading: authLoading, signIn, signUp } = useAuth();
+  const isElectron = useIsElectron();
   const { conversations, createConversation, deleteConversation, updateTitle, refetch } = useConversations();
   const [activeId, setActiveId] = useState<string | null>(null);
   const { messages, addMessage, setMessages, skipNextFetch } = useMessages(activeId);
