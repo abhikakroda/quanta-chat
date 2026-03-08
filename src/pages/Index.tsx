@@ -458,6 +458,19 @@ export default function Index() {
         setStreaming(false);
         setAgentStep(null);
         console.error(err);
+        // Show error to user as a temporary assistant message
+        const errorMsg = {
+          id: crypto.randomUUID(),
+          conversation_id: convId || "ghost",
+          role: "assistant" as const,
+          content: `⚠️ Sorry, something went wrong: ${err}. Please try again.`,
+          created_at: new Date().toISOString(),
+        };
+        if (isGhost) {
+          setGhostMessages((prev: any) => [...prev, errorMsg]);
+        } else {
+          setMessages((prev: any) => [...prev, errorMsg]);
+        }
       },
     });
   };
