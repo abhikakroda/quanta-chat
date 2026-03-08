@@ -111,7 +111,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
 
   const readFileContent = async (file: File): Promise<{ content: string; dataUrl?: string }> => {
     if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
-      return { content: await readPdfContent(file) };
+      return await readPdfContent(file);
     }
     if (file.name.endsWith(".docx") || file.name.endsWith(".doc") || file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       return { content: await readDocxContent(file) };
