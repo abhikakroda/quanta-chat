@@ -4,10 +4,11 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import ReactMarkdown from "react-markdown";
 
-type TabId = "history" | "polity" | "geography" | "science" | "current" | "quiz";
+type TabId = "history" | "polity" | "geography" | "science" | "current" | "static" | "quiz";
 type QuizQ = { question: string; options: string[]; answer: number; explanation: string };
 
 const TABS: { id: TabId; label: string; emoji: string }[] = [
+  { id: "static", label: "Static GK", emoji: "📋" },
   { id: "history", label: "History", emoji: "🏛️" },
   { id: "polity", label: "Polity", emoji: "⚖️" },
   { id: "geography", label: "Geography", emoji: "🌍" },
