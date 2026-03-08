@@ -328,9 +328,9 @@ export default function Index() {
     }
 
     // Store image URL for display
-    const imageFile = files?.find((f) => f.dataUrl && f.type.startsWith("image/"));
-    if (imageFile?.dataUrl) {
-      setMessageImages((prev) => ({ ...prev, [tempId]: imageFile.dataUrl! }));
+    const displayImageFile = files?.find((f) => f.dataUrl);
+    if (displayImageFile?.dataUrl) {
+      setMessageImages((prev) => ({ ...prev, [tempId]: displayImageFile.dataUrl! }));
     }
 
     // Fire-and-forget DB insert (skip in ghost mode)
