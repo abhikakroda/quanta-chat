@@ -23,7 +23,7 @@ const COMPARE_MODELS: { id: ModelId; label: string }[] = [
 
 export default function CompareModelsTool() {
   const [prompt, setPrompt] = useState("");
-  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["qwen", "mistral"]);
+  const [selectedModels, setSelectedModels] = useState<ModelId[]>(["gemini-flash", "gemini-pro"]);
   const [responses, setResponses] = useState<ModelResponse[]>([]);
   const [running, setRunning] = useState(false);
   const abortRefs = useRef<AbortController[]>([]);
