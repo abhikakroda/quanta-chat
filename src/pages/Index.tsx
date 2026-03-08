@@ -693,7 +693,7 @@ export default function Index() {
           .select()
           .single();
         if (data) {
-          const effectiveModel = agentMode ? "qwen" : resolveAutoModel(selectedModel, activeSkill);
+          const effectiveModel = agentMode ? "gemini-pro" as ModelId : resolveAutoModel(selectedModel, activeSkill);
           setMessageModels((prev) => ({ ...prev, [data.id]: getModelLabel(effectiveModel) }));
           setMessages((prev) => [...prev, data as any]);
         }
