@@ -306,7 +306,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
               onClick={toggleRecording}
               disabled={transcribing}
               className={cn(
-                "w-10 h-10 rounded-full transition-all duration-200 touch-manipulation flex items-center justify-center",
+                "w-9 h-9 sm:w-10 sm:h-10 rounded-full transition-all duration-200 touch-manipulation flex items-center justify-center",
                 recording
                   ? "text-destructive bg-destructive/10"
                   : transcribing
