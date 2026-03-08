@@ -267,7 +267,95 @@ export default function DocAnalyzerTool() {
     setFileName(""); setExtractedText(""); setAnalysis(""); setError("");
     setSlides([]); setCurrentSlide(0); setMode("home"); setPdfContent("");
     setPrompt(""); setEditingSlide(null); setEditingPdf(false);
+    setOcrText(""); setOcrPageTexts([]); setOcrProgress(0); setOcrTotalPages(0);
     if (fileRef.current) fileRef.current.value = "";
+    if (ocrFileRef.current) ocrFileRef.current.value = "";
+  };
+
+  // ─── OCR: Handwritten PDF → Digital Text ───
+  const handleOcrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.includes("pdf") && !file.name.endsWith(".pdf")) {
+      setError("Please upload a PDF file for OCR");
+      return;
+    }
+    setFileName(file.name);
+    setError("");
+    setOcrText("");
+    setOcrPageTexts([]);
+    setOcrLoading(true);
+    setOcrProgress(0);
+    setMode("ocr");
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      if (!token) throw new Error("Not authenticated");
+
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const totalPages = Math.min(pdf.numPages, 20);
+      setOcrTotalPages(totalPages);
+      const pageResults: string[] = [];
+
+      for (let i = 1; i <= totalPages; i++) {
+        setOcrProgress(i);
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Convert canvas to base64
+        const dataUrl = canvas.toDataURL("image/png");
+        const base64 = dataUrl.split(",")[1];
+
+        // Send to AI vision for OCR
+        const resp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/describe-image`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            imageBase64: base64,
+            mimeType: "image/png",
+            prompt: "You are an expert OCR engine specialized in handwritten text recognition. Extract ALL text from this handwritten document image with maximum accuracy. Preserve the original structure, paragraphs, and line breaks. If there are diagrams or drawings, describe them briefly in [brackets]. Output ONLY the extracted text, no commentary or explanations. If text is unclear, make your best guess and mark uncertain words with (?).",
+          }),
+        });
+
+        if (!resp.ok) throw new Error(`OCR failed on page ${i}`);
+        const data = await resp.json();
+        const pageText = data.description || `[Page ${i}: No text extracted]`;
+        pageResults.push(pageText);
+        setOcrPageTexts([...pageResults]);
+        setOcrText(pageResults.map((t, idx) => `── Page ${idx + 1} ──\n${t}`).join("\n\n"));
+      }
+    } catch (err: any) {
+      setError(err.message || "OCR processing failed");
+    } finally {
+      setOcrLoading(false);
+    }
+  };
+
+  const copyOcrText = () => {
+    navigator.clipboard.writeText(ocrText);
+    setOcrCopied(true);
+    setTimeout(() => setOcrCopied(false), 2000);
+  };
+
+  const downloadOcrText = () => {
+    const blob = new Blob([ocrText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${fileName?.replace(/\.pdf$/i, "") || "ocr-output"}-digitized.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Download PDF via print
