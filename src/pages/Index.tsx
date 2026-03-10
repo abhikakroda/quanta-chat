@@ -765,7 +765,7 @@ export default function Index() {
     });
   };
 
-  const displayMessages = ghostMode ? ghostMessages : messages;
+  const displayMessages = (ghostMode || !user) ? ghostMessages : messages;
   const hasMessages = displayMessages.length > 0 || streaming;
   const resolvedModel = resolveAutoModel(selectedModel, activeSkill);
   const modelSupportsThinking = true;
