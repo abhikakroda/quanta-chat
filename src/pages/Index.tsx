@@ -551,6 +551,7 @@ export default function Index() {
       activeSkill,
       agentMode,
       imageData,
+      guest: !user,
       signal: controller.signal,
       onAgentStep: (step) => {
         setAgentStep(step);
