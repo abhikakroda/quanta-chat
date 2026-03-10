@@ -102,6 +102,7 @@ export async function streamChat({
   activeSkill,
   agentMode = false,
   imageData,
+  guest = false,
   onThinkingDelta,
   onDelta,
   onDone,
@@ -109,6 +110,24 @@ export async function streamChat({
   onAgentStep,
   signal,
 }: {
+  messages: Message[];
+  model?: ModelId;
+  enableThinking?: boolean;
+  thinkingLevel?: ThinkingLevel;
+  selfVerify?: boolean;
+  projectMemory?: string;
+  skillPrompt?: string;
+  activeSkill?: string | null;
+  agentMode?: boolean;
+  imageData?: { base64: string; mimeType: string };
+  guest?: boolean;
+  onThinkingDelta?: (text: string) => void;
+  onDelta: (text: string) => void;
+  onDone: () => void;
+  onError: (error: string) => void;
+  onAgentStep?: (step: number, total: number | null) => void;
+  signal?: AbortSignal;
+}) {
   messages: Message[];
   model?: ModelId;
   enableThinking?: boolean;
