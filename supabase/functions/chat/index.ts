@@ -225,7 +225,7 @@ serve(async (req) => {
     const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
     const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
 
-    const { messages, enableThinking = true, model = "gemini-flash", skillPrompt, imageData } = await req.json();
+    const { messages, enableThinking = true, model = "gemini-flash", skillPrompt, imageData } = bodyJson;
 
     const systemContent = skillPrompt
       ? `${SYSTEM_PROMPT}\n\nAdditional skill context: ${skillPrompt}`
