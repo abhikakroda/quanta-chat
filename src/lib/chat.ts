@@ -157,20 +157,32 @@ export async function streamChat({
 
     const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    if (!token) { onError("Not authenticated"); return; }
+    let token: string | undefined;
+    if (!guest) {
+      const { data: { session } } = await supabase.auth.getSession();
+      token = session?.access_token;
+      if (!token) { onError("Not authenticated"); return; }
+    }
 
     const bodyPayload: any = {
       messages: currentMessages,
       enableThinking: effectiveThinking,
       model: effectiveModel,
       skillPrompt: effectiveSkillPrompt,
+      ...(guest ? { guest: true } : {}),
     };
     if (imageData && agentStep === 1) {
       bodyPayload.imageData = imageData;
     } else if (imageData && !agentMode) {
       bodyPayload.imageData = imageData;
+    }
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
     }
 
     let resp: Response;
@@ -181,11 +193,7 @@ export async function streamChat({
       
       resp = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
+        headers,
         body: JSON.stringify(bodyPayload),
         signal: fetchController.signal,
       });
