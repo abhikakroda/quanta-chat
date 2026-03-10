@@ -334,8 +334,8 @@ export default function Index() {
       }
     }
 
-    // Ghost mode: skip all DB operations
-    const isGhost = ghostMode;
+    // Ghost mode or guest (no user): skip all DB operations
+    const isGhost = ghostMode || !user;
 
     let convId = activeId;
     if (!isGhost) {
