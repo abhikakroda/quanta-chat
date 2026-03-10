@@ -128,23 +128,6 @@ export async function streamChat({
   onAgentStep?: (step: number, total: number | null) => void;
   signal?: AbortSignal;
 }) {
-  messages: Message[];
-  model?: ModelId;
-  enableThinking?: boolean;
-  thinkingLevel?: ThinkingLevel;
-  selfVerify?: boolean;
-  projectMemory?: string;
-  skillPrompt?: string;
-  activeSkill?: string | null;
-  agentMode?: boolean;
-  imageData?: { base64: string; mimeType: string };
-  onThinkingDelta?: (text: string) => void;
-  onDelta: (text: string) => void;
-  onDone: () => void;
-  onError: (error: string) => void;
-  onAgentStep?: (step: number, total: number | null) => void;
-  signal?: AbortSignal;
-}) {
   const lastMsg = messages[messages.length - 1]?.content || "";
   const resolvedModel = resolveAutoModel(model || "auto", activeSkill, lastMsg);
   const effectiveModel = agentMode ? "gemini-pro" : resolvedModel;
