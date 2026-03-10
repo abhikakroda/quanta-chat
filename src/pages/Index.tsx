@@ -945,8 +945,8 @@ export default function Index() {
               </h2>
               <p className="text-muted-foreground text-sm">
                 {!user && freeChatCount >= FREE_CHAT_LIMIT
-                  ? "You've used your 5 free messages. Sign in to continue chatting."
-                  : authIsSignUp ? "Sign up to get started" : "Sign in to continue"}
+                  ? `You've used all ${FREE_CHAT_LIMIT} free messages. Sign in to continue chatting unlimited.`
+                  : authIsSignUp ? "Create an account to unlock unlimited chats" : "Sign in to continue chatting"}
               </p>
             </div>
 
