@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
 import { ArrowLeft, Puzzle, Loader2, Brain, Trophy, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
-import ReactMarkdown from "react-markdown";
+import { streamAI } from "@/lib/streamAI";
 
 type TabId = "verbal" | "nonverbal" | "analytical" | "quiz";
 type QuizQ = { question: string; options: string[]; answer: number; explanation: string };
