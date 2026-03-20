@@ -41,11 +41,13 @@ const NVIDIA_MODEL_MAP: Record<string, string> = {
   "glm": "thudm/glm-4-32b-instruct",
   "kimi": "moonshotai/kimi-k2-instruct",
   "swan": "snowflake/arctic",
+  "nemotron": "nvidia/llama-3.3-nemotron-super-49b-v1",
+  "nemotron-70b": "nvidia/llama-3.1-nemotron-70b-instruct",
 };
 
 // Which models route through which provider
 const MISTRAL_MODELS = new Set(["mistral"]);
-const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan"]);
+const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan", "nemotron", "nemotron-70b"]);
 
 
 async function callMistralAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
