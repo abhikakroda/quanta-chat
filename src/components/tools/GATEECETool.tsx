@@ -186,24 +186,7 @@ const QUIZ_TYPES = [
   "Mixed GATE ECE", "Previous Year Pattern (Numerical)", "Aptitude & Reasoning",
 ];
 
-async function streamAI(prompt: string, sys: string, onChunk: (t: string) => void) {
-  const res = await supabase.functions.invoke("chat", {
-    body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt: sys },
-  });
-  if (res.data) {
-    const reader = res.data.getReader?.();
-    if (reader) {
-      const dec = new TextDecoder();
-      let t = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        t += dec.decode(value, { stream: true });
-        onChunk(t);
-      }
-    } else if (typeof res.data === "string") onChunk(res.data);
-  }
-}
+// streamAI is now imported from @/lib/streamAI
 
 export default function GATEECETool({ onBack }: { onBack?: () => void }) {
   const [tab, setTab] = useState<TabId>("syllabus");

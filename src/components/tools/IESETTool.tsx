@@ -223,26 +223,7 @@ const QUIZ_TYPES = [
   "Mixed IES E&T", "Previous Year Pattern",
 ];
 
-async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
-  const res = await supabase.functions.invoke("chat", {
-    body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
-  });
-  if (res.data) {
-    const reader = res.data.getReader?.();
-    if (reader) {
-      const decoder = new TextDecoder();
-      let text = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        onChunk(text);
-      }
-    } else if (typeof res.data === "string") {
-      onChunk(res.data);
-    }
-  }
-}
+// streamAI is now imported from @/lib/streamAI
 
 export default function IESETTool({ onBack }: { onBack?: () => void }) {
   const [activeTab, setActiveTab] = useState<TabId>("paper1");
