@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { ArrowLeft, Loader2, Trophy, RotateCcw, Clock, CheckCircle2, AlertTriangle, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { streamAI } from "@/lib/streamAI";
 import { Progress } from "@/components/ui/progress";
 
 type QuizQ = { question: string; options: string[]; answer: number; explanation: string; subject: string };
