@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { ArrowLeft, Puzzle, Loader2, Brain, Trophy, RotateCcw, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { streamAI } from "@/lib/streamAI";
+import ReactMarkdown from "react-markdown";
 
 type TabId = "verbal" | "nonverbal" | "analytical" | "quiz";
 type QuizQ = { question: string; options: string[]; answer: number; explanation: string };
@@ -46,61 +47,6 @@ const STATIC_REASON: Record<string, string> = {
   "Calendar": "**Key Facts:**\n- Odd days: Mon=1, Tue=2...Sun=0\n- Normal year = 1 odd day, Leap = 2\n- 100 years = 5 odd days\n- 400 years = 0 odd days\n- Leap year: divisible by 4, century by 400",
   "Clock": "**Formulas:**\n- Angle = |30H − 5.5M|\n- Hands overlap: every 65 5/11 min\n- Right angle: 22 times in 12 hours\n- Straight line: 22 times in 12 hours\n- Gain/Loss: Minute hand gains 5.5°/min over hour hand",
 };
-
-async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token;
-  if (!token) { onChunk("Error: Not authenticated"); return; }
-
-  const resp = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      },
-      body: JSON.stringify({
-        messages: [{ role: "user", content: prompt }],
-        model: "gemini-flash",
-        enableThinking: false,
-        skillPrompt: systemPrompt,
-      }),
-    }
-  );
-
-  if (!resp.ok || !resp.body) { onChunk("Error: Failed to get response"); return; }
-
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  let fullText = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-
-    let idx: number;
-    while ((idx = buffer.indexOf("\n")) !== -1) {
-      let line = buffer.slice(0, idx);
-      buffer = buffer.slice(idx + 1);
-      if (line.endsWith("\r")) line = line.slice(0, -1);
-      if (!line.startsWith("data: ")) continue;
-      const json = line.slice(6).trim();
-      if (json === "[DONE]") break;
-      try {
-        const parsed = JSON.parse(json);
-        const content = parsed.choices?.[0]?.delta?.content;
-        if (content) {
-          fullText += content;
-          onChunk(fullText);
-        }
-      } catch { /* partial */ }
-    }
-  }
-}
 
 export default function SSCReasoningTool() {
   const [tab, setTab] = useState<TabId>("verbal");
