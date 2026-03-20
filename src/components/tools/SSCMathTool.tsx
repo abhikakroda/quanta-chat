@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { ArrowLeft, Calculator, Sparkles, Loader2, CheckCircle2, XCircle, Trophy, Brain, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { streamAI } from "@/lib/streamAI";
 import ReactMarkdown from "react-markdown";
 
 type TabId = "arithmetic" | "algebra" | "geometry" | "di" | "quiz";
@@ -59,26 +60,7 @@ const STATIC_MATH: Record<string, string> = {
   "Trigonometry": "**Standard Values:**\n| θ | sin | cos | tan |\n|---|-----|-----|-----|\n| 0° | 0 | 1 | 0 |\n| 30° | 1/2 | √3/2 | 1/√3 |\n| 45° | 1/√2 | 1/√2 | 1 |\n| 60° | √3/2 | 1/2 | √3 |\n| 90° | 1 | 0 | ∞ |\n\nsin²θ + cos²θ = 1",
 };
 
-async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
-  const res = await supabase.functions.invoke("chat", {
-    body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
-  });
-  if (res.data) {
-    const reader = res.data.getReader?.();
-    if (reader) {
-      const decoder = new TextDecoder();
-      let text = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        onChunk(text);
-      }
-    } else if (typeof res.data === "string") {
-      onChunk(res.data);
-    }
-  }
-}
+// streamAI is now imported from @/lib/streamAI
 
 export default function SSCMathTool() {
   const [tab, setTab] = useState<TabId>("arithmetic");

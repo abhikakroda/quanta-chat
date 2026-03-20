@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { streamAI } from "@/lib/streamAI";
 import ReactMarkdown from "react-markdown";
 
 type TabId = "digital" | "analog" | "signals" | "comm" | "quiz";
@@ -59,26 +60,7 @@ const STATIC_DATA: Record<string, string> = {
   "Z-Transform": "**Common Pairs:**\n| x[n] | X(z) |\n|------|------|\n| δ[n] | 1 |\n| u[n] | z/(z-1) |\n| aⁿu[n] | z/(z-a) |\n| naⁿu[n] | az/(z-a)² |\n\n- ROC determines stability & causality\n- Causal: ROC is exterior of circle\n- Stable: ROC includes unit circle",
 };
 
-async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
-  const res = await supabase.functions.invoke("chat", {
-    body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
-  });
-  if (res.data) {
-    const reader = res.data.getReader?.();
-    if (reader) {
-      const decoder = new TextDecoder();
-      let text = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        onChunk(text);
-      }
-    } else if (typeof res.data === "string") {
-      onChunk(res.data);
-    }
-  }
-}
+// streamAI is now imported from @/lib/streamAI
 
 export default function ECETool({ onBack }: { onBack?: () => void }) {
   const [activeTab, setActiveTab] = useState<TabId>("digital");

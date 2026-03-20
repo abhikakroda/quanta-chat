@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { streamAI } from "@/lib/streamAI";
 import ReactMarkdown from "react-markdown";
 import {
   ComposableMap,
@@ -104,27 +105,7 @@ const MapChart = memo(({ onSelect, hoveredGeo, setHoveredGeo, highlighted, zoom,
 ));
 MapChart.displayName = "MapChart";
 
-// ─── AI Stream helper ───
-async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
-  const res = await supabase.functions.invoke("chat", {
-    body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
-  });
-  if (res.data) {
-    const reader = res.data.getReader?.();
-    if (reader) {
-      const decoder = new TextDecoder();
-      let text = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        onChunk(text);
-      }
-    } else if (typeof res.data === "string") {
-      onChunk(res.data);
-    }
-  }
-}
+// streamAI is now imported from @/lib/streamAI
 
 // ─── Main Component ───
 export default function WorldMapTool({ onBack }: { onBack: () => void }) {

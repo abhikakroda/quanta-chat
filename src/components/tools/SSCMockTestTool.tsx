@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { ArrowLeft, Loader2, Trophy, RotateCcw, Clock, CheckCircle2, AlertTriangle, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { streamAI } from "@/lib/streamAI";
 import { Progress } from "@/components/ui/progress";
 
 type QuizQ = { question: string; options: string[]; answer: number; explanation: string; subject: string };
@@ -83,22 +84,11 @@ answer is 0-indexed. Shuffle subjects randomly. Make questions exam-realistic.`;
 
     let raw = "";
     try {
-      const res = await supabase.functions.invoke("chat", {
-        body: { messages: [{ role: "user", content: `Generate ${cfg.questions} mixed SSC exam MCQs.` }], model: "google/gemini-2.5-flash", systemPrompt: sys },
-      });
-      if (res.data) {
-        const reader = res.data.getReader?.();
-        if (reader) {
-          const decoder = new TextDecoder();
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            raw += decoder.decode(value, { stream: true });
-          }
-        } else if (typeof res.data === "string") {
-          raw = res.data;
-        }
-      }
+      raw = await streamAI(
+        `Generate ${cfg.questions} mixed SSC exam MCQs.`,
+        sys,
+        () => {} // no streaming UI needed, just collect result
+      );
       const match = raw.match(/\[[\s\S]*\]/);
       if (match) {
         const parsed = JSON.parse(match[0]) as QuizQ[];

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { streamAI } from "@/lib/streamAI";
 import ReactMarkdown from "react-markdown";
 
 type TabId = "vocab" | "grammar" | "comprehension" | "quiz" | "idioms";
@@ -49,26 +50,7 @@ const STATIC_ENG: Record<string, string> = {
   "Articles": "**Rules:**\n- 'A' before consonant sounds: a boy, a university\n- 'An' before vowel sounds: an hour, an MBA\n- 'The' for specific/unique: the sun, the Ganga\n- No article: proper nouns, meals, games, languages\n- Exception: the USA, the UK, the Himalayas",
   "Error Spotting": "**Common Errors:**\n1. Subject-Verb agreement: 'Each of the boys *are*' ❌ → '*is*' ✓\n2. Pronoun case: 'Between you and *I*' ❌ → '*me*' ✓\n3. Preposition: 'Comprise *of*' ❌ → 'Comprise' ✓\n4. Tense consistency: Don't mix past and present\n5. Double negatives: 'hardly *no*' ❌ → 'hardly *any*' ✓",
 };
-async function streamAI(prompt: string, systemPrompt: string, onChunk: (text: string) => void) {
-  const res = await supabase.functions.invoke("chat", {
-    body: { messages: [{ role: "user", content: prompt }], model: "google/gemini-2.5-flash", systemPrompt },
-  });
-  if (res.data) {
-    const reader = res.data.getReader?.();
-    if (reader) {
-      const decoder = new TextDecoder();
-      let text = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        text += decoder.decode(value, { stream: true });
-        onChunk(text);
-      }
-    } else if (typeof res.data === "string") {
-      onChunk(res.data);
-    }
-  }
-}
+// streamAI is now imported from @/lib/streamAI
 
 export default function SSCEnglishTool({ onBack }: { onBack: () => void }) {
   const [activeTab, setActiveTab] = useState<TabId>("vocab");
