@@ -30,6 +30,8 @@ const LOVABLE_MODEL_MAP: Record<string, string> = {
   "glm": "google/gemini-3-flash-preview",
   "kimi": "google/gemini-3-flash-preview",
   "swan": "google/gemini-3-flash-preview",
+  "nemotron": "google/gemini-2.5-pro",
+  "nemotron-70b": "google/gemini-2.5-pro",
 };
 
 // Mistral model mapping
