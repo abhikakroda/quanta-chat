@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { ArrowLeft, Calculator, Sparkles, Loader2, CheckCircle2, XCircle, Trophy, Brain, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { streamAI } from "@/lib/streamAI";
 import ReactMarkdown from "react-markdown";
 
 type TabId = "arithmetic" | "algebra" | "geometry" | "di" | "quiz";
