@@ -102,6 +102,12 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
 
   const pinnedTools = useMemo(() => ALL_TOOLS.filter(t => pinnedToolIds.includes(t.id)), [pinnedToolIds]);
 
+  const filteredConversations = useMemo(() => {
+    if (!searchQuery.trim()) return conversations;
+    const q = searchQuery.toLowerCase();
+    return conversations.filter((c) => c.title.toLowerCase().includes(q));
+  }, [conversations, searchQuery]);
+
   // Group conversations by date
   const groupedConversations = useMemo(() => {
     const now = new Date();
