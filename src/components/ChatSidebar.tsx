@@ -128,7 +128,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           {/* Header */}
           <div className="flex items-center px-3 pt-4 pb-2 justify-between">
             <div className="flex items-center">
-              <span className="text-[22px] font-bold text-sidebar-foreground tracking-tight lowercase">opentropic</span>
+              <span className="text-[22px] font-bold text-primary tracking-tight lowercase">opentropic</span>
             </div>
             <div className="flex items-center gap-0.5">
               <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
