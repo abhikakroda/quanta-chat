@@ -39,9 +39,6 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
       {/* Brand heading */}
       <div className="mb-5 sm:mb-8 animate-slide-up text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-primary flex items-center justify-center">
-            <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-primary-foreground" />
-          </div>
           <span className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
             Start chatting with <span className="text-primary">{mode === "instant" ? "Instant" : "Expert"}</span>
           </span>
