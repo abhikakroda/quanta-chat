@@ -397,19 +397,19 @@ button, a, input, textarea, select, [role="button"] {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(ellipse at 20% 50%, hsl(220 60% 92% / 0.5) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 20%, hsl(270 50% 90% / 0.4) 0%, transparent 50%),
-              radial-gradient(ellipse at 40% 80%, hsl(190 50% 90% / 0.4) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 60%, hsl(340 40% 92% / 0.3) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 20% 50%, hsl(224 70% 92% / 0.5) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, hsl(224 60% 90% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 40% 80%, hsl(200 50% 90% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, hsl(240 40% 92% / 0.3) 0%, transparent 50%);
   background-size: 200% 200%;
   animation: gradient-shift 20s ease-in-out infinite;
   pointer-events: none;
 }
 .dark .animated-gradient-bg::before {
-  background: radial-gradient(ellipse at 20% 50%, hsl(220 60% 15% / 0.4) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 20%, hsl(270 50% 18% / 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 40% 80%, hsl(190 50% 14% / 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 60%, hsl(340 40% 16% / 0.25) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 20% 50%, hsl(224 60% 15% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, hsl(224 50% 18% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 40% 80%, hsl(200 50% 14% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, hsl(240 40% 16% / 0.25) 0%, transparent 50%);
   background-size: 200% 200%;
   animation: gradient-shift 20s ease-in-out infinite;
 }
