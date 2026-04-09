@@ -166,7 +166,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                       />
                     </div>
                   )}
-                  <p className="text-[15px] sm:text-base leading-relaxed whitespace-pre-wrap break-words text-foreground">{content}</p>
+                  <p className="text-base sm:text-[17px] leading-relaxed whitespace-pre-wrap break-words text-foreground">{content}</p>
                 </div>
               </div>
             )
@@ -200,7 +200,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                 )}
 
                 {content && (
-                  <div className="prose prose-base max-w-none prose-p:my-3 prose-p:leading-[1.8] prose-headings:my-4 prose-headings:text-foreground prose-h1:text-lg sm:prose-h1:text-xl prose-h2:text-base sm:prose-h2:text-lg prose-h3:text-sm sm:prose-h3:text-base prose-h3:font-semibold prose-pre:my-3 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[13px] sm:prose-code:text-[14px] text-[15px] sm:text-base leading-[1.8] break-words overflow-hidden prose-li:my-1 prose-li:leading-[1.8] prose-ul:my-3 prose-ol:my-3 prose-ul:pl-4 sm:prose-ul:pl-5 prose-ol:pl-4 sm:prose-ol:pl-5 prose-strong:text-foreground prose-strong:font-semibold [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground text-foreground prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-hr:my-6 prose-hr:border-border/50">
+                  <div className="prose prose-lg max-w-none prose-p:my-3 prose-p:leading-[1.8] prose-headings:my-4 prose-headings:text-foreground prose-h1:text-xl sm:prose-h1:text-2xl prose-h2:text-lg sm:prose-h2:text-xl prose-h3:text-base sm:prose-h3:text-lg prose-h3:font-semibold prose-pre:my-3 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[14px] sm:prose-code:text-[15px] text-base sm:text-[17px] leading-[1.8] break-words overflow-hidden prose-li:my-1 prose-li:leading-[1.8] prose-ul:my-3 prose-ol:my-3 prose-ul:pl-4 sm:prose-ul:pl-5 prose-ol:pl-4 sm:prose-ol:pl-5 prose-strong:text-foreground prose-strong:font-semibold [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground text-foreground prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-hr:my-6 prose-hr:border-border/50">
                     <ReactMarkdown
                       remarkPlugins={[remarkMath]}
                       rehypePlugins={[rehypeKatex]}
