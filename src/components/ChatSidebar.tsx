@@ -102,11 +102,42 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
 
   const pinnedTools = useMemo(() => ALL_TOOLS.filter(t => pinnedToolIds.includes(t.id)), [pinnedToolIds]);
 
-  const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) return conversations;
-    const q = searchQuery.toLowerCase();
-    return conversations.filter((c) => c.title.toLowerCase().includes(q));
-  }, [conversations, searchQuery]);
+  // Group conversations by date
+  const groupedConversations = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today.getTime() - 86400000);
+    const weekAgo = new Date(today.getTime() - 7 * 86400000);
+
+    const groups: { label: string; items: typeof filteredConversations }[] = [];
+    const todayItems: typeof filteredConversations = [];
+    const yesterdayItems: typeof filteredConversations = [];
+    const weekItems: typeof filteredConversations = [];
+    const olderMap = new Map<string, typeof filteredConversations>();
+
+    for (const c of filteredConversations) {
+      const d = new Date(c.updated_at || c.created_at);
+      if (d >= today) {
+        todayItems.push(c);
+      } else if (d >= yesterday) {
+        yesterdayItems.push(c);
+      } else if (d >= weekAgo) {
+        weekItems.push(c);
+      } else {
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+        if (!olderMap.has(key)) olderMap.set(key, []);
+        olderMap.get(key)!.push(c);
+      }
+    }
+
+    if (todayItems.length) groups.push({ label: "Today", items: todayItems });
+    if (yesterdayItems.length) groups.push({ label: "Yesterday", items: yesterdayItems });
+    if (weekItems.length) groups.push({ label: "7 Days", items: weekItems });
+    for (const [key, items] of olderMap) {
+      groups.push({ label: key, items });
+    }
+    return groups;
+  }, [filteredConversations]);
 
   return (
     <>
@@ -116,46 +147,55 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
 
       <aside
         className={cn(
-          "fixed md:relative z-50 md:z-auto flex flex-col h-full glass-strong border-r border-border/20 transition-all duration-300 ease-out will-change-transform",
-          open ? "translate-x-0 w-[260px]" : "-translate-x-full",
+          "fixed md:relative z-50 md:z-auto flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-out will-change-transform",
+          open ? "translate-x-0 w-[280px]" : "-translate-x-full",
           collapsed
             ? "md:w-0 md:-translate-x-full md:border-0 md:overflow-hidden"
-            : "md:translate-x-0 md:w-[260px]"
+            : "md:translate-x-0 md:w-[280px]"
         )}
       >
-        <div className={cn("flex flex-col h-full w-[260px]")}>
+        <div className={cn("flex flex-col h-full w-[280px]")}>
 
           {/* Header */}
-          <div className="flex items-center px-3 pt-4 pb-2 justify-between">
-            <div className="flex items-center">
-              <span className="text-[22px] font-bold text-primary tracking-tight lowercase">opentropic</span>
-            </div>
-            <div className="flex items-center gap-0.5">
-              <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
-                <PanelLeftClose className="w-4 h-4" />
-              </button>
-              <button onClick={onClose} className="md:hidden p-1.5 rounded-md hover:bg-sidebar-accent text-sidebar-foreground/30 transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* New Chat */}
-          <div className="px-3 pt-2">
-            <button
-              onClick={() => { onNew(); onSelectSkill?.(null); }}
-              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[15px] text-sidebar-foreground hover:bg-sidebar-accent/60 transition-all duration-200 touch-manipulation text-left press-scale border border-sidebar-border/40"
-            >
-              <SquarePen className="w-5 h-5 shrink-0 opacity-60" />
-              <span className="flex-1 truncate font-medium">New Chat</span>
+          <div className="flex items-center px-4 pt-4 pb-3 justify-between">
+            <span className="text-xl font-bold text-primary tracking-tight lowercase">opentropic</span>
+            <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+            <button onClick={onClose} className="md:hidden p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/30 transition-colors">
+              <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="mx-3 my-3 h-px bg-sidebar-border/40" />
+          {/* New Chat button */}
+          <div className="px-3 mb-2">
+            <button
+              onClick={() => { onNew(); onSelectSkill?.(null); }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[14px] font-medium text-sidebar-foreground border border-sidebar-border hover:bg-sidebar-accent/60 transition-all duration-200 touch-manipulation press-scale"
+            >
+              <Plus className="w-4 h-4" />
+              New chat
+            </button>
+          </div>
 
-          {/* Main nav items */}
-          <div className="flex-1 overflow-y-auto">
-            <div className="px-3 space-y-1">
+          {/* Search bar */}
+          <div className="px-3 mb-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search chats…"
+                className="w-full pl-9 pr-3 py-2 rounded-xl bg-sidebar-accent/50 border-0 text-[13px] text-sidebar-foreground placeholder:text-muted-foreground/40 outline-none focus:bg-sidebar-accent transition-colors"
+              />
+            </div>
+          </div>
+
+          {/* Scrollable area: nav + conversations */}
+          <div className="flex-1 overflow-y-auto px-1">
+            {/* Main nav items */}
+            <div className="px-2 space-y-0.5 mb-1">
               {SIDEBAR_ITEMS.map((item) => (
                 <button
                   key={item.id}
@@ -164,13 +204,13 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     onNew();
                   }}
                   className={cn(
-                    "w-full flex items-center gap-3.5 px-3 py-3 rounded-xl text-[15px] transition-all duration-200 touch-manipulation text-left press-scale",
+                    "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left",
                     activeSkill === item.id
-                      ? "bg-sidebar-accent text-sidebar-foreground font-medium"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      ? "bg-sidebar-accent text-primary font-medium"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
                   )}
                 >
-                  <item.icon className="w-5 h-5 shrink-0 opacity-70" />
+                  <item.icon className="w-[18px] h-[18px] shrink-0" />
                   <span className="flex-1 truncate">{item.label}</span>
                 </button>
               ))}
@@ -178,9 +218,9 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
               {/* AI Playground */}
               <Link
                 to="/ai-playground"
-                className="w-full flex items-center gap-3.5 px-3 py-3 rounded-xl text-[15px] transition-all duration-200 touch-manipulation text-left press-scale text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 touch-manipulation text-left text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
               >
-                <FlaskConical className="w-5 h-5 shrink-0 opacity-70" />
+                <FlaskConical className="w-[18px] h-[18px] shrink-0" />
                 <span className="flex-1 truncate">AI Playground</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
               </Link>
@@ -188,80 +228,79 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
 
             {/* Pinned Tools */}
             {pinnedTools.length > 0 && (
-              <>
-                <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
-                <div className="px-3 space-y-0.5">
-                  <span className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-sidebar-foreground/30 font-semibold uppercase tracking-wider">
-                    <Pin className="w-3 h-3" /> Pinned
-                  </span>
-                  {pinnedTools.map((tool) => (
+              <div className="px-2 mt-1 mb-1">
+                <span className="flex items-center gap-2 px-3 py-1.5 text-[11px] text-sidebar-foreground/30 font-semibold uppercase tracking-wider">
+                  <Pin className="w-3 h-3" /> Pinned
+                </span>
+                {pinnedTools.map((tool) => (
+                  <button
+                    key={tool.id}
+                    onClick={() => { onSelectSkill?.(tool.id); onNew(); }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] transition-all duration-200 text-left group",
+                      activeSkill === tool.id
+                        ? "bg-sidebar-accent text-primary font-medium"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+                    )}
+                  >
+                    <tool.icon className="w-4 h-4 shrink-0 opacity-70" />
+                    <span className="flex-1 truncate">{tool.label}</span>
                     <button
-                      key={tool.id}
-                      onClick={() => { onSelectSkill?.(tool.id); onNew(); }}
-                      className={cn(
-                        "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] transition-all duration-200 text-left group",
-                        activeSkill === tool.id
-                          ? "bg-sidebar-accent text-sidebar-foreground font-medium"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
+                      onClick={(e) => { e.stopPropagation(); setPinnedToolIds(prev => prev.filter(id => id !== tool.id)); }}
+                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive transition-opacity"
                     >
-                      <tool.icon className="w-4 h-4 shrink-0 opacity-70" />
-                      <span className="flex-1 truncate">{tool.label}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setPinnedToolIds(prev => prev.filter(id => id !== tool.id)); }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive transition-opacity"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
+                      <X className="w-3 h-3" />
                     </button>
-                  ))}
-                </div>
-              </>
+                  </button>
+                ))}
+              </div>
             )}
 
-            <div className="mx-3 my-2 h-px bg-sidebar-border/40" />
-
-            {/* Chat History */}
-            <div className="px-3">
-              <button
-                onClick={() => setHistoryOpen((o) => !o)}
-                className="flex items-center gap-2.5 px-3 py-2.5 text-[14px] text-sidebar-foreground/40 hover:text-sidebar-foreground/60 transition-colors w-full"
-              >
-                <Clock className="w-5 h-5 shrink-0" />
-                <span className="flex-1 text-left font-medium">Chat History</span>
-                {historyOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-              </button>
-
-              {historyOpen && (
-                <div className="space-y-0.5 pb-2 mt-1">
-                  {filteredConversations.length === 0 && (
-                    <p className="text-[13px] text-muted-foreground/30 text-center py-3">
-                      No conversations yet
-                    </p>
-                  )}
-                  {filteredConversations.map((c) => (
-                    <div
-                      key={c.id}
-                      className={cn(
-                        "group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 text-[14px]",
-                        activeId === c.id
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )}
-                      onClick={() => onSelect(c.id)}
-                    >
-                      <span className="truncate flex-1">{c.title}</span>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
-                        className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive transition-opacity"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
+            {/* Conversation history — date grouped */}
+            {groupedConversations.length > 0 && (
+              <div className="mt-1">
+                {groupedConversations.map((group) => (
+                  <div key={group.label} className="mb-1">
+                    <div className="px-5 py-2 text-[11px] font-medium text-muted-foreground/50 uppercase tracking-wide">
+                      {group.label}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <div className="px-2 space-y-0.5">
+                      {group.items.map((c) => (
+                        <div
+                          key={c.id}
+                          className={cn(
+                            "group flex items-center gap-2 px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 text-[14px]",
+                            activeId === c.id
+                              ? "bg-sidebar-accent text-primary font-medium"
+                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+                          )}
+                          onClick={() => onSelect(c.id)}
+                        >
+                          <span className="truncate flex-1">{c.title}</span>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-sidebar-accent hover:text-destructive transition-all"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {filteredConversations.length === 0 && !searchQuery && (
+              <p className="text-[13px] text-muted-foreground/30 text-center py-6">
+                No conversations yet
+              </p>
+            )}
+            {filteredConversations.length === 0 && searchQuery && (
+              <p className="text-[13px] text-muted-foreground/30 text-center py-6">
+                No results for "{searchQuery}"
+              </p>
+            )}
           </div>
 
           {/* User section at bottom */}
