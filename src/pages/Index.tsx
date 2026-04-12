@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Moon, Sun, Menu, Atom, BookMarked, Ghost, ChevronDown } from "lucide-react";
+import { Moon, Sun, Menu, Atom, BookMarked, Ghost, ChevronDown, Sparkles, Loader2 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -216,6 +216,7 @@ export default function Index() {
   }, [sidebarCollapsed]);
   
   const [agentMode, setAgentMode] = useState(false);
+  const [expertMode, setExpertMode] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeSkill, setActiveSkill] = useState<string | null>(() => searchParams.get("tool"));
   const [activeAvatar, setActiveAvatar] = useState<string | null>(null);
@@ -421,7 +422,90 @@ export default function Index() {
       { role: "user" as const, content: userContent },
     ];
 
-    // Detect image generation requests and handle them separately
+    // ── Expert Mode: run multiple models in parallel ──
+    if (expertMode && !imageData) {
+      setStreaming(true);
+      setStreamContent("");
+      setStreamingHint("🧠 Expert Mode — querying 6 AI models in parallel…");
+
+      try {
+        const { data: { session: expSession } } = await supabase.auth.getSession();
+        const expToken = expSession?.access_token;
+        if (!expToken) throw new Error("Not authenticated");
+
+        const avatarDef = activeAvatar ? AVATARS.find((a) => a.id === activeAvatar) : null;
+        const skillDef = avatarDef
+          ? { prompt: avatarDef.systemPrompt }
+          : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || ALL_TOOLS.find((t) => t.id === activeSkill)) : null;
+
+        const expResp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/expert-council`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${expToken}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            messages: allMessages,
+            skillPrompt: skillDef?.prompt,
+          }),
+        });
+
+        const expData = await expResp.json();
+        if (!expResp.ok) throw new Error(expData.error || "Expert mode failed");
+
+        // Build a rich combined response
+        let expertContent = `## 🧠 Expert Council Response\n\n*${expData.successfulModels}/${expData.totalModels} models responded*\n\n`;
+
+        if (expData.synthesis) {
+          expertContent += `### ✨ Synthesized Answer\n\n${expData.synthesis}\n\n---\n\n`;
+        }
+
+        expertContent += `### 📊 Individual Model Responses\n\n`;
+        for (const r of expData.results) {
+          expertContent += `<details>\n<summary><strong>${r.label}</strong></summary>\n\n${r.response}\n\n</details>\n\n`;
+        }
+
+        const assistantMsg = {
+          id: crypto.randomUUID(),
+          conversation_id: convId || "ghost",
+          role: "assistant" as const,
+          content: expertContent,
+          created_at: new Date().toISOString(),
+        };
+
+        if (isGhost) {
+          setGhostMessages((prev) => [...prev, assistantMsg]);
+        } else {
+          setMessageModels((prev) => ({ ...prev, [assistantMsg.id]: "Expert Council" }));
+          setMessages((prev: any) => [...prev, assistantMsg]);
+          supabase.from("messages").insert({ conversation_id: convId!, role: "assistant" as const, content: expertContent });
+        }
+      } catch (err: any) {
+        const errorMsg = {
+          id: crypto.randomUUID(),
+          conversation_id: convId || "ghost",
+          role: "assistant" as const,
+          content: `⚠️ Expert Mode failed: ${err.message || "Unknown error"}. Please try again.`,
+          created_at: new Date().toISOString(),
+        };
+        if (isGhost) {
+          setGhostMessages((prev: any) => [...prev, errorMsg]);
+        } else {
+          setMessages((prev: any) => [...prev, errorMsg]);
+        }
+      } finally {
+        setStreaming(false);
+        setStreamingHint(null);
+      }
+
+      if (!isGhost && messages.length === 0 && convId) {
+        updateTitle(convId, input.slice(0, 50));
+      }
+      return;
+    }
+
+
     const lowerInput = userContent.toLowerCase();
     const isImageRequest = /\b(make|create|generate|draw|design|paint|sketch)\b.*\b(image|picture|photo|illustration|art|drawing|logo|icon|poster|wallpaper)\b/.test(lowerInput) ||
         /\b(image|picture|photo|illustration)\b.*\b(of|for|about|with)\b/.test(lowerInput);
@@ -810,6 +894,17 @@ export default function Index() {
             )}
           </div>
           <div className="flex items-center gap-1">
+            <button
+              onClick={() => setExpertMode(e => !e)}
+              className={cn(
+                "shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors touch-manipulation",
+                expertMode ? "text-primary bg-primary/10 border border-primary/30" : "text-muted-foreground/40 hover:text-muted-foreground"
+              )}
+              title={expertMode ? "Expert Mode ON — Multiple AI models work in parallel" : "Expert Mode — Enable multi-model parallel processing"}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {expertMode && <span>Expert</span>}
+            </button>
             <button
               onClick={() => { setMemoryDraft(projectMemory); setMemoryDialogOpen(true); }}
               className={cn(
