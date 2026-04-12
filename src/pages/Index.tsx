@@ -812,6 +812,17 @@ export default function Index() {
           </div>
           <div className="flex items-center gap-1">
             <button
+              onClick={() => setExpertMode(e => !e)}
+              className={cn(
+                "shrink-0 flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors touch-manipulation",
+                expertMode ? "text-primary bg-primary/10 border border-primary/30" : "text-muted-foreground/40 hover:text-muted-foreground"
+              )}
+              title={expertMode ? "Expert Mode ON — Multiple AI models work in parallel" : "Expert Mode — Enable multi-model parallel processing"}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              {expertMode && <span>Expert</span>}
+            </button>
+            <button
               onClick={() => { setMemoryDraft(projectMemory); setMemoryDialogOpen(true); }}
               className={cn(
                 "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
