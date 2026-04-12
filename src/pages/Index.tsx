@@ -422,7 +422,90 @@ export default function Index() {
       { role: "user" as const, content: userContent },
     ];
 
-    // Detect image generation requests and handle them separately
+    // ── Expert Mode: run multiple models in parallel ──
+    if (expertMode && !imageData) {
+      setStreaming(true);
+      setStreamContent("");
+      setStreamingHint("🧠 Expert Mode — querying 6 AI models in parallel…");
+
+      try {
+        const { data: { session: expSession } } = await supabase.auth.getSession();
+        const expToken = expSession?.access_token;
+        if (!expToken) throw new Error("Not authenticated");
+
+        const avatarDef = activeAvatar ? AVATARS.find((a) => a.id === activeAvatar) : null;
+        const skillDef = avatarDef
+          ? { prompt: avatarDef.systemPrompt }
+          : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || ALL_TOOLS.find((t) => t.id === activeSkill)) : null;
+
+        const expResp = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/expert-council`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${expToken}`,
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          },
+          body: JSON.stringify({
+            messages: allMessages,
+            skillPrompt: skillDef?.prompt,
+          }),
+        });
+
+        const expData = await expResp.json();
+        if (!expResp.ok) throw new Error(expData.error || "Expert mode failed");
+
+        // Build a rich combined response
+        let expertContent = `## 🧠 Expert Council Response\n\n*${expData.successfulModels}/${expData.totalModels} models responded*\n\n`;
+
+        if (expData.synthesis) {
+          expertContent += `### ✨ Synthesized Answer\n\n${expData.synthesis}\n\n---\n\n`;
+        }
+
+        expertContent += `### 📊 Individual Model Responses\n\n`;
+        for (const r of expData.results) {
+          expertContent += `<details>\n<summary><strong>${r.label}</strong></summary>\n\n${r.response}\n\n</details>\n\n`;
+        }
+
+        const assistantMsg = {
+          id: crypto.randomUUID(),
+          conversation_id: convId || "ghost",
+          role: "assistant" as const,
+          content: expertContent,
+          created_at: new Date().toISOString(),
+        };
+
+        if (isGhost) {
+          setGhostMessages((prev) => [...prev, assistantMsg]);
+        } else {
+          setMessageModels((prev) => ({ ...prev, [assistantMsg.id]: "Expert Council" }));
+          setMessages((prev: any) => [...prev, assistantMsg]);
+          supabase.from("messages").insert({ conversation_id: convId!, role: "assistant" as const, content: expertContent });
+        }
+      } catch (err: any) {
+        const errorMsg = {
+          id: crypto.randomUUID(),
+          conversation_id: convId || "ghost",
+          role: "assistant" as const,
+          content: `⚠️ Expert Mode failed: ${err.message || "Unknown error"}. Please try again.`,
+          created_at: new Date().toISOString(),
+        };
+        if (isGhost) {
+          setGhostMessages((prev: any) => [...prev, errorMsg]);
+        } else {
+          setMessages((prev: any) => [...prev, errorMsg]);
+        }
+      } finally {
+        setStreaming(false);
+        setStreamingHint(null);
+      }
+
+      if (!isGhost && messages.length === 0 && convId) {
+        updateTitle(convId, input.slice(0, 50));
+      }
+      return;
+    }
+
+
     const lowerInput = userContent.toLowerCase();
     const isImageRequest = /\b(make|create|generate|draw|design|paint|sketch)\b.*\b(image|picture|photo|illustration|art|drawing|logo|icon|poster|wallpaper)\b/.test(lowerInput) ||
         /\b(image|picture|photo|illustration)\b.*\b(of|for|about|with)\b/.test(lowerInput);
