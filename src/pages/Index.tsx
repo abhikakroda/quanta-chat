@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Moon, Sun, Menu, Atom, BookMarked, Ghost, ChevronDown } from "lucide-react";
+import { Moon, Sun, Menu, Atom, BookMarked, Ghost, ChevronDown, Sparkles, Loader2 } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -216,6 +216,7 @@ export default function Index() {
   }, [sidebarCollapsed]);
   
   const [agentMode, setAgentMode] = useState(false);
+  const [expertMode, setExpertMode] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeSkill, setActiveSkill] = useState<string | null>(() => searchParams.get("tool"));
   const [activeAvatar, setActiveAvatar] = useState<string | null>(null);
