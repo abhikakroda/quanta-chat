@@ -265,7 +265,7 @@ serve(async (req) => {
       // Try Google first for vision
       if (GOOGLE_API_KEY) {
         try {
-          const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, visionMessages, true, 4096);
+          const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, visionMessages, true, 16384);
           if (googleResp.ok && googleResp.body) {
             console.log("✅ Vision: Using Google AI Studio");
             const transformedStream = transformGoogleStream(googleResp.body);
@@ -282,7 +282,7 @@ serve(async (req) => {
       // Fallback to Lovable AI for vision
       if (LOVABLE_API_KEY) {
         console.log("🔄 Vision: Falling back to Lovable AI");
-        const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, visionMessages, true, 4096);
+        const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, visionMessages, true, 16384);
         if (!lovableResp.ok) {
           if (lovableResp.status === 429) {
             return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
@@ -313,7 +313,7 @@ serve(async (req) => {
     // Mistral models → Mistral API
     if (MISTRAL_MODELS.has(model) && MISTRAL_API_KEY) {
       try {
-        const resp = await callMistralAI(MISTRAL_API_KEY, allMessages, true, 4096);
+        const resp = await callMistralAI(MISTRAL_API_KEY, allMessages, true, 16384);
         if (resp.ok && resp.body) {
           console.log("✅ Chat: Using Mistral API");
           return new Response(resp.body, {
@@ -329,7 +329,7 @@ serve(async (req) => {
     // NVIDIA models (Minimax, GLM, Kimi, Swan) → NVIDIA NIM API
     if (NVIDIA_MODELS.has(model) && NVIDIA_API_KEY) {
       try {
-        const resp = await callNvidiaAI(NVIDIA_API_KEY, model, allMessages, true, 4096);
+        const resp = await callNvidiaAI(NVIDIA_API_KEY, model, allMessages, true, 16384);
         if (resp.ok && resp.body) {
           console.log("✅ Chat: Using NVIDIA NIM -", NVIDIA_MODEL_MAP[model] || model);
           return new Response(resp.body, {
@@ -345,7 +345,7 @@ serve(async (req) => {
     // Google Gemini models → Google AI Studio (primary for gemini-* and gpt5-*)
     if (GOOGLE_API_KEY && !MISTRAL_MODELS.has(model) && !NVIDIA_MODELS.has(model)) {
       try {
-        const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, allMessages, true, 4096);
+        const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, allMessages, true, 16384);
         if (googleResp.ok && googleResp.body) {
           console.log("✅ Chat: Using Google AI Studio -", GOOGLE_MODEL_MAP[model] || model);
           const transformedStream = transformGoogleStream(googleResp.body);
@@ -362,7 +362,7 @@ serve(async (req) => {
     // Fallback to Lovable AI for any model
     if (LOVABLE_API_KEY) {
       console.log("🔄 Chat: Falling back to Lovable AI for model:", model);
-      const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, allMessages, true, 4096);
+      const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, allMessages, true, 16384);
       if (!lovableResp.ok) {
         if (lovableResp.status === 429) {
           return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
