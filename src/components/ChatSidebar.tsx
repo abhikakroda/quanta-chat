@@ -3,7 +3,7 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose,
   Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, Phone,
-  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown, Pin, Cpu, Keyboard, MoreHorizontal, Plus
+  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown, Pin, Cpu, Keyboard, MoreHorizontal, Plus, BookMarked
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +25,8 @@ type Props = {
   onSelectSkill?: (skill: string | null) => void;
   activeAvatar?: string | null;
   onSelectAvatar?: (avatarId: string | null) => void;
+  projectMemory?: string;
+  onOpenMemory?: () => void;
 };
 
 export const SKILLS = [
@@ -89,7 +91,7 @@ const SIDEBAR_ITEMS = [
   { id: "image-generator", icon: Wand2, label: "Create" },
 ] as const;
 
-function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar }: Props) {
+function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open, onClose, collapsed, onToggleCollapse, activeSkill, onSelectSkill, activeAvatar, onSelectAvatar, projectMemory, onOpenMemory }: Props) {
   const { user, signOut } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [historyOpen, setHistoryOpen] = useState(true);
@@ -309,8 +311,25 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             )}
           </div>
 
+          {/* Memory button */}
+          <div className="px-2 py-1.5 border-t border-sidebar-border/40">
+            <button
+              onClick={onOpenMemory}
+              className={cn(
+                "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-colors",
+                projectMemory
+                  ? "text-primary bg-primary/5 hover:bg-primary/10"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+              )}
+            >
+              <BookMarked className="w-4 h-4" />
+              <span>Project Memory</span>
+              {projectMemory && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+            </button>
+          </div>
+
           {/* User section at bottom */}
-          <div className="mt-auto border-t border-sidebar-border/40">
+          <div className="border-t border-sidebar-border/40">
             {user ? (
               <div className="px-2 py-2">
                 {userMenuOpen && (

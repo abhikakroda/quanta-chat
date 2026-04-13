@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Moon, Sun, Menu, Atom, BookMarked, ChevronDown } from "lucide-react";
+import { Moon, Sun, Menu, Atom, ChevronDown } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -867,6 +867,8 @@ export default function Index() {
         onSelectSkill={(s) => { setActiveSkill(s); setActiveAvatar(null); }}
         activeAvatar={activeAvatar}
         onSelectAvatar={setActiveAvatar}
+        projectMemory={projectMemory}
+        onOpenMemory={() => { setMemoryDraft(projectMemory); setMemoryDialogOpen(true); }}
       />
 
       <div className="flex-1 flex flex-col min-w-0">
@@ -885,16 +887,6 @@ export default function Index() {
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => { setMemoryDraft(projectMemory); setMemoryDialogOpen(true); }}
-              className={cn(
-                "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
-                projectMemory ? "text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
-              )}
-              title="Project Memory"
-            >
-              <BookMarked className="w-4 h-4" />
-            </button>
             <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
