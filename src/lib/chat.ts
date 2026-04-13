@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Message = { role: "user" | "assistant"; content: string };
 
-export type ModelId = "auto" | "gemini-flash" | "gemini-pro" | "gemini-flash-lite" | "gpt5-mini" | "gpt5" | "mistral" | "minimax" | "glm" | "kimi" | "swan" | "nemotron" | "nemotron-70b";
+export type ModelId = "auto" | "gemini-flash" | "gemini-pro" | "gemini-flash-lite" | "mistral" | "minimax" | "glm" | "kimi" | "swan" | "nemotron" | "nemotron-70b";
 
 export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean; premium?: boolean }[] = [
   { id: "auto", label: "Auto", supportsThinking: true },
@@ -16,8 +16,6 @@ export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean; p
   { id: "glm", label: "GLM" },
   { id: "kimi", label: "Kimi", supportsThinking: true },
   { id: "swan", label: "Swan" },
-  { id: "gpt5-mini", label: "GPT-5 Mini", supportsThinking: true },
-  { id: "gpt5", label: "GPT-5", supportsThinking: true },
 ];
 
 export function getModelLabel(modelId: ModelId): string {

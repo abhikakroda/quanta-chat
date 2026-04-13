@@ -14,24 +14,6 @@ const GOOGLE_MODEL_MAP: Record<string, string> = {
   "gemini-flash": "gemini-2.5-flash",
   "gemini-pro": "gemini-2.5-pro",
   "gemini-flash-lite": "gemini-2.0-flash-lite",
-  "gpt5-mini": "gemini-2.5-flash",
-  "gpt5": "gemini-2.5-pro",
-};
-
-// Lovable AI gateway fallback model mapping
-const LOVABLE_MODEL_MAP: Record<string, string> = {
-  "gemini-flash": "google/gemini-3-flash-preview",
-  "gemini-pro": "google/gemini-2.5-pro",
-  "gemini-flash-lite": "google/gemini-2.5-flash-lite",
-  "gpt5-mini": "openai/gpt-5-mini",
-  "gpt5": "openai/gpt-5",
-  "mistral": "google/gemini-3-flash-preview",
-  "minimax": "google/gemini-3-flash-preview",
-  "glm": "google/gemini-3-flash-preview",
-  "kimi": "google/gemini-3-flash-preview",
-  "swan": "google/gemini-3-flash-preview",
-  "nemotron": "google/gemini-2.5-pro",
-  "nemotron-70b": "google/gemini-2.5-pro",
 };
 
 // Mistral model mapping
@@ -133,28 +115,6 @@ async function callGoogleAI(apiKey: string, model: string, messages: any[], stre
   });
 }
 
-async function callLovableAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
-  const lovableModel = LOVABLE_MODEL_MAP[model] || "google/gemini-3-flash-preview";
-  const isOpenAI = lovableModel.startsWith("openai/");
-  const body: any = {
-    model: lovableModel,
-    messages,
-    stream,
-  };
-  if (isOpenAI) {
-    body.max_completion_tokens = maxTokens;
-  } else {
-    body.max_tokens = maxTokens;
-  }
-  return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-}
 
 // Transform Google SSE stream to OpenAI-compatible SSE stream
 function transformGoogleStream(googleBody: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
@@ -225,7 +185,6 @@ serve(async (req) => {
     }
 
     const GOOGLE_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
     const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
 
@@ -279,33 +238,8 @@ serve(async (req) => {
         }
       }
 
-      // Fallback to Lovable AI for vision
-      if (LOVABLE_API_KEY) {
-        console.log("🔄 Vision: Falling back to Lovable AI");
-        const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, visionMessages, true, 16384);
-        if (!lovableResp.ok) {
-          if (lovableResp.status === 429) {
-            return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-              status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-          if (lovableResp.status === 402) {
-            return new Response(JSON.stringify({ error: "Credits exhausted." }), {
-              status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-            });
-          }
-          const errText = await lovableResp.text();
-          console.error("Lovable AI vision error:", lovableResp.status, errText);
-          return new Response(JSON.stringify({ error: "Vision service error" }), {
-            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        return new Response(lovableResp.body, {
-          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-        });
-      }
 
-      throw new Error("No AI API key configured");
+      throw new Error("No AI API key configured for vision");
     }
 
     // ── Route by model provider ──
@@ -342,7 +276,7 @@ serve(async (req) => {
       }
     }
 
-    // Google Gemini models → Google AI Studio (primary for gemini-* and gpt5-*)
+    // Google Gemini models → Google AI Studio
     if (GOOGLE_API_KEY && !MISTRAL_MODELS.has(model) && !NVIDIA_MODELS.has(model)) {
       try {
         const googleResp = await callGoogleAI(GOOGLE_API_KEY, model, allMessages, true, 16384);
@@ -359,31 +293,6 @@ serve(async (req) => {
       }
     }
 
-    // Fallback to Lovable AI for any model
-    if (LOVABLE_API_KEY) {
-      console.log("🔄 Chat: Falling back to Lovable AI for model:", model);
-      const lovableResp = await callLovableAI(LOVABLE_API_KEY, model, allMessages, true, 16384);
-      if (!lovableResp.ok) {
-        if (lovableResp.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        if (lovableResp.status === 402) {
-          return new Response(JSON.stringify({ error: "Credits exhausted." }), {
-            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        const errText = await lovableResp.text();
-        console.error("Lovable AI error:", lovableResp.status, errText);
-        return new Response(JSON.stringify({ error: `AI error: ${lovableResp.status}` }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(lovableResp.body, {
-        headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
-      });
-    }
 
     throw new Error("No AI API key configured");
   } catch (e) {
