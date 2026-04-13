@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Moon, Sun, Menu, Atom, BookMarked, ChevronDown } from "lucide-react";
+import { Moon, Sun, Menu, Atom, ChevronDown } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
