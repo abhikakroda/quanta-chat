@@ -14,24 +14,6 @@ const GOOGLE_MODEL_MAP: Record<string, string> = {
   "gemini-flash": "gemini-2.5-flash",
   "gemini-pro": "gemini-2.5-pro",
   "gemini-flash-lite": "gemini-2.0-flash-lite",
-  "gpt5-mini": "gemini-2.5-flash",
-  "gpt5": "gemini-2.5-pro",
-};
-
-// Lovable AI gateway fallback model mapping
-const LOVABLE_MODEL_MAP: Record<string, string> = {
-  "gemini-flash": "google/gemini-3-flash-preview",
-  "gemini-pro": "google/gemini-2.5-pro",
-  "gemini-flash-lite": "google/gemini-2.5-flash-lite",
-  "gpt5-mini": "openai/gpt-5-mini",
-  "gpt5": "openai/gpt-5",
-  "mistral": "google/gemini-3-flash-preview",
-  "minimax": "google/gemini-3-flash-preview",
-  "glm": "google/gemini-3-flash-preview",
-  "kimi": "google/gemini-3-flash-preview",
-  "swan": "google/gemini-3-flash-preview",
-  "nemotron": "google/gemini-2.5-pro",
-  "nemotron-70b": "google/gemini-2.5-pro",
 };
 
 // Mistral model mapping
