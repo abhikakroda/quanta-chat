@@ -3,7 +3,7 @@ import {
   SquarePen, Search, Trash2, LogOut, X, PanelLeftClose,
   Clock, Code2, FileText, Globe, ChevronDown, ChevronUp, Sparkles,
   Calculator, Languages, Image, Bug, Eye, Mic, CalendarDays, BookOpen, Phone,
-  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown, Pin, Cpu, Keyboard, MoreHorizontal, Plus
+  FilePen, Newspaper, Wand2, Columns2, Users, GraduationCap, Rocket, Flame, Swords, AlertTriangle, FlaskConical, Dna, TrendingUp, Zap, FileDown, Pin, Cpu, Keyboard, MoreHorizontal, Plus, BookMarked
 } from "lucide-react";
 import { Conversation } from "@/hooks/useConversations";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +25,8 @@ type Props = {
   onSelectSkill?: (skill: string | null) => void;
   activeAvatar?: string | null;
   onSelectAvatar?: (avatarId: string | null) => void;
+  projectMemory?: string;
+  onOpenMemory?: () => void;
 };
 
 export const SKILLS = [
