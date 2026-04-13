@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Moon, Sun, Menu, Atom, BookMarked, Ghost, ChevronDown } from "lucide-react";
+import { Moon, Sun, Menu, Atom, BookMarked, ChevronDown } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -227,7 +227,6 @@ export default function Index() {
       setSearchParams({}, { replace: true });
     }
   }, []);
-  const [ghostMode, setGhostMode] = useState(false);
   const [ghostMessages, setGhostMessages] = useState<any[]>([]);
   const { dark, toggle: toggleTheme } = useTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -260,7 +259,6 @@ export default function Index() {
   const [authSubmitting, setAuthSubmitting] = useState(false);
 
   const needsAuth = (_action: string) => {
-    if (ghostMode) return false;
     if (!user) {
       if (freeChatCount >= FREE_CHAT_LIMIT) {
         setShowAuthDialog(true);
@@ -306,7 +304,7 @@ export default function Index() {
 
     // Smart Prompt: optimize the user's prompt before sending
     let finalInput = input;
-    if (smartPrompt && input.trim().length >= 10 && !ghostMode) {
+    if (smartPrompt && input.trim().length >= 10 && user) {
       try {
         setOptimizing(true);
         const { data: { session } } = await supabase.auth.getSession();
@@ -335,8 +333,8 @@ export default function Index() {
       }
     }
 
-    // Ghost mode or guest (no user): skip all DB operations
-    const isGhost = ghostMode || !user;
+    // Guest (no user): skip all DB operations
+    const isGhost = !user;
 
     let convId = activeId;
     if (!isGhost) {
@@ -759,7 +757,6 @@ export default function Index() {
   const handleNewChat = async () => {
     setActiveId(null);
     setMessageImages({});
-    setGhostMessages([]);
     setSidebarOpen(false);
   };
 
@@ -849,7 +846,7 @@ export default function Index() {
     });
   };
 
-  const displayMessages = (ghostMode || !user) ? ghostMessages : messages;
+  const displayMessages = !user ? ghostMessages : messages;
   const hasMessages = displayMessages.length > 0 || streaming;
   const resolvedModel = resolveAutoModel(selectedModel, activeSkill);
   const modelSupportsThinking = true;
@@ -886,12 +883,6 @@ export default function Index() {
             </button>
             {/* Model selector */}
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
-            {ghostMode && (
-              <span className="flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border/40">
-                <Ghost className="w-3 h-3" />
-                Ghost
-              </span>
-            )}
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -903,21 +894,6 @@ export default function Index() {
               title="Project Memory"
             >
               <BookMarked className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => {
-                setGhostMode(g => {
-                  if (!g) { setGhostMessages([]); setActiveId(null); }
-                  return !g;
-                });
-              }}
-              className={cn(
-                "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
-                ghostMode ? "text-foreground bg-muted" : "text-muted-foreground/40 hover:text-muted-foreground"
-              )}
-              title={ghostMode ? "Ghost Mode ON" : "Ghost Mode"}
-            >
-              <Ghost className="w-4 h-4" />
             </button>
             <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -934,12 +910,6 @@ export default function Index() {
           </Suspense>
         ) : hasMessages ? (
           <>
-            {ghostMode && (
-              <div className="shrink-0 flex items-center justify-center gap-2 px-3 py-1.5 bg-muted/50 border-b border-border/30 text-[11px] text-muted-foreground">
-                <Ghost className="w-3 h-3" />
-                <span>Ghost Mode — messages are temporary and won't be saved</span>
-              </div>
-            )}
             <div ref={scrollRef} className="flex-1 overflow-y-auto smooth-scroll">
               {displayMessages.map((m, i) => {
                 let thinking: string | undefined;
