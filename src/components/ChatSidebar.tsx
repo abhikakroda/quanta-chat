@@ -311,8 +311,25 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
             )}
           </div>
 
+          {/* Memory button */}
+          <div className="px-2 py-1.5 border-t border-sidebar-border/40">
+            <button
+              onClick={onOpenMemory}
+              className={cn(
+                "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] transition-colors",
+                projectMemory
+                  ? "text-primary bg-primary/5 hover:bg-primary/10"
+                  : "text-sidebar-foreground/60 hover:bg-sidebar-accent/40 hover:text-sidebar-foreground"
+              )}
+            >
+              <BookMarked className="w-4 h-4" />
+              <span>Project Memory</span>
+              {projectMemory && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+            </button>
+          </div>
+
           {/* User section at bottom */}
-          <div className="mt-auto border-t border-sidebar-border/40">
+          <div className="border-t border-sidebar-border/40">
             {user ? (
               <div className="px-2 py-2">
                 {userMenuOpen && (

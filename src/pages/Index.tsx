@@ -885,16 +885,6 @@ export default function Index() {
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={() => { setMemoryDraft(projectMemory); setMemoryDialogOpen(true); }}
-              className={cn(
-                "shrink-0 p-1.5 rounded-md transition-colors touch-manipulation",
-                projectMemory ? "text-primary" : "text-muted-foreground/40 hover:text-muted-foreground"
-              )}
-              title="Project Memory"
-            >
-              <BookMarked className="w-4 h-4" />
-            </button>
             <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
