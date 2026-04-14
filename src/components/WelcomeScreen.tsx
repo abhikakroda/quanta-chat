@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
-import { Zap, Diamond } from "lucide-react";
+import { Zap, Diamond, Code2, Globe, ImagePlus, FlaskConical } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ChatInput from "./ChatInput";
 import { ModelId, getModelLabel } from "@/lib/chat";
 import { cn } from "@/lib/utils";
