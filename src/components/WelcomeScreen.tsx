@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
-import { Zap, Diamond } from "lucide-react";
+import { Zap, Diamond, Code2, Globe, ImagePlus, FlaskConical } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import ChatInput from "./ChatInput";
 import { ModelId, getModelLabel } from "@/lib/chat";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,15 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   activeSkillLabel,
 }, ref) {
   const modelLabel = getModelLabel(selectedModel);
+
+  const navigate = useNavigate();
+
+  const featureCards = [
+    { icon: Code2, title: "Code & Build", desc: "Write, debug, review code in any language", color: "text-blue-400", border: "border-blue-500/20", bg: "bg-blue-500/5" },
+    { icon: Globe, title: "Research", desc: "Deep research with live web access", color: "text-purple-400", border: "border-purple-500/20", bg: "bg-purple-500/5" },
+    { icon: ImagePlus, title: "Create", desc: "Generate images, docs, and content", color: "text-pink-400", border: "border-pink-500/20", bg: "bg-pink-500/5" },
+    { icon: FlaskConical, title: "40+ Tools", desc: "AI playground with specialized tools", color: "text-emerald-400", border: "border-emerald-500/20", bg: "bg-emerald-500/5", action: () => navigate("/ai-playground") },
+  ];
 
   return (
     <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 pb-[10vh] animate-fade-in">
@@ -83,6 +93,28 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
           activeSkillLabel={activeSkillLabel}
           noBorder
         />
+      </div>
+
+      {/* Feature cards */}
+      <div className="w-full max-w-[720px] grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mt-6 sm:mt-8">
+        {featureCards.map((card) => (
+          <button
+            key={card.title}
+            onClick={card.action}
+            className={cn(
+              "flex flex-col items-start gap-2 p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left",
+              card.border, card.bg,
+              "hover:scale-[1.02] hover:shadow-lg",
+              !card.action && "cursor-default"
+            )}
+          >
+            <card.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", card.color)} />
+            <div>
+              <p className="text-sm font-semibold text-foreground">{card.title}</p>
+              <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug mt-0.5">{card.desc}</p>
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
