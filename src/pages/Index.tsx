@@ -56,16 +56,9 @@ const FileProcessorTool = lazy(() => import("@/components/tools/FileProcessorToo
 const TaskExecutorTool = lazy(() => import("@/components/tools/TaskExecutorTool"));
 const StudentAITool = lazy(() => import("@/components/tools/StudentAITool"));
 const WorldMapTool = lazy(() => import("@/components/tools/WorldMapTool"));
-const SSCEnglishTool = lazy(() => import("@/components/tools/SSCEnglishTool"));
-const SSCMathTool = lazy(() => import("@/components/tools/SSCMathTool"));
-const SSCReasoningTool = lazy(() => import("@/components/tools/SSCReasoningTool"));
-const GKTool = lazy(() => import("@/components/tools/GKTool"));
-const SSCMockTestTool = lazy(() => import("@/components/tools/SSCMockTestTool"));
-const ECETool = lazy(() => import("@/components/tools/ECETool"));
+const SSCHubTool = lazy(() => import("@/components/tools/SSCHubTool"));
+const EngineeringHubTool = lazy(() => import("@/components/tools/EngineeringHubTool"));
 const CustomSkillTool = lazy(() => import("@/components/tools/CustomSkillTool"));
-const IESETTool = lazy(() => import("@/components/tools/IESETTool"));
-const GATEECETool = lazy(() => import("@/components/tools/GATEECETool"));
-const PCBDesignTool = lazy(() => import("@/components/tools/PCBDesignTool"));
 const TypingSpeedTool = lazy(() => import("@/components/tools/TypingSpeedTool"));
 
 function ModelSelector({ selectedModel, onSelectModel }: { selectedModel: ModelId; onSelectModel: (m: ModelId) => void }) {
@@ -159,17 +152,9 @@ const TOOL_UI_MAP: Record<string, React.ComponentType> = {
   "file-processor": FileProcessorTool,
   "task-executor": TaskExecutorTool,
   "student-ai": StudentAITool,
-  "world-map": WorldMapTool,
-  "ssc-english": SSCEnglishTool,
-  "ssc-math": SSCMathTool,
-  "ssc-reasoning": SSCReasoningTool,
-  "gk-tool": GKTool,
-  "ssc-mock-test": SSCMockTestTool,
-  "ece-tool": ECETool,
+  "ssc-hub": SSCHubTool,
+  "engineering-hub": EngineeringHubTool,
   "custom-skill": CustomSkillTool,
-  "ies-et": IESETTool,
-  "gate-ece": GATEECETool,
-  "pcb-design": PCBDesignTool,
   "typing-speed": TypingSpeedTool,
 };
 
