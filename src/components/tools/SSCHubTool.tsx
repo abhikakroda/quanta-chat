@@ -40,7 +40,7 @@ export default function SSCHubTool() {
           </span>
         </div>
         <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}>
-          {activeSection === "english" && <SSCEnglishTool />}
+          {activeSection === "english" && <SSCEnglishTool onBack={() => setActiveSection(null)} />}
           {activeSection === "math" && <SSCMathTool />}
           {activeSection === "reasoning" && <SSCReasoningTool />}
           {activeSection === "gk" && <GKTool />}
