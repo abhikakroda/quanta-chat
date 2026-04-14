@@ -39,10 +39,12 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
 
   const navigate = useNavigate();
 
+  const prefill = (text: string) => onSend(text);
+
   const featureCards = [
-    { icon: Code2, title: "Code & Build", desc: "Write, debug, review code in any language", color: "text-blue-400", border: "border-blue-500/20", bg: "bg-blue-500/5" },
-    { icon: Globe, title: "Research", desc: "Deep research with live web access", color: "text-purple-400", border: "border-purple-500/20", bg: "bg-purple-500/5" },
-    { icon: ImagePlus, title: "Create", desc: "Generate images, docs, and content", color: "text-pink-400", border: "border-pink-500/20", bg: "bg-pink-500/5" },
+    { icon: Code2, title: "Code & Build", desc: "Write, debug, review code in any language", color: "text-blue-400", border: "border-blue-500/20", bg: "bg-blue-500/5", action: () => prefill("Help me write, debug, and review code. What language or project are you working on?") },
+    { icon: Globe, title: "Research", desc: "Deep research with live web access", color: "text-purple-400", border: "border-purple-500/20", bg: "bg-purple-500/5", action: () => prefill("Do a deep research on this topic for me:") },
+    { icon: ImagePlus, title: "Create", desc: "Generate images, docs, and content", color: "text-pink-400", border: "border-pink-500/20", bg: "bg-pink-500/5", action: () => prefill("Help me create content — I need to generate:") },
     { icon: FlaskConical, title: "40+ Tools", desc: "AI playground with specialized tools", color: "text-emerald-400", border: "border-emerald-500/20", bg: "bg-emerald-500/5", action: () => navigate("/ai-playground") },
   ];
 
