@@ -106,8 +106,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
             className={cn(
               "flex flex-col items-start gap-2 p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left",
               card.border, card.bg,
-              "hover:scale-[1.02] hover:shadow-lg",
-              !card.action && "cursor-default"
+              "hover:scale-[1.02] hover:shadow-lg"
             )}
           >
             <card.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", card.color)} />
