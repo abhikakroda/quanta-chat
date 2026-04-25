@@ -1,6 +1,7 @@
 import { useState, memo, useCallback, useEffect, useRef, lazy, Suspense } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import hljs from "highlight.js/lib/core";
@@ -202,9 +203,42 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                 {content && (
                   <div className="prose prose-lg max-w-none prose-p:my-3 prose-p:leading-[1.8] prose-headings:my-4 prose-headings:text-foreground prose-h1:text-xl sm:prose-h1:text-2xl prose-h2:text-lg sm:prose-h2:text-xl prose-h3:text-base sm:prose-h3:text-lg prose-h3:font-semibold prose-pre:my-3 prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0 prose-code:text-foreground prose-code:font-mono prose-code:text-[14px] sm:prose-code:text-[15px] text-base sm:text-[17px] leading-[1.8] break-words overflow-hidden prose-li:my-1 prose-li:leading-[1.8] prose-ul:my-3 prose-ol:my-3 prose-ul:pl-4 sm:prose-ul:pl-5 prose-ol:pl-4 sm:prose-ol:pl-5 prose-strong:text-foreground prose-strong:font-semibold [&_.katex-display]:my-3 [&_.katex-display]:overflow-x-auto [&_.katex]:text-foreground text-foreground prose-blockquote:border-l-2 prose-blockquote:border-primary/30 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-hr:my-6 prose-hr:border-border/50">
                     <ReactMarkdown
-                      remarkPlugins={[remarkMath]}
+                      remarkPlugins={[remarkGfm, remarkMath]}
                       rehypePlugins={[rehypeKatex]}
                       components={{
+                        table({ children }) {
+                          return (
+                            <div className="my-4 -mx-1 sm:mx-0 overflow-x-auto rounded-xl border border-border/50 bg-muted/20">
+                              <table className="w-full text-sm border-collapse">{children}</table>
+                            </div>
+                          );
+                        },
+                        thead({ children }) {
+                          return <thead className="bg-muted/60">{children}</thead>;
+                        },
+                        tbody({ children }) {
+                          return <tbody className="divide-y divide-border/40">{children}</tbody>;
+                        },
+                        tr({ children }) {
+                          return <tr className="hover:bg-muted/30 transition-colors">{children}</tr>;
+                        },
+                        th({ children, style }) {
+                          return (
+                            <th
+                              style={style}
+                              className="px-3 py-2 text-left text-xs font-semibold text-foreground border-b border-border/50 whitespace-nowrap"
+                            >
+                              {children}
+                            </th>
+                          );
+                        },
+                        td({ children, style }) {
+                          return (
+                            <td style={style} className="px-3 py-2 text-sm text-foreground/90 align-top">
+                              {children}
+                            </td>
+                          );
+                        },
                         code({ className, children, ...props }) {
                           const match = /language-(\w+)/.exec(className || "");
                           const lang = match?.[1] || "";
