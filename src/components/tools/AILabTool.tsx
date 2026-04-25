@@ -29,7 +29,8 @@ type QualityResult = {
 const TESTABLE_MODELS: { id: ModelId; label: string }[] = [
   { id: "gemini-flash", label: "Gemini Flash" },
   { id: "gemini-pro", label: "Gemini Pro" },
-  { id: "gemini-flash-lite", label: "Flash Lite" },
+  { id: "mistral", label: "Mistral" },
+  { id: "nemotron", label: "Nemotron 49B" },
 ];
 
 export default function AILabTool() {
