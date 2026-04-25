@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { Zap, Diamond, Code2, Globe, ImagePlus, FlaskConical } from "lucide-react";
+import { Zap, Diamond, Image as ImageIcon, Pencil, Globe, FlaskConical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ChatInput from "./ChatInput";
 import { ModelId, getModelLabel } from "@/lib/chat";
@@ -41,11 +41,11 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
 
   const prefill = (text: string) => onSend(text);
 
-  const featureCards = [
-    { icon: Code2, title: "Code & Build", desc: "Write, debug, review code in any language", color: "text-blue-400", border: "border-blue-500/20", bg: "bg-blue-500/5", action: () => prefill("Help me write, debug, and review code. What language or project are you working on?") },
-    { icon: Globe, title: "Research", desc: "Deep research with live web access", color: "text-purple-400", border: "border-purple-500/20", bg: "bg-purple-500/5", action: () => prefill("Do a deep research on this topic for me:") },
-    { icon: ImagePlus, title: "Create", desc: "Generate images, docs, and content", color: "text-pink-400", border: "border-pink-500/20", bg: "bg-pink-500/5", action: () => prefill("Help me create content — I need to generate:") },
-    { icon: FlaskConical, title: "40+ Tools", desc: "AI playground with specialized tools", color: "text-emerald-400", border: "border-emerald-500/20", bg: "bg-emerald-500/5", action: () => navigate("/ai-playground") },
+  const quickActions = [
+    { icon: ImageIcon, label: "Create an image", action: () => prefill("Create an image of ") },
+    { icon: Pencil, label: "Write or edit", action: () => prefill("Help me write or edit ") },
+    { icon: Globe, label: "Look something up", action: () => prefill("Look up information about ") },
+    { icon: FlaskConical, label: "40+ Tools", action: () => navigate("/ai-playground") },
   ];
 
   return (
@@ -97,23 +97,21 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
         />
       </div>
 
-      {/* Feature cards */}
-      <div className="w-full max-w-[720px] grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mt-6 sm:mt-8">
-        {featureCards.map((card) => (
+      {/* Quick action pills */}
+      <div className="w-full max-w-[720px] flex flex-wrap items-center justify-center gap-2 sm:gap-2.5 mt-6 sm:mt-8">
+        {quickActions.map((action) => (
           <button
-            key={card.title}
-            onClick={card.action}
+            key={action.label}
+            onClick={action.action}
             className={cn(
-              "flex flex-col items-start gap-2 p-3.5 sm:p-4 rounded-xl border transition-all duration-200 text-left",
-              card.border, card.bg,
-              "hover:scale-[1.02] hover:shadow-lg"
+              "inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full",
+              "border border-border/60 bg-background/40 backdrop-blur-sm",
+              "text-sm text-foreground/90 hover:text-foreground",
+              "hover:bg-muted/40 hover:border-border transition-all duration-200"
             )}
           >
-            <card.icon className={cn("w-5 h-5 sm:w-6 sm:h-6", card.color)} />
-            <div>
-              <p className="text-sm font-semibold text-foreground">{card.title}</p>
-              <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug mt-0.5">{card.desc}</p>
-            </div>
+            <action.icon className="w-4 h-4 text-muted-foreground" />
+            <span>{action.label}</span>
           </button>
         ))}
       </div>
