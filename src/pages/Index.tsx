@@ -742,6 +742,7 @@ export default function Index() {
   const handleNewChat = async () => {
     setActiveId(null);
     setMessageImages({});
+    setGhostMessages([]);
     setSidebarOpen(false);
   };
 
