@@ -2,20 +2,14 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type Message = { role: "user" | "assistant"; content: string };
 
-export type ModelId = "auto" | "gemini-flash" | "gemini-pro" | "gemini-flash-lite" | "mistral" | "minimax" | "glm" | "kimi" | "swan" | "nemotron" | "nemotron-70b";
+export type ModelId = "auto" | "gemini-flash" | "gemini-pro" | "mistral" | "nemotron";
 
 export const MODELS: { id: ModelId; label: string; supportsThinking?: boolean; premium?: boolean }[] = [
   { id: "auto", label: "Auto", supportsThinking: true },
   { id: "gemini-flash", label: "Gemini Flash", supportsThinking: true },
   { id: "gemini-pro", label: "Gemini Pro", supportsThinking: true },
-  { id: "gemini-flash-lite", label: "Flash Lite" },
   { id: "mistral", label: "Mistral", supportsThinking: true },
   { id: "nemotron", label: "Nemotron 49B", supportsThinking: true, premium: true },
-  { id: "nemotron-70b", label: "Nemotron 70B", supportsThinking: true, premium: true },
-  { id: "minimax", label: "MiniMax" },
-  { id: "glm", label: "GLM" },
-  { id: "kimi", label: "Kimi", supportsThinking: true },
-  { id: "swan", label: "Swan" },
 ];
 
 export function getModelLabel(modelId: ModelId): string {
@@ -35,7 +29,7 @@ const AUTO_MODEL_MAP: Record<string, ModelId> = {
   "image-describer": "gemini-flash",
   "vision": "gemini-flash",
   "task-scheduler": "gemini-flash",
-  "news": "gemini-flash-lite",
+  "news": "gemini-flash",
   "web-scraper": "gemini-flash",
 };
 
