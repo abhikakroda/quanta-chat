@@ -13,7 +13,6 @@ const SYSTEM_PROMPT = "You are OpenTropic, a powerful and helpful AI assistant c
 const GOOGLE_MODEL_MAP: Record<string, string> = {
   "gemini-flash": "gemini-2.5-flash",
   "gemini-pro": "gemini-2.5-pro",
-  "gemini-flash-lite": "gemini-2.0-flash-lite",
 };
 
 // Mistral model mapping
@@ -21,17 +20,12 @@ const MISTRAL_MODEL = "mistral-small-latest";
 
 // NVIDIA NIM model mapping (build.nvidia.com)
 const NVIDIA_MODEL_MAP: Record<string, string> = {
-  "minimax": "minimaxi/minimax-m1-80k",
-  "glm": "thudm/glm-4-32b-instruct",
-  "kimi": "moonshotai/kimi-k2-instruct",
-  "swan": "snowflake/arctic",
   "nemotron": "nvidia/llama-3.3-nemotron-super-49b-v1",
-  "nemotron-70b": "nvidia/llama-3.1-nemotron-70b-instruct",
 };
 
 // Which models route through which provider
 const MISTRAL_MODELS = new Set(["mistral"]);
-const NVIDIA_MODELS = new Set(["minimax", "glm", "kimi", "swan", "nemotron", "nemotron-70b"]);
+const NVIDIA_MODELS = new Set(["nemotron"]);
 
 
 async function callMistralAI(apiKey: string, messages: any[], stream: boolean, maxTokens: number) {
@@ -51,7 +45,7 @@ async function callMistralAI(apiKey: string, messages: any[], stream: boolean, m
 }
 
 async function callNvidiaAI(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
-  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "minimaxi/minimax-m1-80k";
+  const nvidiaModel = NVIDIA_MODEL_MAP[model] || "nvidia/llama-3.3-nemotron-super-49b-v1";
   return await fetch("https://integrate.api.nvidia.com/v1/chat/completions", {
     method: "POST",
     headers: {
