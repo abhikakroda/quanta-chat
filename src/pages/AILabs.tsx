@@ -64,6 +64,7 @@ export default function AIPlayground() {
           <div className="flex items-center gap-3 mb-6">
             <button
               onClick={() => navigate("/")}
+              aria-label="Back to chat"
               className="p-2 rounded-xl hover:bg-accent/50 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -195,6 +196,7 @@ export default function AIPlayground() {
                   </div>
                   <button
                     onClick={(e) => togglePin(tool.id, e)}
+                    aria-label={pinnedIds.includes(tool.id) ? `Unpin ${tool.label} from sidebar` : `Pin ${tool.label} to sidebar`}
                     className={cn(
                       "p-1.5 rounded-lg transition-all z-10",
                       pinnedIds.includes(tool.id)
