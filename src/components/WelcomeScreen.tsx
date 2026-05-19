@@ -53,10 +53,13 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
       {/* Brand heading */}
       <div className="mb-5 sm:mb-8 animate-slide-up text-center">
         <div className="flex items-center justify-center gap-3 mb-4">
-          <span className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
             Start chatting with <span className="text-primary">{expertMode ? "Expert" : "Instant"}</span>
-          </span>
+          </h1>
         </div>
+        <p className="max-w-xl mx-auto text-sm sm:text-base text-muted-foreground mb-4 px-4">
+          OpenTropic is a free AI chat assistant with multiple models for code, research, writing, image generation, voice chat and 40+ specialized tools — all in one place.
+        </p>
 
         {/* Mode toggle pill */}
         <div className="inline-flex items-center rounded-full border border-border/60 p-1 glass-subtle">

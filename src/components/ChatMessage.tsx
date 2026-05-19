@@ -58,6 +58,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
         <span className="text-[11px] text-muted-foreground font-mono">{lang || "code"}</span>
         <button
           onClick={handleCopy}
+          aria-label={copied ? "Code copied to clipboard" : "Copy code to clipboard"}
           className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors touch-manipulation"
         >
           {copied ? <ClipboardCheck className="w-3.5 h-3.5" /> : <Clipboard className="w-3.5 h-3.5" />}
@@ -151,6 +152,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                 {onEdit && (
                   <button
                     onClick={() => { setEditValue(content); setEditing(true); }}
+                    aria-label="Edit message"
                     className="shrink-0 p-1.5 rounded-md text-transparent group-hover:text-muted-foreground/50 hover:!text-foreground transition-colors mt-1"
                     title="Edit message"
                   >
@@ -297,6 +299,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                 <div className="flex items-center gap-0.5 pt-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                   <button
                     onClick={handleCopy}
+                    aria-label={copied ? "Response copied" : "Copy response"}
                     className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors touch-manipulation"
                     title={copied ? "Copied" : "Copy"}
                   >
@@ -304,6 +307,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   </button>
                   <button
                     onClick={() => handleFeedback("up")}
+                    aria-label="Mark response as helpful"
                     className={cn(
                       "p-1.5 rounded-lg transition-colors touch-manipulation",
                       localFeedback === "up" ? "text-foreground bg-muted/50" : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
@@ -314,6 +318,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   </button>
                   <button
                     onClick={() => handleFeedback("down")}
+                    aria-label="Mark response as not helpful"
                     className={cn(
                       "p-1.5 rounded-lg transition-colors touch-manipulation",
                       localFeedback === "down" ? "text-foreground bg-muted/50" : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
@@ -324,6 +329,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   </button>
                   <button
                     onClick={() => handleSpeak(content)}
+                    aria-label={speaking ? "Stop reading response aloud" : "Read response aloud"}
                     className={cn(
                       "p-1.5 rounded-lg transition-colors touch-manipulation",
                       speaking ? "text-foreground bg-muted/50" : "text-muted-foreground/60 hover:text-foreground hover:bg-muted/50"
@@ -335,6 +341,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                   {onRegenerate && (
                     <button
                       onClick={onRegenerate}
+                      aria-label="Regenerate response"
                       className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-muted/50 transition-colors touch-manipulation"
                       title="Regenerate"
                     >

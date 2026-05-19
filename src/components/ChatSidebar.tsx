@@ -161,10 +161,10 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           {/* Header */}
           <div className="flex items-center px-4 pt-4 pb-3 justify-between">
             <span className="text-xl font-bold text-primary tracking-tight lowercase">opentropic</span>
-            <button onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
+            <button aria-label="Collapse sidebar" onClick={onToggleCollapse} className="hidden md:flex p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/30 hover:text-sidebar-foreground transition-colors">
               <PanelLeftClose className="w-4 h-4" />
             </button>
-            <button onClick={onClose} className="md:hidden p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/30 transition-colors">
+            <button aria-label="Close sidebar" onClick={onClose} className="md:hidden p-1.5 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground/30 transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -249,6 +249,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                     <span className="flex-1 truncate">{tool.label}</span>
                     <button
                       onClick={(e) => { e.stopPropagation(); setPinnedToolIds(prev => prev.filter(id => id !== tool.id)); }}
+                      aria-label={`Unpin ${tool.label}`}
                       className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:text-destructive transition-opacity"
                     >
                       <X className="w-3 h-3" />
@@ -281,6 +282,7 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
                           <span className="truncate flex-1">{c.title}</span>
                           <button
                             onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
+                            aria-label="Delete conversation"
                             className="opacity-0 group-hover:opacity-100 p-1 rounded-lg hover:bg-sidebar-accent hover:text-destructive transition-all"
                           >
                             <Trash2 className="w-3.5 h-3.5" />

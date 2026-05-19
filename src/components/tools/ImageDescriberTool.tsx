@@ -77,7 +77,7 @@ export default function ImageDescriberTool() {
       ) : (
         <div className="space-y-3">
           <div className="relative rounded-2xl overflow-hidden border border-border">
-            <img src={imagePreview} alt="Uploaded" className="w-full max-h-[300px] object-contain bg-muted/30" />
+            <img src={imagePreview} alt="Uploaded image preview for AI description" className="w-full max-h-[300px] object-contain bg-muted/30" />
             <button onClick={() => { setImagePreview(null); setImageBase64(null); setDescription(""); }} className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-background/80 text-xs text-muted-foreground hover:text-foreground backdrop-blur-sm">
               Change
             </button>
