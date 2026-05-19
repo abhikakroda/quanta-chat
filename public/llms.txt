@@ -1,0 +1,13 @@
+# OpenTropic
+
+> A free AI chat assistant powered by multiple models including Mistral, Gemini, and DeepSeek. Features code help, deep research, image generation, voice chat, translation, summarization, and 40+ specialized tools.
+
+## Pages
+
+- [Home](/): Free AI chat with multiple models, code assistance, deep research, and voice chat.
+- [AI Playground](/ai-playground): Explore 40+ AI tools including image generation, web search, document analysis, code runner, and specialized assistants.
+
+## Tools
+
+- [Chat](/): Multi-model AI chat with code highlighting, table rendering, and streaming responses.
+- [AI Playground](/ai-playground): Collection of 40+ AI-powered tools and utilities.
