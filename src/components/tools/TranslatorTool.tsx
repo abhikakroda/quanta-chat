@@ -73,12 +73,15 @@ export default function TranslatorTool() {
     <div className="max-w-2xl mx-auto p-4 space-y-4 animate-fade-in">
       <div className="flex items-center gap-2 mb-2">
         <Languages className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Sarvam AI Translator</h2>
+        <h1 className="text-lg font-semibold text-foreground">Sarvam AI Translator</h1>
       </div>
 
       {/* Language selectors */}
       <div className="flex items-center gap-2">
+        <label htmlFor="translator-source" className="sr-only">Source language</label>
         <select
+          id="translator-source"
+          aria-label="Source language"
           value={sourceLang}
           onChange={(e) => setSourceLang(e.target.value)}
           className="flex-1 bg-muted border border-border rounded-xl px-3 py-2 text-sm text-foreground outline-none focus:border-primary/30 transition-colors"
@@ -91,12 +94,17 @@ export default function TranslatorTool() {
         <button
           onClick={swapLanguages}
           disabled={sourceLang === "auto"}
+          aria-label="Swap source and target languages"
+          title="Swap languages"
           className="p-2 rounded-xl border border-border hover:bg-accent text-muted-foreground hover:text-foreground transition-colors disabled:opacity-30"
         >
           <ArrowRightLeft className="w-4 h-4" />
         </button>
 
+        <label htmlFor="translator-target" className="sr-only">Target language</label>
         <select
+          id="translator-target"
+          aria-label="Target language"
           value={targetLang}
           onChange={(e) => setTargetLang(e.target.value)}
           className="flex-1 bg-muted border border-border rounded-xl px-3 py-2 text-sm text-foreground outline-none focus:border-primary/30 transition-colors"
@@ -109,7 +117,10 @@ export default function TranslatorTool() {
 
       {/* Input/Output */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <label htmlFor="translator-input" className="sr-only">Text to translate</label>
         <textarea
+          id="translator-input"
+          aria-label="Text to translate"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Enter text to translate..."
