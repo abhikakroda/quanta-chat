@@ -164,7 +164,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                     <div className="mb-2">
                       <img
                         src={imageUrl}
-                        alt="Attached image"
+                        alt="User-attached image preview"
                         className="rounded-xl max-w-[240px] sm:max-w-[280px] max-h-[200px] object-cover"
                       />
                     </div>
@@ -271,7 +271,7 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                           return (
                             <img
                               src={src}
-                              alt={alt || "Generated image"}
+                              alt={alt || "AI-generated image based on prompt"}
                               className="rounded-2xl max-w-full max-h-[60vh] object-contain border border-border/20 my-3"
                               loading="lazy"
                               {...props}

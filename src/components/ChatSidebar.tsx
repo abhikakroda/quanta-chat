@@ -184,7 +184,10 @@ function ChatSidebar({ conversations, activeId, onSelect, onNew, onDelete, open,
           <div className="px-3 mb-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/40" />
+              <label htmlFor="sidebar-search" className="sr-only">Search chats</label>
               <input
+                id="sidebar-search"
+                aria-label="Search chats"
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Gamepad2, Trophy, Zap, Star, TrendingUp, Pin, PinOff } from "lucide-react";
 import { ALL_TOOLS } from "@/components/ChatSidebar";
 import { cn } from "@/lib/utils";
+import { Helmet } from "react-helmet-async";
 
 const CATEGORIES = ["All", "AI", "Career", "Learning", "Productivity", "Chat", "Search", "Creative", "Code", "Utility"] as const;
 
@@ -57,6 +58,14 @@ export default function AIPlayground() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Helmet>
+        <title>AI Playground – 40+ Free AI Tools | OpenTropic</title>
+        <meta name="description" content="Explore 40+ free AI tools: image generation, web search, code runner, document analysis, translator, deep research and specialized study assistants." />
+        <link rel="canonical" href="https://quanta-chat-verse.lovable.app/ai-playground" />
+        <meta property="og:title" content="AI Playground – 40+ Free AI Tools" />
+        <meta property="og:description" content="40+ free AI tools for image, code, research, learning and productivity — all in one place." />
+        <meta property="og:url" content="https://quanta-chat-verse.lovable.app/ai-playground" />
+      </Helmet>
       {/* Hero Header */}
       <header className="relative overflow-hidden border-b border-border/30">
         <div className="absolute inset-0 animated-gradient-bg" />
@@ -107,7 +116,11 @@ export default function AIPlayground() {
           {/* Search */}
           <div className="relative mt-6 max-w-xl">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40" />
+            <label htmlFor="ai-playground-search" className="sr-only">Search AI tools</label>
             <input
+              id="ai-playground-search"
+              aria-label="Search AI tools"
+              type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tools… e.g. 'image', 'code', 'debate'"

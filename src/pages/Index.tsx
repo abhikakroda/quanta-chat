@@ -857,7 +857,7 @@ export default function Index() {
         onOpenMemory={() => { setMemoryDraft(projectMemory); setMemoryDialogOpen(true); }}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0" aria-label="Main chat area">
         {/* Top bar — ChatGPT style: model name left, actions right */}
         <div className={cn("h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 glass-subtle border-b border-border/20 relative z-[50]", isElectron && "pl-[76px]")}>
           <div className="flex items-center gap-2">
@@ -962,7 +962,7 @@ export default function Index() {
         ) : (
           <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} expertMode={expertMode} onToggleExpert={() => setExpertMode(e => !e)} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} />
         )}
-      </div>
+      </main>
 
       {/* Auth Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>

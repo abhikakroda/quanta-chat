@@ -91,12 +91,15 @@ export default function DeepResearcherTool() {
     <div className="max-w-3xl mx-auto p-4 space-y-4 animate-fade-in">
       <div className="flex items-center gap-2 mb-2">
         <Globe className="w-5 h-5 text-primary" />
-        <h2 className="text-lg font-semibold text-foreground">Deep Researcher</h2>
+        <h1 className="text-lg font-semibold text-foreground">Deep Researcher</h1>
       </div>
 
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <label htmlFor="deep-research-query" className="sr-only">Research topic</label>
         <input
+          id="deep-research-query"
+          aria-label="Research topic"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleResearch()}

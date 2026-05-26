@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Bot } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
@@ -32,6 +33,15 @@ export default function Auth() {
 
   return (
     <div className="h-[100dvh] flex items-center justify-center bg-background px-4">
+      <Helmet>
+        <title>Sign in to OpenTropic – Free AI Chat Account</title>
+        <meta name="description" content="Sign in or create a free OpenTropic account to unlock unlimited AI chats, code help, deep research and 40+ AI tools." />
+        <meta name="robots" content="noindex, follow" />
+        <link rel="canonical" href="https://quanta-chat-verse.lovable.app/auth" />
+        <meta property="og:title" content="Sign in to OpenTropic" />
+        <meta property="og:description" content="Sign in or create a free OpenTropic account to unlock unlimited AI chats and tools." />
+        <meta property="og:url" content="https://quanta-chat-verse.lovable.app/auth" />
+      </Helmet>
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
@@ -43,18 +53,26 @@ export default function Auth() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" aria-label={isSignUp ? "Sign up form" : "Sign in form"}>
+          <label htmlFor="auth-email" className="sr-only">Email address</label>
           <input
+            id="auth-email"
             type="email"
             placeholder="Email"
+            aria-label="Email address"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
+          <label htmlFor="auth-password" className="sr-only">Password</label>
           <input
+            id="auth-password"
             type="password"
             placeholder="Password"
+            aria-label="Password"
+            autoComplete={isSignUp ? "new-password" : "current-password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
