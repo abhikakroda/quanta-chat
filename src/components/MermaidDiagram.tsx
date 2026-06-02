@@ -8,9 +8,9 @@ function initMermaid(dark: boolean) {
   mermaid.initialize({
     startOnLoad: false,
     theme: dark ? "dark" : "default",
-    securityLevel: "loose",
+    securityLevel: "strict",
     fontFamily: '"DM Sans", system-ui, sans-serif',
-    flowchart: { htmlLabels: true, curve: "basis" },
+    flowchart: { htmlLabels: false, curve: "basis" },
     sequence: { actorMargin: 50, messageMargin: 40 },
   });
   mermaidInitialized = true;
