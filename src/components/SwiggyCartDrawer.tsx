@@ -54,6 +54,8 @@ export default function SwiggyCartDrawer({
   const [step, setStep] = useState<"cart" | "pay" | "processing" | "done">("cart");
   const [method, setMethod] = useState<PayMethodId>("upi");
   const [order, setOrder] = useState<{ id: string; eta: number; partner: string; otp: string } | null>(null);
+  const [otpDigits, setOtpDigits] = useState<string[]>(["", "", "", ""]);
+  const [otpStatus, setOtpStatus] = useState<"idle" | "verifying" | "verified" | "wrong">("idle");
 
   useEffect(() => {
     if (open) setMounted(true);
