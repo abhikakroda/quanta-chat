@@ -15,6 +15,7 @@ import { detectSwiggyIntent, SWIGGY_SYSTEM_PROMPT } from "@/lib/swiggy";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
+import SwiggyCartDrawer, { SwiggyCartButton } from "@/components/SwiggyCartDrawer";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
