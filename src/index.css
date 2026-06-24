@@ -398,20 +398,20 @@ button, a, input, textarea, select, [role="button"] {
   position: absolute;
   inset: 0;
   z-index: 0;
-  /* Sarvam-style soft hero glow: central indigo wash with warm peach edges */
-  background: radial-gradient(ellipse 60% 50% at 50% 12%, hsl(225 90% 92% / 0.55) 0%, transparent 65%),
-              radial-gradient(ellipse 40% 30% at 12% 22%, hsl(28 90% 92% / 0.4) 0%, transparent 70%),
-              radial-gradient(ellipse 40% 30% at 88% 22%, hsl(28 90% 92% / 0.4) 0%, transparent 70%),
-              radial-gradient(ellipse 80% 40% at 50% 100%, hsl(230 30% 96% / 0.5) 0%, transparent 60%);
+  /* Warm sunset glow: orange top wash fading into soft lavender bottom */
+  background: radial-gradient(ellipse 70% 55% at 50% 8%, hsl(22 90% 72% / 0.45) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 40% at 15% 25%, hsl(28 85% 78% / 0.35) 0%, transparent 65%),
+              radial-gradient(ellipse 50% 40% at 85% 25%, hsl(28 85% 78% / 0.35) 0%, transparent 65%),
+              radial-gradient(ellipse 80% 50% at 50% 100%, hsl(250 50% 92% / 0.6) 0%, transparent 55%);
   background-size: 200% 200%;
   animation: gradient-shift 20s ease-in-out infinite;
   pointer-events: none;
 }
 .dark .animated-gradient-bg::before {
-  background: radial-gradient(ellipse at 20% 50%, hsl(224 60% 15% / 0.4) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 20%, hsl(224 50% 18% / 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 40% 80%, hsl(200 50% 14% / 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 60%, hsl(240 40% 16% / 0.25) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 50% 10%, hsl(22 60% 25% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 15% 30%, hsl(28 50% 20% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 85% 30%, hsl(28 50% 20% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 90%, hsl(255 30% 18% / 0.35) 0%, transparent 50%);
   background-size: 200% 200%;
   animation: gradient-shift 20s ease-in-out infinite;
 }
