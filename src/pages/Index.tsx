@@ -15,6 +15,7 @@ import { detectSwiggyIntent, SWIGGY_SYSTEM_PROMPT } from "@/lib/swiggy";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
+import SwiggyCartDrawer, { SwiggyCartButton } from "@/components/SwiggyCartDrawer";
 import { Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -174,6 +175,13 @@ export default function Index() {
   const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarPreviewOpen, setSidebarPreviewOpen] = useState(false);
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const onOpen = () => setCartDrawerOpen(true);
+    window.addEventListener("swiggy-cart-open", onOpen);
+    return () => window.removeEventListener("swiggy-cart-open", onOpen);
+  }, []);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem("quanta-sidebar-collapsed");
     return saved !== null ? saved === "true" : false; // default open
@@ -931,6 +939,7 @@ export default function Index() {
             <ModelSelector selectedModel={selectedModel} onSelectModel={setSelectedModel} />
           </div>
           <div className="flex items-center gap-1">
+            <SwiggyCartButton onClick={() => setCartDrawerOpen(true)} />
             <button onClick={toggleTheme} className="shrink-0 p-1.5 rounded-md text-muted-foreground/40 hover:text-muted-foreground transition-colors touch-manipulation">
               {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -1021,6 +1030,8 @@ export default function Index() {
           <WelcomeScreen onSend={handleSend} onStop={handleStop} disabled={streaming} streaming={streaming} agentMode={agentMode} onToggleAgent={() => setAgentMode((a) => !a)} selectedModel={selectedModel} expertMode={expertMode} onToggleExpert={() => setExpertMode(e => !e)} thinkingEnabled={thinkingEnabled} onToggleThinking={() => setThinkingEnabled((t) => !t)} onSelectSkill={(skill) => { setActiveSkill(skill); handleNewChat(); }} activeSkillLabel={activeSkill ? (SKILLS.find(s => s.id === activeSkill)?.label || ALL_TOOLS.find(t => t.id === activeSkill)?.label || null) : null} userName={user?.user_metadata?.name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || null} />
         )}
       </main>
+
+      <SwiggyCartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} />
 
       {/* Auth Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
