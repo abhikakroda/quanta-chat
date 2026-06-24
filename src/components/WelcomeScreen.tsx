@@ -57,9 +57,6 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground mb-4">
           AI for all from <span className="text-primary">OpenTropic</span>
         </h1>
-        <p className="max-w-xl mx-auto text-sm sm:text-base text-muted-foreground px-4">
-          A free AI chat assistant with multiple models for code, research, writing, image generation, voice chat and 40+ specialized tools — all in one place. Use the <span className="font-medium text-foreground">+</span> button to enable Thinking, Expert or Agent modes.
-        </p>
       </div>
 
       <div className="w-full max-w-[640px]">
