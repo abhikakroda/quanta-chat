@@ -398,10 +398,11 @@ button, a, input, textarea, select, [role="button"] {
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: radial-gradient(ellipse at 20% 50%, hsl(224 70% 92% / 0.5) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 20%, hsl(224 60% 90% / 0.4) 0%, transparent 50%),
-              radial-gradient(ellipse at 40% 80%, hsl(200 50% 90% / 0.4) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 60%, hsl(240 40% 92% / 0.3) 0%, transparent 50%);
+  /* Sarvam-style soft hero glow: central indigo wash with warm peach edges */
+  background: radial-gradient(ellipse 60% 50% at 50% 12%, hsl(225 90% 92% / 0.55) 0%, transparent 65%),
+              radial-gradient(ellipse 40% 30% at 12% 22%, hsl(28 90% 92% / 0.4) 0%, transparent 70%),
+              radial-gradient(ellipse 40% 30% at 88% 22%, hsl(28 90% 92% / 0.4) 0%, transparent 70%),
+              radial-gradient(ellipse 80% 40% at 50% 100%, hsl(230 30% 96% / 0.5) 0%, transparent 60%);
   background-size: 200% 200%;
   animation: gradient-shift 20s ease-in-out infinite;
   pointer-events: none;
