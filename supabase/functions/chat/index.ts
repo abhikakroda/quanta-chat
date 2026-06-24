@@ -288,7 +288,42 @@ serve(async (req) => {
     }
 
 
-    throw new Error("No AI API key configured");
+    // Fallback: Lovable AI Gateway (covers transient upstream outages like 503)
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (LOVABLE_API_KEY) {
+      try {
+        const gatewayModel = NVIDIA_MODELS.has(model) || MISTRAL_MODELS.has(model)
+          ? "google/gemini-2.5-flash"
+          : `google/${GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash"}`;
+        const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+          },
+          body: JSON.stringify({ model: gatewayModel, messages: allMessages, stream: true, max_tokens: 16384 }),
+        });
+        if (resp.ok && resp.body) {
+          console.log("✅ Chat: Using Lovable AI Gateway fallback -", gatewayModel);
+          return new Response(resp.body, {
+            headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+          });
+        }
+        const errText = await resp.text();
+        console.warn("⚠️ Lovable Gateway fallback failed:", resp.status, errText);
+        if (resp.status === 429) {
+          throw new Error("Rate limit exceeded. Please try again in a moment.");
+        }
+        if (resp.status === 402) {
+          throw new Error("AI credits exhausted. Please add credits in workspace settings.");
+        }
+      } catch (e) {
+        if (e instanceof Error && (e.message.includes("Rate limit") || e.message.includes("credits"))) throw e;
+        console.warn("⚠️ Lovable Gateway fallback error:", e);
+      }
+    }
+
+    throw new Error("All AI providers are currently unavailable. Please try again in a moment.");
   } catch (e) {
     console.error("chat error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
