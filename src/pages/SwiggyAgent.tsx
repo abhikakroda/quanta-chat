@@ -265,3 +265,80 @@ export default function SwiggyAgent() {
     </div>
   );
 }
+
+type OrderStatus = "CONFIRMED" | "PREPARING" | "PICKED_UP" | "DELIVERED";
+
+const STEPS: { key: OrderStatus; label: string; Icon: typeof CheckCircle2 }[] = [
+  { key: "CONFIRMED", label: "Confirmed", Icon: CheckCircle2 },
+  { key: "PREPARING", label: "Preparing", Icon: ChefHat },
+  { key: "PICKED_UP", label: "On the way", Icon: Bike },
+  { key: "DELIVERED", label: "Delivered", Icon: PackageCheck },
+];
+
+function OrderStatusBar({ order }: { order: { order_id: string; restaurant_name: string; status: OrderStatus; eta_min: number } }) {
+  const currentIdx = STEPS.findIndex((s) => s.key === order.status);
+  const pct = ((currentIdx + 1) / STEPS.length) * 100;
+  const done = order.status === "DELIVERED";
+
+  return (
+    <div className="border-b border-border/60 bg-card/40 backdrop-blur-md">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-3">
+        <div className="flex items-center justify-between mb-2.5 gap-3">
+          <div className="min-w-0">
+            <div className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Tracking order · #{order.order_id.slice(-6).toUpperCase()}
+            </div>
+            <div className="text-sm font-semibold truncate">{order.restaurant_name}</div>
+          </div>
+          <div
+            className="text-[11px] font-bold px-2.5 py-1 rounded-full text-white shrink-0"
+            style={{ background: done ? "#16a34a" : SWIGGY_ORANGE }}
+          >
+            {done ? "Delivered" : `ETA ~${order.eta_min} min`}
+          </div>
+        </div>
+
+        {/* Progress rail */}
+        <div className="relative">
+          <div className="absolute left-0 right-0 top-3 h-[3px] rounded-full bg-muted" />
+          <div
+            className="absolute left-0 top-3 h-[3px] rounded-full transition-all duration-700"
+            style={{ width: `${pct}%`, background: done ? "#16a34a" : SWIGGY_ORANGE }}
+          />
+          <div className="relative flex justify-between">
+            {STEPS.map((s, i) => {
+              const reached = i <= currentIdx;
+              const isCurrent = i === currentIdx && !done;
+              return (
+                <div key={s.key} className="flex flex-col items-center gap-1 w-[25%]">
+                  <div
+                    className={cn(
+                      "w-6 h-6 rounded-full flex items-center justify-center border-2 transition-colors",
+                      reached ? "text-white border-transparent" : "bg-background text-muted-foreground border-border",
+                      isCurrent && "ring-2 ring-offset-2 ring-offset-background animate-pulse",
+                    )}
+                    style={
+                      reached
+                        ? { background: done ? "#16a34a" : SWIGGY_ORANGE, boxShadow: isCurrent ? `0 0 0 4px ${SWIGGY_ORANGE}22` : undefined }
+                        : undefined
+                    }
+                  >
+                    <s.Icon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                  </div>
+                  <span
+                    className={cn(
+                      "text-[10px] sm:text-[11px] font-medium text-center leading-tight",
+                      reached ? "text-foreground" : "text-muted-foreground/70",
+                    )}
+                  >
+                    {s.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
