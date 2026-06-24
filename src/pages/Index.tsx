@@ -176,6 +176,12 @@ export default function Index() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarPreviewOpen, setSidebarPreviewOpen] = useState(false);
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const onOpen = () => setCartDrawerOpen(true);
+    window.addEventListener("swiggy-cart-open", onOpen);
+    return () => window.removeEventListener("swiggy-cart-open", onOpen);
+  }, []);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem("quanta-sidebar-collapsed");
     return saved !== null ? saved === "true" : false; // default open
