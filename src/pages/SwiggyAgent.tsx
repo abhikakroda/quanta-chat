@@ -422,3 +422,72 @@ function OrderStatusBar({ order }: { order: { order_id: string; restaurant_name:
     </div>
   );
 }
+
+function ConnectionsBar({
+  authLoading,
+  signedIn,
+  connections,
+  connecting,
+  onConnect,
+  onDisconnect,
+}: {
+  authLoading: boolean;
+  signedIn: boolean;
+  connections: ConnectionStatus[];
+  connecting: "food" | "im" | null;
+  onConnect: (s: "food" | "im") => void;
+  onDisconnect: (s: "food" | "im") => void;
+}) {
+  if (authLoading) return null;
+  if (!signedIn) {
+    return (
+      <div className="border-b border-border/60 bg-amber-500/10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-2.5 flex items-center gap-2 text-[12px]">
+          <ShieldAlert className="w-4 h-4 text-amber-500" />
+          <span className="text-foreground/80">
+            Sign in to connect Swiggy and place real orders.
+          </span>
+          <Link to="/auth" className="ml-auto underline text-foreground">Sign in</Link>
+        </div>
+      </div>
+    );
+  }
+  const has = (s: "food" | "im") => connections.some((c) => c.server === s);
+  return (
+    <div className="border-b border-border/60 bg-card/40">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-2 flex items-center gap-2 flex-wrap text-[12px]">
+        {(["food", "im"] as const).map((s) => {
+          const connected = has(s);
+          const label = s === "food" ? "Food" : "Instamart";
+          return (
+            <div key={s} className="inline-flex items-center gap-1.5 rounded-full border border-border/60 pl-2 pr-1 py-0.5">
+              <span className={cn("w-1.5 h-1.5 rounded-full", connected ? "bg-emerald-500" : "bg-muted-foreground/40")} />
+              <span className="text-foreground/80">{label}</span>
+              {connected ? (
+                <Button size="sm" variant="ghost" className="h-6 px-2 text-[11px]" onClick={() => onDisconnect(s)}>
+                  <Unlink className="w-3 h-3 mr-1" />Disconnect
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 text-[11px]"
+                  disabled={connecting === s}
+                  onClick={() => onConnect(s)}
+                >
+                  {connecting === s ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Link2 className="w-3 h-3 mr-1" />
+                  )}
+                  Connect
+                </Button>
+              )}
+            </div>
+          );
+        })}
+        <span className="text-[11px] text-muted-foreground ml-auto">Phone + OTP via Swiggy</span>
+      </div>
+    </div>
+  );
+}
