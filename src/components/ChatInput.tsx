@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Plus, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X, Brain, Diamond, Zap, Sparkles, Check } from "lucide-react";
+import { ArrowUp, Square, Plus, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X, Brain, Diamond, Zap, Sparkles, Check, UtensilsCrossed } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
 import {
@@ -49,6 +50,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   noBorder,
 }, _ref) {
   const [input, setInput] = useState("");
+  const navigate = useNavigate();
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
@@ -334,6 +336,11 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                   {agentMode && <Check className="w-4 h-4 text-primary" />}
                 </DropdownMenuItem>
               )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => navigate("/swiggy")}>
+                <UtensilsCrossed className="w-4 h-4 mr-2" style={{ color: "#FC8019" }} />
+                <span className="flex-1">Order on Swiggy</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
