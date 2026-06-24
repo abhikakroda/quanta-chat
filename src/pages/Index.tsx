@@ -431,7 +431,7 @@ export default function Index() {
           },
           body: JSON.stringify({
             messages: allMessages,
-            skillPrompt: skillDef?.prompt,
+            skillPrompt: skillDef?.prompt ?? (detectSwiggyIntent(input) ? SWIGGY_SYSTEM_PROMPT : undefined),
           }),
         });
 
@@ -590,11 +590,18 @@ export default function Index() {
 
     const WEB_SCRAPER_PROMPT = "You are a web search and crawling assistant. Help users find information from the web, summarize web pages, extract data from URLs, and perform web research tasks.";
     const avatarDef = activeAvatar ? AVATARS.find((a) => a.id === activeAvatar) : null;
-    const skillDef = avatarDef
+    let skillDef: { prompt?: string } | null | undefined = avatarDef
       ? { prompt: avatarDef.systemPrompt }
       : activeSkill === "web-scraper"
         ? { prompt: WEB_SCRAPER_PROMPT }
         : activeSkill ? (SKILLS.find((s) => s.id === activeSkill) || ALL_TOOLS.find((t) => t.id === activeSkill)) : null;
+
+    // 🍔 Auto-detect Swiggy/food-ordering intent and swap in the Swiggy agent.
+    const swiggyIntent = !skillDef?.prompt && detectSwiggyIntent(input);
+    if (swiggyIntent) {
+      skillDef = { prompt: SWIGGY_SYSTEM_PROMPT };
+      setStreamingHint("🍔 Swiggy Agent — finding restaurants near you…");
+    }
 
     // Skip memory extraction & XP in ghost mode
     if (!isGhost) {
