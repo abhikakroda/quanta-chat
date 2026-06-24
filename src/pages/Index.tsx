@@ -11,6 +11,7 @@ import { useSkillLevel } from "@/hooks/useSkillLevel";
 import { useIsElectron } from "@/hooks/useElectron";
 import ChatSidebar, { SKILLS, ALL_TOOLS, SkillId } from "@/components/ChatSidebar";
 import { AVATARS } from "@/lib/avatars";
+import { detectSwiggyIntent, SWIGGY_SYSTEM_PROMPT } from "@/lib/swiggy";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
