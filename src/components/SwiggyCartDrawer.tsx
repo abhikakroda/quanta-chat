@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ShoppingBag,
   X,
@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   MapPin,
   Clock,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSwiggyCart, clearSwiggyCart } from "@/hooks/useSwiggyCart";
