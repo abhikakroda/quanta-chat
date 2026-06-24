@@ -268,7 +268,26 @@ export default function SwiggyCartDrawer({
           )}
 
           {step === "done" && order && (
-            <OrderConfirmation order={order} method={method} total={totalValue} />
+            <OrderConfirmation
+              order={order}
+              method={method}
+              total={totalValue}
+              otpDigits={otpDigits}
+              onOtpChange={setOtpDigits}
+              otpStatus={otpStatus}
+              onVerify={() => {
+                setOtpStatus("verifying");
+                setTimeout(() => {
+                  const entered = otpDigits.join("");
+                  if (entered === order.otp) {
+                    setOtpStatus("verified");
+                  } else {
+                    setOtpStatus("wrong");
+                    setOtpDigits(["", "", "", ""]);
+                  }
+                }, 900);
+              }}
+            />
           )}
         </div>
 
