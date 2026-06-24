@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowUp, Loader2, MapPin, Plus, Minus, ShoppingBag, Trash2, UtensilsCrossed, CheckCircle2, Bike, Package, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, ArrowUp, Loader2, UtensilsCrossed, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { callTool, getCartSnapshot, getActiveOrders, type SwiggyCart, type SwiggyOrder } from "@/lib/swiggyMcp";
 
 // ── Types for the OpenAI-tool message protocol used by Lovable AI Gateway ──
 type ChatMessage =
