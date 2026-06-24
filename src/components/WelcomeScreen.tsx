@@ -56,7 +56,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
     <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 pb-[10vh] animate-fade-in">
       {/* Brand heading */}
       <div className="mb-5 sm:mb-8 animate-slide-up text-center">
-        <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground mb-4">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-foreground mb-4">
           {userName ? (
             <>
               Welcome back, <span className="text-primary">{userName}</span>
