@@ -39,6 +39,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   onToggleThinking,
   onSelectSkill,
   activeSkillLabel,
+  userName,
 }, ref) {
   const navigate = useNavigate();
 
