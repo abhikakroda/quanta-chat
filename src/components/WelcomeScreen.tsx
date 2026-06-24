@@ -26,6 +26,7 @@ type Props = {
   onToggleThinking?: () => void;
   onSelectSkill?: (skill: string) => void;
   activeSkillLabel?: string | null;
+  userName?: string | null;
 };
 
 const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
