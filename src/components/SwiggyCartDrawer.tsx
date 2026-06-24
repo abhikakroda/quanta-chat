@@ -110,6 +110,8 @@ export default function SwiggyCartDrawer({
     setTimeout(() => {
       setStep("cart");
       setOrder(null);
+      setOtpDigits(["", "", "", ""]);
+      setOtpStatus("idle");
       if (step === "done") clearSwiggyCart();
     }, 250);
   };
