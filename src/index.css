@@ -6,59 +6,59 @@
 
 @layer base {
   :root {
-    /* Sarvam AI — warm cream surface, deep navy ink, indigo accent */
-    --background: 36 30% 96%;
-    --foreground: 232 30% 14%;
+    /* Sarvam AI — clean white surface, near-black navy ink, indigo accent */
+    --background: 0 0% 100%;
+    --foreground: 230 28% 12%;
 
-    --card: 36 25% 98%;
-    --card-foreground: 232 30% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 230 28% 12%;
 
-    --popover: 36 30% 98%;
-    --popover-foreground: 232 30% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 230 28% 12%;
 
-    --primary: 232 32% 16%;
-    --primary-foreground: 36 30% 97%;
-    --primary-glow: 232 32% 26%;
+    --primary: 230 28% 16%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 230 28% 26%;
 
-    --secondary: 36 22% 92%;
-    --secondary-foreground: 232 30% 14%;
+    --secondary: 230 18% 96%;
+    --secondary-foreground: 230 28% 12%;
 
-    --muted: 36 22% 92%;
-    --muted-foreground: 232 10% 42%;
+    --muted: 230 18% 96%;
+    --muted-foreground: 230 12% 45%;
 
     --accent: 232 90% 96%;
-    --accent-foreground: 232 80% 50%;
+    --accent-foreground: 232 70% 48%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 36 18% 86%;
-    --input: 36 18% 88%;
-    --ring: 232 80% 50%;
+    --border: 230 16% 91%;
+    --input: 230 16% 93%;
+    --ring: 232 70% 48%;
 
     --radius: 0.875rem;
 
-    --sidebar-background: 36 28% 95%;
-    --sidebar-foreground: 232 30% 14%;
-    --sidebar-primary: 232 32% 16%;
-    --sidebar-primary-foreground: 36 30% 97%;
-    --sidebar-accent: 232 60% 95%;
-    --sidebar-accent-foreground: 232 80% 50%;
-    --sidebar-border: 36 18% 88%;
-    --sidebar-ring: 232 80% 50%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 230 28% 12%;
+    --sidebar-primary: 230 28% 16%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 232 70% 96%;
+    --sidebar-accent-foreground: 232 70% 48%;
+    --sidebar-border: 230 16% 93%;
+    --sidebar-ring: 232 70% 48%;
 
-    --chat-user: 232 32% 16%;
-    --chat-user-foreground: 36 30% 97%;
-    --chat-ai: 36 25% 98%;
-    --chat-ai-foreground: 232 30% 14%;
+    --chat-user: 230 28% 16%;
+    --chat-user-foreground: 0 0% 100%;
+    --chat-ai: 230 18% 97%;
+    --chat-ai-foreground: 230 28% 12%;
 
-    --glass-bg: 36 30% 98% / 0.7;
-    --glass-border: 36 18% 80% / 0.8;
-    --glass-shadow: 232 30% 30% / 0.06;
-    --glass-shine: 36 30% 100% / 0.9;
+    --glass-bg: 0 0% 100% / 0.72;
+    --glass-border: 230 16% 88% / 0.8;
+    --glass-shadow: 230 30% 20% / 0.06;
+    --glass-shine: 0 0% 100% / 0.95;
 
-    --badge-new: 232 80% 94%;
-    --badge-new-foreground: 232 80% 45%;
+    --badge-new: 232 80% 96%;
+    --badge-new-foreground: 232 70% 48%;
   }
 
   .dark {
