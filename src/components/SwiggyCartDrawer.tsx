@@ -323,20 +323,52 @@ export default function SwiggyCartDrawer({
         )}
 
         {step === "done" && (
-          <div className="px-4 sm:px-5 pt-2 pb-[max(env(safe-area-inset-bottom),12px)] border-t border-border/40 grid grid-cols-2 gap-2">
-            <button
-              onClick={closeAndReset}
-              className="h-11 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-muted/50 transition-colors"
-            >
-              Close
-            </button>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="h-11 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
-              style={{ background: SWIGGY_ORANGE }}
-            >
-              Track order
-            </button>
+          <div className="px-4 sm:px-5 pt-2 pb-[max(env(safe-area-inset-bottom),12px)] border-t border-border/40">
+            {otpStatus === "verified" ? (
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={closeAndReset}
+                  className="h-11 rounded-xl border border-border text-foreground font-semibold text-sm hover:bg-muted/50 transition-colors"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => onOpenChange(false)}
+                  className="h-11 rounded-xl text-white font-semibold text-sm transition-opacity hover:opacity-90"
+                  style={{ background: SWIGGY_ORANGE }}
+                >
+                  Track order
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setOtpStatus("verifying");
+                  setTimeout(() => {
+                    const entered = otpDigits.join("");
+                    if (entered === order?.otp) {
+                      setOtpStatus("verified");
+                    } else {
+                      setOtpStatus("wrong");
+                      setOtpDigits(["", "", "", ""]);
+                    }
+                  }, 900);
+                }}
+                disabled={otpDigits.some((d) => !d) || otpStatus === "verifying"}
+                className="w-full h-11 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2 transition-opacity hover:opacity-90 disabled:opacity-50"
+                style={{ background: SWIGGY_ORANGE }}
+              >
+                {otpStatus === "verifying" ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Verifying…
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-4 h-4" /> Verify OTP
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>
