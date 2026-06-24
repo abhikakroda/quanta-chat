@@ -35,15 +35,7 @@ import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipb
 import { cn } from "@/lib/utils";
 
 const MermaidDiagram = lazy(() => import("@/components/MermaidDiagram"));
-const SwiggyCartCard = lazy(() => import("@/components/SwiggyCartCard"));
-
-function looksLikeSwiggyCart(text: string): boolean {
-  if (!text) return false;
-  const hasRupee = /₹\s?\d/.test(text);
-  const hasTotal = /\btotal\b/i.test(text);
-  const hasCartCue = /(subtotal|delivery\s*fee|gst|cart|qty)/i.test(text);
-  return hasRupee && hasTotal && hasCartCue;
-}
+import { looksLikeSwiggyCart, pushSwiggyCart } from "@/hooks/useSwiggyCart";
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [copied, setCopied] = useState(false);
@@ -266,10 +258,17 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
 
                           if (isBlock) {
                             if (looksLikeSwiggyCart(codeStr)) {
+                              // Push to global drawer instead of rendering between chats.
+                              pushSwiggyCart(codeStr);
                               return (
-                                <Suspense fallback={null}>
-                                  <SwiggyCartCard raw={codeStr} />
-                                </Suspense>
+                                <button
+                                  type="button"
+                                  onClick={() => window.dispatchEvent(new CustomEvent("swiggy-cart-open"))}
+                                  className="my-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-colors hover:opacity-90"
+                                  style={{ borderColor: "#FC801955", background: "#FC801914", color: "#FC8019" }}
+                                >
+                                  🛒 Cart updated · tap to view
+                                </button>
                               );
                             }
                             return <CodeBlock lang={lang} code={codeStr} />;
