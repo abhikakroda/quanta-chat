@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowUp, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowUp, Loader2, Sparkles, CheckCircle2, ChefHat, Bike, PackageCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { getActiveOrders } from "@/lib/swiggyMcp";
 
 // ── Types for the OpenAI-tool message protocol used by Lovable AI Gateway ──
 type ChatMessage =
@@ -38,6 +39,17 @@ export default function SwiggyAgent() {
   const [busy, setBusy] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [orderTick, setOrderTick] = useState(0);
+
+  useEffect(() => {
+    const onTick = () => setOrderTick((t) => t + 1);
+    window.addEventListener("swiggy-order-tick", onTick);
+    return () => window.removeEventListener("swiggy-order-tick", onTick);
+  }, []);
+
+  void orderTick;
+  const allOrders = getActiveOrders();
+  const activeOrder = allOrders.find((o) => o.status !== "DELIVERED") || allOrders[0];
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -176,6 +188,8 @@ export default function SwiggyAgent() {
           </Badge>
         </div>
       </header>
+
+      {activeOrder && <OrderStatusBar order={activeOrder} />}
 
       <div className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 py-4 min-h-0">
         <Card className="flex flex-col h-[calc(100dvh-88px)] overflow-hidden">
