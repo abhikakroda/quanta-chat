@@ -50,6 +50,7 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   noBorder,
 }, _ref) {
   const [input, setInput] = useState("");
+  const navigate = useNavigate();
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [recording, setRecording] = useState(false);
   const [transcribing, setTranscribing] = useState(false);
