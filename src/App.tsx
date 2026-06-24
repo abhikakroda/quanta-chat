@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const AIPlayground = lazy(() => import("./pages/AILabs"));
+const SwiggyAgent = lazy(() => import("./pages/SwiggyAgent"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/ai-playground" element={<AIPlayground />} />
               <Route path="/ai-labs" element={<AIPlayground />} />
+              <Route path="/swiggy" element={<SwiggyAgent />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
