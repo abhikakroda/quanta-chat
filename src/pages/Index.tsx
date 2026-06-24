@@ -1025,6 +1025,8 @@ export default function Index() {
         )}
       </main>
 
+      <SwiggyCartDrawer open={cartDrawerOpen} onOpenChange={setCartDrawerOpen} />
+
       {/* Auth Dialog */}
       <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
         <DialogContent className="sm:max-w-sm p-0 gap-0 glass-strong border-border/20 rounded-2xl overflow-hidden">
