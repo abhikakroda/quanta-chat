@@ -35,6 +35,15 @@ import { ChevronDown, ChevronRight, Brain, Copy, Check, Pencil, RefreshCw, Clipb
 import { cn } from "@/lib/utils";
 
 const MermaidDiagram = lazy(() => import("@/components/MermaidDiagram"));
+const SwiggyCartCard = lazy(() => import("@/components/SwiggyCartCard"));
+
+function looksLikeSwiggyCart(text: string): boolean {
+  if (!text) return false;
+  const hasRupee = /₹\s?\d/.test(text);
+  const hasTotal = /\btotal\b/i.test(text);
+  const hasCartCue = /(subtotal|delivery\s*fee|gst|cart|qty)/i.test(text);
+  return hasRupee && hasTotal && hasCartCue;
+}
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const [copied, setCopied] = useState(false);
@@ -256,6 +265,13 @@ function ChatMessage({ role, content, thinking, isThinking, isStreaming, imageUr
                           }
 
                           if (isBlock) {
+                            if (looksLikeSwiggyCart(codeStr)) {
+                              return (
+                                <Suspense fallback={null}>
+                                  <SwiggyCartCard raw={codeStr} />
+                                </Suspense>
+                              );
+                            }
                             return <CodeBlock lang={lang} code={codeStr} />;
                           }
                           return (
