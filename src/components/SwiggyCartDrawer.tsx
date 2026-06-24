@@ -485,25 +485,56 @@ function OrderConfirmation({
   order,
   method,
   total,
+  otpDigits,
+  onOtpChange,
+  otpStatus,
 }: {
   order: { id: string; eta: number; partner: string; otp: string };
   method: PayMethodId;
   total: string;
+  otpDigits: string[];
+  onOtpChange: (v: string[]) => void;
+  otpStatus: "idle" | "verifying" | "verified" | "wrong";
 }) {
   const m = PAY_METHODS.find((x) => x.id === method);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const handleOtpChange = (idx: number, val: string) => {
+    if (!/^\d?$/.test(val)) return;
+    const next = [...otpDigits];
+    next[idx] = val;
+    onOtpChange(next);
+    if (val && idx < 3) {
+      inputRefs.current[idx + 1]?.focus();
+    }
+  };
+
+  const handleOtpKey = (idx: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !otpDigits[idx] && idx > 0) {
+      inputRefs.current[idx - 1]?.focus();
+    }
+  };
+
   return (
     <div className="space-y-4 py-1">
       <div className="flex flex-col items-center text-center gap-2 py-3">
         <div
-          className="w-16 h-16 rounded-full flex items-center justify-center text-white animate-in zoom-in-50 duration-300"
-          style={{ background: "#16a34a" }}
+          className={cn(
+            "w-16 h-16 rounded-full flex items-center justify-center text-white animate-in zoom-in-50 duration-300",
+            otpStatus === "verified" && "bg-green-600",
+          )}
+          style={otpStatus !== "verified" ? { background: "#16a34a" } : undefined}
         >
-          <CheckCircle2 className="w-9 h-9" />
+          {otpStatus === "verified" ? <ShieldCheck className="w-9 h-9" /> : <CheckCircle2 className="w-9 h-9" />}
         </div>
         <div>
-          <div className="text-base font-bold text-foreground">Order placed!</div>
+          <div className="text-base font-bold text-foreground">
+            {otpStatus === "verified" ? "Handover confirmed!" : "Order placed!"}
+          </div>
           <div className="text-[13px] text-muted-foreground">
-            Paid {total}{method !== "cod" ? ` via ${m?.label}` : ""}
+            {otpStatus === "verified"
+              ? "Your delivery is complete."
+              : `Paid ${total}${method !== "cod" ? ` via ${m?.label}` : ""}`}
           </div>
         </div>
       </div>
@@ -522,9 +553,49 @@ function OrderConfirmation({
           }
         />
         <Row label="Delivery partner" value={order.partner} />
-        <Row label="OTP for handover" value={order.otp} mono highlight />
         <Row label="Payment" value={m?.label || ""} />
       </div>
+
+      {otpStatus !== "verified" && (
+        <div className="rounded-2xl border border-border/60 p-4 space-y-3">
+          <div className="text-[11px] uppercase tracking-wider font-semibold text-muted-foreground">
+            Confirm handover
+          </div>
+          <div className="text-[13px] text-muted-foreground">
+            Ask the delivery partner for the OTP and enter it below to confirm receipt.
+          </div>
+          <div className="flex items-center justify-center gap-2.5">
+            {otpDigits.map((d, i) => (
+              <input
+                key={i}
+                ref={(el) => { inputRefs.current[i] = el; }}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={d}
+                onChange={(e) => handleOtpChange(i, e.target.value)}
+                onKeyDown={(e) => handleOtpKey(i, e)}
+                className={cn(
+                  "w-12 h-14 text-center text-xl font-bold rounded-xl border-2 bg-background outline-none transition-all",
+                  otpStatus === "wrong"
+                    ? "border-red-500 text-red-500 animate-in shake"
+                    : "border-border focus:border-orange-500 text-foreground",
+                )}
+              />
+            ))}
+          </div>
+          {otpStatus === "wrong" && (
+            <div className="text-center text-[12px] text-red-500 font-medium">Wrong OTP. Try again.</div>
+          )}
+        </div>
+      )}
+
+      {otpStatus === "verified" && (
+        <div className="rounded-2xl border border-green-200 bg-green-50/5 p-4 flex items-center gap-3">
+          <ShieldCheck className="w-5 h-5 shrink-0 text-green-500" />
+          <div className="text-[13px] text-green-600 font-medium">Delivery handover verified successfully.</div>
+        </div>
+      )}
 
       <div className="text-[11px] text-muted-foreground text-center">
         Demo order · nothing was actually ordered or charged.
