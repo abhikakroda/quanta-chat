@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Plus, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X, Brain, Diamond, Zap, Sparkles, Check } from "lucide-react";
+import { ArrowUp, Square, Plus, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X, Brain, Diamond, Zap, Sparkles, Check, UtensilsCrossed } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
 import {
