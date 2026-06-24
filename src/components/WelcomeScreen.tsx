@@ -26,6 +26,7 @@ type Props = {
   onToggleThinking?: () => void;
   onSelectSkill?: (skill: string) => void;
   activeSkillLabel?: string | null;
+  userName?: string | null;
 };
 
 const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
@@ -38,6 +39,7 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   onToggleThinking,
   onSelectSkill,
   activeSkillLabel,
+  userName,
 }, ref) {
   const navigate = useNavigate();
 
@@ -55,7 +57,15 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
       {/* Brand heading */}
       <div className="mb-5 sm:mb-8 animate-slide-up text-center">
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground mb-4">
-          AI for all from <span className="text-primary">OpenTropic</span>
+          {userName ? (
+            <>
+              Welcome back, <span className="text-primary">{userName}</span>
+            </>
+          ) : (
+            <>
+              AI for all from <span className="text-primary">OpenTropic</span>
+            </>
+          )}
         </h1>
       </div>
 
