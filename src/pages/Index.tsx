@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Moon, Sun, Menu, Atom, ChevronDown } from "lucide-react";
+import { Moon, Sun, Menu, Atom, ChevronDown, Plus, Globe, Code2, FilePen, Wand2, FlaskConical, UtensilsCrossed } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/hooks/useAuth";
 import { useConversations } from "@/hooks/useConversations";
@@ -9,7 +9,7 @@ import { streamChat, Message, MODELS, ModelId, resolveAutoModel, getModelLabel, 
 import { useUserMemories, extractMemories } from "@/hooks/useUserMemories";
 import { useSkillLevel } from "@/hooks/useSkillLevel";
 import { useIsElectron } from "@/hooks/useElectron";
-import ChatSidebar, { SKILLS, ALL_TOOLS, SkillId } from "@/components/ChatSidebar";
+import ChatSidebar, { SKILLS, ALL_TOOLS, SkillId, SIDEBAR_ITEMS } from "@/components/ChatSidebar";
 import { AVATARS } from "@/lib/avatars";
 import { detectSwiggyIntent, SWIGGY_SYSTEM_PROMPT } from "@/lib/swiggy";
 import ChatMessage from "@/components/ChatMessage";
@@ -172,6 +172,7 @@ export default function Index() {
   const [streamThinking, setStreamThinking] = useState("");
   const [isThinkingPhase, setIsThinkingPhase] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarPreviewOpen, setSidebarPreviewOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     const saved = localStorage.getItem("quanta-sidebar-collapsed");
     return saved !== null ? saved === "true" : false; // default open
