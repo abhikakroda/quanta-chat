@@ -71,9 +71,9 @@
     --popover: 222 14% 14%;
     --popover-foreground: 220 10% 90%;
 
-    --primary: 232 80% 62%;
+    --primary: 0 0% 62%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 232 85% 72%;
+    --primary-glow: 0 0% 72%;
 
     --secondary: 222 12% 18%;
     --secondary-foreground: 220 10% 90%;
@@ -81,26 +81,26 @@
     --muted: 222 12% 18%;
     --muted-foreground: 220 8% 55%;
 
-    --accent: 232 40% 22%;
-    --accent-foreground: 232 80% 75%;
+    --accent: 0 0% 22%;
+    --accent-foreground: 0 0% 75%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 222 12% 20%;
     --input: 222 12% 22%;
-    --ring: 232 80% 62%;
+    --ring: 0 0% 62%;
 
     --sidebar-background: 222 16% 8%;
     --sidebar-foreground: 220 10% 85%;
-    --sidebar-primary: 232 80% 62%;
+    --sidebar-primary: 0 0% 62%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 14% 16%;
-    --sidebar-accent-foreground: 232 80% 75%;
+    --sidebar-accent-foreground: 0 0% 75%;
     --sidebar-border: 222 12% 18%;
-    --sidebar-ring: 232 80% 62%;
+    --sidebar-ring: 0 0% 62%;
 
-    --chat-user: 224 50% 22%;
+    --chat-user: 0 0% 22%;
     --chat-user-foreground: 220 10% 95%;
     --chat-ai: 222 14% 14%;
     --chat-ai-foreground: 220 10% 90%;
@@ -110,8 +110,8 @@
     --glass-shadow: 0 0% 0% / 0.3;
     --glass-shine: 0 0% 100% / 0.04;
 
-    --badge-new: 232 50% 22%;
-    --badge-new-foreground: 232 80% 75%;
+    --badge-new: 0 0% 22%;
+    --badge-new-foreground: 0 0% 75%;
   }
 }
 
@@ -408,10 +408,10 @@ button, a, input, textarea, select, [role="button"] {
   pointer-events: none;
 }
 .dark .animated-gradient-bg::before {
-  background: radial-gradient(ellipse at 20% 50%, hsl(224 60% 15% / 0.4) 0%, transparent 50%),
-              radial-gradient(ellipse at 80% 20%, hsl(224 50% 18% / 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 40% 80%, hsl(200 50% 14% / 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 60%, hsl(240 40% 16% / 0.25) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 20% 50%, hsl(0 0% 15% / 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse at 80% 20%, hsl(0 0% 18% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 40% 80%, hsl(0 0% 14% / 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 60%, hsl(0 0% 16% / 0.25) 0%, transparent 50%);
   background-size: 200% 200%;
   animation: gradient-shift 20s ease-in-out infinite;
 }
