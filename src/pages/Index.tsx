@@ -871,9 +871,57 @@ export default function Index() {
         <div className={cn("h-12 shrink-0 flex items-center justify-between px-3 sm:px-4 glass-subtle border-b border-border/20 relative z-[50]", isElectron && "pl-[76px]")}>
           <div className="flex items-center gap-2">
             {sidebarCollapsed && (
-              <button onClick={() => setSidebarCollapsed(false)} className="hidden md:flex p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
-                <Menu className="w-4 h-4 text-muted-foreground" />
-              </button>
+              <div
+                className="relative hidden md:flex"
+                onMouseEnter={() => setSidebarPreviewOpen(true)}
+                onMouseLeave={() => setSidebarPreviewOpen(false)}
+              >
+                <button onClick={() => setSidebarCollapsed(false)} className="p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
+                  <Menu className="w-4 h-4 text-muted-foreground" />
+                </button>
+                {sidebarPreviewOpen && (
+                  <div className="absolute top-full left-0 mt-1.5 w-[220px] bg-popover border border-border/40 rounded-xl shadow-xl z-[60] py-2 px-1.5 animate-in fade-in slide-in-from-left-2 duration-200">
+                    <button
+                      onClick={() => { setSidebarPreviewOpen(false); handleNewChat(); }}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium text-foreground border border-border/50 hover:bg-accent/50 transition-all mb-1"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      New chat
+                    </button>
+                    <div className="space-y-0.5">
+                      {SIDEBAR_ITEMS.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => { setSidebarPreviewOpen(false); setActiveSkill(activeSkill === item.id ? null : item.id); setActiveAvatar(null); handleNewChat(); }}
+                          className={cn(
+                            "w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] transition-colors text-left",
+                            activeSkill === item.id ? "bg-accent text-primary font-medium" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                          )}
+                        >
+                          <item.icon className="w-4 h-4 shrink-0" />
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => { setSidebarPreviewOpen(false); navigate("/ai-playground"); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors text-left"
+                      >
+                        <FlaskConical className="w-4 h-4 shrink-0" />
+                        <span>AI Playground</span>
+                        <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">{ALL_TOOLS.length}</span>
+                      </button>
+                      <button
+                        onClick={() => { setSidebarPreviewOpen(false); navigate("/swiggy"); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[13px] text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors text-left"
+                      >
+                        <UtensilsCrossed className="w-4 h-4 shrink-0" style={{ color: "#FC8019" }} />
+                        <span>Swiggy Agent</span>
+                        <span className="ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: "#FC801920", color: "#FC8019" }}>New</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
             <button onClick={() => setSidebarOpen(true)} className="md:hidden p-1.5 rounded-md hover:bg-accent transition-colors touch-manipulation">
               <Menu className="w-4 h-4 text-muted-foreground" />
