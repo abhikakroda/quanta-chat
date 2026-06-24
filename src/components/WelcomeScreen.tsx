@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { Zap, Diamond, Image as ImageIcon, Pencil, Globe, FlaskConical } from "lucide-react";
+import { Image as ImageIcon, Pencil, Globe, FlaskConical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ChatInput from "./ChatInput";
 import { ModelId, getModelLabel } from "@/lib/chat";
@@ -22,6 +22,8 @@ type Props = {
   selectedModel?: ModelId;
   expertMode?: boolean;
   onToggleExpert?: () => void;
+  thinkingEnabled?: boolean;
+  onToggleThinking?: () => void;
   onSelectSkill?: (skill: string) => void;
   activeSkillLabel?: string | null;
 };
@@ -32,11 +34,11 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
   selectedModel = "gemini-flash",
   expertMode = false,
   onToggleExpert,
+  thinkingEnabled = false,
+  onToggleThinking,
   onSelectSkill,
   activeSkillLabel,
 }, ref) {
-  const modelLabel = getModelLabel(selectedModel);
-
   const navigate = useNavigate();
 
   const prefill = (text: string) => onSend(text);
@@ -52,48 +54,20 @@ const WelcomeScreen = forwardRef<HTMLDivElement, Props>(function WelcomeScreen({
     <div ref={ref} className="flex-1 flex flex-col items-center justify-center px-3 sm:px-4 pb-[10vh] animate-fade-in">
       {/* Brand heading */}
       <div className="mb-5 sm:mb-8 animate-slide-up text-center">
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            Start chatting with <span className="text-primary">{expertMode ? "Expert" : "Instant"}</span>
-          </h1>
-        </div>
-        <p className="max-w-xl mx-auto text-sm sm:text-base text-muted-foreground mb-4 px-4">
-          OpenTropic is a free AI chat assistant with multiple models for code, research, writing, image generation, voice chat and 40+ specialized tools — all in one place.
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-foreground mb-4">
+          AI for all from <span className="text-primary">OpenTropic</span>
+        </h1>
+        <p className="max-w-xl mx-auto text-sm sm:text-base text-muted-foreground px-4">
+          A free AI chat assistant with multiple models for code, research, writing, image generation, voice chat and 40+ specialized tools — all in one place. Use the <span className="font-medium text-foreground">+</span> button to enable Thinking, Expert or Agent modes.
         </p>
-
-        {/* Mode toggle pill */}
-        <div className="inline-flex items-center rounded-full border border-border/60 p-1 glass-subtle">
-          <button
-            onClick={() => expertMode && onToggleExpert?.()}
-            className={cn(
-              "flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-medium transition-all duration-300",
-              !expertMode
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Zap className="w-3.5 h-3.5" />
-            Instant
-          </button>
-          <button
-            onClick={() => !expertMode && onToggleExpert?.()}
-            className={cn(
-              "flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-medium transition-all duration-300",
-              expertMode
-                ? "bg-primary/10 text-primary border border-primary/20"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Diamond className="w-3.5 h-3.5" />
-            Expert
-          </button>
-        </div>
       </div>
 
       <div className="w-full max-w-[640px]">
         <ChatInput
           onSend={onSend} onStop={onStop} disabled={disabled} streaming={streaming}
           agentMode={agentMode} onToggleAgent={onToggleAgent}
+          expertMode={expertMode} onToggleExpert={onToggleExpert}
+          thinkingEnabled={thinkingEnabled} onToggleThinking={onToggleThinking}
           selectedModel={selectedModel}
           activeSkillLabel={activeSkillLabel}
           noBorder

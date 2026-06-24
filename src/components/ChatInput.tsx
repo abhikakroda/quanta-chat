@@ -1,7 +1,15 @@
 import { useState, useRef, useEffect, useCallback, forwardRef } from "react";
-import { ArrowUp, Square, Plus, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X } from "lucide-react";
+import { ArrowUp, Square, Plus, Mic, MicOff, Loader2, Paperclip, AudioLines, FileText, X, Brain, Diamond, Zap, Sparkles, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MODELS, ModelId } from "@/lib/chat";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import * as pdfjsLib from "pdfjs-dist";
 import mammoth from "mammoth";
 
@@ -21,6 +29,10 @@ type Props = {
   streaming?: boolean;
   agentMode?: boolean;
   onToggleAgent?: () => void;
+  expertMode?: boolean;
+  onToggleExpert?: () => void;
+  thinkingEnabled?: boolean;
+  onToggleThinking?: () => void;
   selectedModel?: ModelId;
   onSelectModel?: (model: ModelId) => void;
   activeSkillLabel?: string | null;
@@ -30,6 +42,8 @@ type Props = {
 const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   onSend, onStop, disabled, streaming,
   agentMode, onToggleAgent,
+  expertMode, onToggleExpert,
+  thinkingEnabled, onToggleThinking,
   selectedModel = "mistral", onSelectModel,
   activeSkillLabel,
   noBorder,
@@ -136,6 +150,12 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
   };
 
   const removeFile = (index: number) => setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+
+  const activeModes = [
+    expertMode && "Expert",
+    thinkingEnabled && "Thinking",
+    agentMode && "Agent",
+  ].filter(Boolean) as string[];
 
   const [dragging, setDragging] = useState(false);
   const dragCounter = useRef(0);
@@ -267,16 +287,55 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             dragging && "ring-2 ring-primary/30"
           )}
         >
-          {/* Plus / attach */}
+          {/* Plus menu — attach + mode toggles */}
           <input ref={fileRef} type="file" accept=".txt,.md,.csv,.json,.js,.ts,.tsx,.jsx,.py,.html,.css,.xml,.yaml,.yml,.log,.sql,.sh,.env,.toml,.ini,.cfg,.conf,.pdf,.docx,.doc,image/*" multiple className="hidden" onChange={handleFileSelect} />
-          <button
-            onClick={() => fileRef.current?.click()}
-            aria-label="Attach file"
-            className="shrink-0 w-9 h-9 sm:w-10 sm:h-10 ml-1 sm:ml-1.5 mb-1 rounded-full hover:bg-accent text-muted-foreground/50 hover:text-foreground transition-colors flex items-center justify-center touch-manipulation"
-            title="Attach file"
-          >
-            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                aria-label="Open tools menu"
+                className={cn(
+                  "shrink-0 w-9 h-9 sm:w-10 sm:h-10 ml-1 sm:ml-1.5 mb-1 rounded-full transition-colors flex items-center justify-center touch-manipulation",
+                  activeModes.length > 0
+                    ? "bg-primary/10 text-primary hover:bg-primary/15"
+                    : "hover:bg-accent text-muted-foreground/60 hover:text-foreground"
+                )}
+                title="Tools & modes"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" side="top" className="w-60">
+              <DropdownMenuItem onSelect={() => fileRef.current?.click()}>
+                <Paperclip className="w-4 h-4 mr-2" />
+                Attach file
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-[11px] uppercase tracking-wide text-muted-foreground/70">
+                Modes
+              </DropdownMenuLabel>
+              {onToggleThinking && (
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onToggleThinking(); }}>
+                  <Brain className="w-4 h-4 mr-2" />
+                  <span className="flex-1">Thinking</span>
+                  {thinkingEnabled && <Check className="w-4 h-4 text-primary" />}
+                </DropdownMenuItem>
+              )}
+              {onToggleExpert && (
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onToggleExpert(); }}>
+                  <Diamond className="w-4 h-4 mr-2" />
+                  <span className="flex-1">Expert (multi-model)</span>
+                  {expertMode && <Check className="w-4 h-4 text-primary" />}
+                </DropdownMenuItem>
+              )}
+              {onToggleAgent && (
+                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); onToggleAgent(); }}>
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  <span className="flex-1">Agent (multi-step)</span>
+                  {agentMode && <Check className="w-4 h-4 text-primary" />}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           {/* Textarea */}
           <textarea
@@ -343,6 +402,20 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
             )}
           </div>
         </div>
+
+        {/* Active mode chips */}
+        {activeModes.length > 0 && (
+          <div className="flex items-center gap-1.5 mt-2 px-1 flex-wrap">
+            {activeModes.map((m) => (
+              <span key={m} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium">
+                {m === "Thinking" && <Brain className="w-3 h-3" />}
+                {m === "Expert" && <Diamond className="w-3 h-3" />}
+                {m === "Agent" && <Sparkles className="w-3 h-3" />}
+                {m}
+              </span>
+            ))}
+          </div>
+        )}
 
       </div>
     </div>
