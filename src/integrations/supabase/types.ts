@@ -195,6 +195,93 @@ export type Database = {
           },
         ]
       }
+      swiggy_oauth_clients: {
+        Row: {
+          client_id: string
+          client_secret: string | null
+          created_at: string
+          redirect_uri: string
+          registration_response: Json | null
+          server: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          client_secret?: string | null
+          created_at?: string
+          redirect_uri: string
+          registration_response?: Json | null
+          server: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          client_secret?: string | null
+          created_at?: string
+          redirect_uri?: string
+          registration_response?: Json | null
+          server?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      swiggy_oauth_sessions: {
+        Row: {
+          code_verifier: string
+          created_at: string
+          redirect_uri: string
+          server: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          code_verifier: string
+          created_at?: string
+          redirect_uri: string
+          server: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          code_verifier?: string
+          created_at?: string
+          redirect_uri?: string
+          server?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      swiggy_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          scope: string | null
+          server: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          scope?: string | null
+          server: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          scope?: string | null
+          server?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       typing_progress: {
         Row: {
           accuracy: number
@@ -323,7 +410,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      swiggy_token_status: {
+        Row: {
+          expires_at: string | null
+          scope: string | null
+          server: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          expires_at?: string | null
+          scope?: string | null
+          server?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          expires_at?: string | null
+          scope?: string | null
+          server?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
