@@ -109,6 +109,33 @@ async function callGoogleAI(apiKey: string, model: string, messages: any[], stre
   });
 }
 
+async function callLovableGateway(apiKey: string, model: string, messages: any[], stream: boolean, maxTokens: number) {
+  const gatewayModel = NVIDIA_MODELS.has(model) || MISTRAL_MODELS.has(model)
+    ? "google/gemini-2.5-flash"
+    : `google/${GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash"}`;
+
+  return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Lovable-API-Key": apiKey,
+      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+    },
+    body: JSON.stringify({
+      model: gatewayModel,
+      messages,
+      stream,
+      max_tokens: maxTokens,
+    }),
+  });
+}
+
+function gatewayErrorMessage(status: number) {
+  if (status === 429) return "Rate limit exceeded. Please try again in a moment.";
+  if (status === 402) return "AI credits exhausted. Please add credits in workspace settings.";
+  return "All AI providers are currently unavailable. Please try again in a moment.";
+}
+
 
 // Transform Google SSE stream to OpenAI-compatible SSE stream
 function transformGoogleStream(googleBody: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
@@ -181,6 +208,7 @@ serve(async (req) => {
     const GOOGLE_API_KEY = Deno.env.get("GOOGLE_GEMINI_API_KEY");
     const MISTRAL_API_KEY = Deno.env.get("MISTRAL_API_KEY");
     const NVIDIA_API_KEY = Deno.env.get("NVIDIA_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     const { messages, enableThinking = true, model = "gemini-flash", skillPrompt, imageData } = bodyJson;
 
@@ -231,9 +259,25 @@ serve(async (req) => {
           console.warn("⚠️ Google vision error:", e);
         }
       }
+      if (LOVABLE_API_KEY) {
+        try {
+          const resp = await callLovableGateway(LOVABLE_API_KEY, model, visionMessages, true, 16384);
+          if (resp.ok && resp.body) {
+            console.log("✅ Vision: Using Lovable AI Gateway fallback");
+            return new Response(resp.body, {
+              headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+            });
+          }
+          const errText = await resp.text();
+          console.warn("⚠️ Lovable Gateway vision fallback failed:", resp.status, errText);
+          throw new Error(gatewayErrorMessage(resp.status));
+        } catch (e) {
+          if (e instanceof Error && (e.message.includes("Rate limit") || e.message.includes("credits"))) throw e;
+          console.warn("⚠️ Lovable Gateway vision fallback error:", e);
+        }
+      }
 
-
-      throw new Error("No AI API key configured for vision");
+      throw new Error("All AI providers are currently unavailable. Please try again in a moment.");
     }
 
     // ── Route by model provider ──
@@ -289,34 +333,18 @@ serve(async (req) => {
 
 
     // Fallback: Lovable AI Gateway (covers transient upstream outages like 503)
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (LOVABLE_API_KEY) {
       try {
-        const gatewayModel = NVIDIA_MODELS.has(model) || MISTRAL_MODELS.has(model)
-          ? "google/gemini-2.5-flash"
-          : `google/${GOOGLE_MODEL_MAP[model] || "gemini-2.5-flash"}`;
-        const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-          },
-          body: JSON.stringify({ model: gatewayModel, messages: allMessages, stream: true, max_tokens: 16384 }),
-        });
+        const resp = await callLovableGateway(LOVABLE_API_KEY, model, allMessages, true, 16384);
         if (resp.ok && resp.body) {
-          console.log("✅ Chat: Using Lovable AI Gateway fallback -", gatewayModel);
+          console.log("✅ Chat: Using Lovable AI Gateway fallback");
           return new Response(resp.body, {
             headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
           });
         }
         const errText = await resp.text();
         console.warn("⚠️ Lovable Gateway fallback failed:", resp.status, errText);
-        if (resp.status === 429) {
-          throw new Error("Rate limit exceeded. Please try again in a moment.");
-        }
-        if (resp.status === 402) {
-          throw new Error("AI credits exhausted. Please add credits in workspace settings.");
-        }
+        throw new Error(gatewayErrorMessage(resp.status));
       } catch (e) {
         if (e instanceof Error && (e.message.includes("Rate limit") || e.message.includes("credits"))) throw e;
         console.warn("⚠️ Lovable Gateway fallback error:", e);
