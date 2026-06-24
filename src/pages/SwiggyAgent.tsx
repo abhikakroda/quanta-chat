@@ -1,12 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ArrowUp, Loader2, Sparkles, CheckCircle2, ChefHat, Bike, PackageCheck } from "lucide-react";
+import { ArrowLeft, ArrowUp, Loader2, Sparkles, CheckCircle2, ChefHat, Bike, PackageCheck, Link2, Unlink, ShieldAlert } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { getActiveOrders } from "@/lib/swiggyMcp";
+import {
+  getActiveOrders,
+  callTool,
+  getSwiggyStatus,
+  startSwiggyConnect,
+  disconnectSwiggy,
+  SwiggyAuthError,
+  type ConnectionStatus,
+} from "@/lib/swiggyMcp";
+import { useAuth } from "@/hooks/useAuth";
 
 // ── Types for the OpenAI-tool message protocol used by Lovable AI Gateway ──
 type ChatMessage =
@@ -26,6 +36,7 @@ const SWIGGY_ORANGE = "#FC8019";
 
 export default function SwiggyAgent() {
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
   const [messages, setMessages] = useState<UiMessage[]>([
     {
       id: "welcome",
@@ -40,6 +51,34 @@ export default function SwiggyAgent() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [orderTick, setOrderTick] = useState(0);
+  const [connections, setConnections] = useState<ConnectionStatus[]>([]);
+  const [connectingServer, setConnectingServer] = useState<"food" | "im" | null>(null);
+
+  const refreshStatus = useCallback(async () => {
+    if (!user) return;
+    const c = await getSwiggyStatus();
+    setConnections(c);
+  }, [user]);
+
+  useEffect(() => { refreshStatus(); }, [refreshStatus]);
+
+  // Listen for the popup-callback postMessage so we can refresh status
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string; ok?: boolean } | null;
+      if (d?.type === "swiggy-oauth") {
+        setConnectingServer(null);
+        if (d.ok) {
+          toast({ title: "Swiggy connected" });
+          refreshStatus();
+        } else {
+          toast({ title: "Swiggy connection failed", variant: "destructive" });
+        }
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, [toast, refreshStatus]);
 
   useEffect(() => {
     const onTick = () => setOrderTick((t) => t + 1);
@@ -95,20 +134,23 @@ export default function SwiggyAgent() {
         } catch {
           args = {};
         }
-        // Forward to the swiggy edge function for tool execution
-        const toolResp = await fetch(`${supabaseUrl}/functions/v1/swiggy-chat`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: anonKey,
-            Authorization: `Bearer ${anonKey}`,
-          },
-          body: JSON.stringify({
-            messages: working,
-            tool_call: { name: call.function.name, arguments: args },
-          }),
-        });
-        const toolResult = toolResp.ok ? await toolResp.json() : { error: "Tool failed" };
+        // Execute the tool against the real Swiggy MCP through swiggy-mcp.
+        let toolResult: unknown;
+        try {
+          toolResult = await callTool(call.function.name, args);
+        } catch (e) {
+          if (e instanceof SwiggyAuthError) {
+            toast({
+              title: `Swiggy ${e.server === "food" ? "Food" : "Instamart"} needs reconnecting`,
+              description: e.reason,
+              variant: "destructive",
+            });
+            void connectServer(e.server);
+            toolResult = { error: "Swiggy session expired; user is reconnecting." };
+          } else {
+            toolResult = { error: (e as Error).message };
+          }
+        }
         toolResults.push({
           role: "tool",
           tool_call_id: call.id,
@@ -123,9 +165,38 @@ export default function SwiggyAgent() {
     return working;
   }
 
+  async function connectServer(server: "food" | "im") {
+    if (!user) {
+      toast({ title: "Sign in first", description: "You need to sign in to connect Swiggy." });
+      return;
+    }
+    try {
+      setConnectingServer(server);
+      const url = await startSwiggyConnect(server);
+      const w = window.open(url, "swiggy-oauth", "width=480,height=720");
+      if (!w) {
+        setConnectingServer(null);
+        toast({ title: "Popup blocked", description: "Allow popups and try again.", variant: "destructive" });
+      }
+    } catch (e) {
+      setConnectingServer(null);
+      toast({ title: "Couldn't start Swiggy connect", description: (e as Error).message, variant: "destructive" });
+    }
+  }
+
+  async function disconnectServer(server: "food" | "im") {
+    await disconnectSwiggy(server);
+    toast({ title: `Disconnected from Swiggy ${server === "food" ? "Food" : "Instamart"}` });
+    refreshStatus();
+  }
+
   async function send(text?: string) {
     const userText = (text ?? input).trim();
     if (!userText || busy) return;
+    if (!user) {
+      toast({ title: "Sign in required", description: "Sign in to talk to the Swiggy agent.", variant: "destructive" });
+      return;
+    }
     setInput("");
     setBusy(true);
     const userMsg: UiMessage = { id: crypto.randomUUID(), role: "user", text: userText, ts: Date.now() };
@@ -180,14 +251,23 @@ export default function SwiggyAgent() {
             </div>
             <div className="leading-tight">
               <div className="text-sm font-semibold">Swiggy AI Agent</div>
-              <div className="text-[11px] text-muted-foreground">Order food by chatting</div>
+              <div className="text-[11px] text-muted-foreground">Real Swiggy MCP · OAuth</div>
             </div>
           </div>
           <Badge variant="secondary" className="gap-1 text-[10px]">
-            <Sparkles className="w-3 h-3" /> Demo mode
+            <Sparkles className="w-3 h-3" /> Live MCP
           </Badge>
         </div>
       </header>
+
+      <ConnectionsBar
+        authLoading={authLoading}
+        signedIn={!!user}
+        connections={connections}
+        connecting={connectingServer}
+        onConnect={connectServer}
+        onDisconnect={disconnectServer}
+      />
 
       {activeOrder && <OrderStatusBar order={activeOrder} />}
 
