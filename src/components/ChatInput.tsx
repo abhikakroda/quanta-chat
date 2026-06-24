@@ -336,6 +336,11 @@ const ChatInput = forwardRef<HTMLDivElement, Props>(function ChatInput({
                   {agentMode && <Check className="w-4 h-4 text-primary" />}
                 </DropdownMenuItem>
               )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => navigate("/swiggy")}>
+                <UtensilsCrossed className="w-4 h-4 mr-2" style={{ color: "#FC8019" }} />
+                <span className="flex-1">Order on Swiggy</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
