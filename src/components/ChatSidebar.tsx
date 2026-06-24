@@ -77,7 +77,7 @@ export type SkillId = typeof SKILLS[number]["id"];
 export type ToolId = typeof ALL_TOOLS[number]["id"];
 
 // Main sidebar items shown as top-level nav (Kimi-style)
-const SIDEBAR_ITEMS = [
+export const SIDEBAR_ITEMS = [
   { id: "deep-research", icon: Globe, label: "Deep Research" },
   { id: "code-assistant", icon: Code2, label: "Website Builder" },
   
